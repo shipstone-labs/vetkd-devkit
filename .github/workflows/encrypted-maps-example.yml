@@ -3,7 +3,7 @@ name: encrypted-maps-example
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - cdk/encrypted-maps-example/**
