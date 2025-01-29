@@ -1,0 +1,25 @@
+[workspace]
+members = [
+    "encrypted_maps_example",
+    "key_manager_example",
+    "encrypted_maps",
+    "key_manager",
+    "test_utils",
+    "utils"
+]
+resolver = "2"
+
+[workspace.package]
+authors = ["The Internet Computer Project Developers"]
+version = "0.1.0"
+edition = "2021"
+description = "Verifiably encrypted threshold key derivation (VetKD) canister development kit (CDK)"
+documentation = "https://crates.io/vetkd_cdk"
+
+[workspace.dependencies]
+candid = "0.10.2"
+ic-cdk = "0.13.0"
+ic-cdk-macros = "0.13.0"
+ic-stable-structures = "0.6.5"
+ic-vetkd-utils = { version = "0.1.0", git = "https://github.com/dfinity/ic.git" }
+serde = "1.0.217"

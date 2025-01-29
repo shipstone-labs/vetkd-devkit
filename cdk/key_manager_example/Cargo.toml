@@ -1,0 +1,28 @@
+[package]
+name = "ic-vetkd-cdk-key-manager-example"
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
+version.workspace = true
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+candid = { workspace = true }
+ic-cdk = { workspace = true }
+ic-cdk-macros = { workspace = true }
+ic-stable-structures = { workspace = true }
+ic-vetkd-cdk-key-manager = { path = "../key_manager" }
+ic-vetkd-cdk-utils = { path = "../utils" }
+ic-vetkd-utils = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+ic-vetkd-cdk-test-utils = { path = "../test_utils" }
+pocket-ic = "6.0.0"
+rand = "0.8.4"
+rand_chacha = "0.3.0"
+reqwest = "0.12.12"
