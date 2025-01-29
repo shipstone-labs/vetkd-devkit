@@ -237,19 +237,10 @@ impl TestEnvironment {
 }
 
 fn load_key_manager_example_canister_wasm() -> Vec<u8> {
-    // use flate2::write::GzEncoder;
-    // use flate2::Compression;
-    //use std::io::prelude::*;
-
     let wasm_path = Path::new("../target/wasm32-unknown-unknown/release/key_manager_example.wasm");
     let wasm_bytes = std::fs::read(wasm_path).expect(
         "wasm does not exist - run `cargo build --release --target wasm32-unknown-unknown`",
     );
-
-    // let mut e = GzEncoder::new(Vec::new(), Compression::default());
-    // e.write_all(wasm_bytes.as_slice()).unwrap();
-    // let zipped_bytes = e.finish().unwrap();
-    // zipped_bytes
 
     wasm_bytes
 }
