@@ -23,3 +23,8 @@ ic-cdk-macros = "0.13.0"
 ic-stable-structures = "0.6.5"
 ic-vetkd-utils = { version = "0.1.0", git = "https://github.com/dfinity/ic.git" }
 serde = "1.0.217"
+
+[profile.release]
+lto = true
+opt-level = 'z'
+panic = 'abort'

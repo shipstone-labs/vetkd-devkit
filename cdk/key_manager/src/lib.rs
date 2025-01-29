@@ -39,7 +39,7 @@ pub type Caller = Principal;
 pub type KeyId = (Caller, KeyName);
 
 thread_local! {
-    static ENCRYPTED_MAPS: RefCell<Option<KeyManager>> = RefCell::new(None);
+    static ENCRYPTED_MAPS: RefCell<Option<KeyManager>> = const { RefCell::new(None) };
 }
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
@@ -104,14 +104,14 @@ pub fn get_shared_user_access_for_key(
     caller: Principal,
     key_id: KeyId,
 ) -> Result<Vec<(Principal, AccessRights)>, String> {
-    if get_user_rights(caller, key_id.clone(), caller)?.is_none() {
+    if get_user_rights(caller, key_id, caller)?.is_none() {
         return Err("unauthorized user".to_string());
     }
 
     let users: Vec<Principal> = KeyManager::with_borrow(|km| {
         Ok::<_, ()>(
             km.shared_keys
-                .range((key_id.clone(), Principal::management_canister())..)
+                .range((key_id, Principal::management_canister())..)
                 .take_while(|((k, _), _)| k == &key_id)
                 .map(|((_, user), _)| user)
                 .collect(),
@@ -122,7 +122,7 @@ pub fn get_shared_user_access_for_key(
     users
         .into_iter()
         .map(|user| {
-            get_user_rights(caller, key_id.clone(), user)
+            get_user_rights(caller, key_id, user)
                 .map(|opt_user_rights| (user, opt_user_rights.expect("always some access rights")))
         })
         .collect::<Result<Vec<_>, _>>()
@@ -151,7 +151,7 @@ pub async fn get_encrypted_vetkey(
     key_id: KeyId,
     transport_key: TransportKey,
 ) -> Result<VetKey, String> {
-    let user_rights = get_user_rights(caller, key_id.clone(), caller)?;
+    let user_rights = get_user_rights(caller, key_id, caller)?;
     if user_rights.is_none() {
         return Err("unauthorized user".to_string());
     }
@@ -214,13 +214,13 @@ pub fn set_user_rights(
     KeyManager::with_borrow_mut(|km| {
         if caller == key_id.0 {
         } else {
-            match km.access_control.get(&(caller, key_id.clone())) {
-                Some(ar) if ar == AccessRights::ReadWriteManage => {}
+            match km.access_control.get(&(caller, key_id)) {
+                Some(AccessRights::ReadWriteManage) => {}
                 _ => return Err("unauthorized user".to_string()),
             };
         }
 
-        km.shared_keys.insert((key_id.clone(), user), ());
+        km.shared_keys.insert((key_id, user), ());
 
         Ok(km.access_control.insert((user, key_id), access_rights))
     })
@@ -238,8 +238,8 @@ pub fn remove_user(
     KeyManager::with_borrow_mut(|km| {
         if caller == key_id.0 {
         } else {
-            match km.access_control.get(&(caller, key_id.clone())) {
-                Some(ar) if ar == AccessRights::ReadWriteManage => {}
+            match km.access_control.get(&(caller, key_id)) {
+                Some(AccessRights::ReadWriteManage) => {}
                 _ => return Err("unauthorized user".to_string()),
             }
         };
@@ -252,7 +252,7 @@ pub fn is_key_shared(key_id: KeyId) -> Result<bool, String> {
     KeyManager::with_borrow(|km| {
         Ok::<bool, ()>(
             km.shared_keys
-                .range(&(key_id.clone(), Principal::management_canister())..)
+                .range(&(key_id, Principal::management_canister())..)
                 .take_while(|((k, _), _)| k == &key_id)
                 .next()
                 .is_some(),

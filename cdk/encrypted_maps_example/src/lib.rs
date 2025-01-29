@@ -164,3 +164,5 @@ fn remove_user(
 fn bytebuf_to_blob(buf: ByteBuf) -> Result<Blob<32>, String> {
     Blob::try_from(buf.as_ref()).map_err(|_| "too large input".to_string())
 }
+
+ic_cdk::export_candid!();

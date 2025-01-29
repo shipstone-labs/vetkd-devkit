@@ -1,0 +1,25 @@
+name: Cargo Clippy Linux
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - cdk/**
+      - .github/workflows/provision-linux.sh
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  cargo-clippy:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Provision Linux
+        run: bash .github/workflows/provision-linux.sh
+      - name: Run Clippy Linux
+        run: |
+          set -eExuo pipefail
+          export CARGO_TERM_COLOR=always # ensure output has colors
+          pushd cdk
+          cargo clippy

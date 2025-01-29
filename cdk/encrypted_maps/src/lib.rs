@@ -25,7 +25,7 @@ pub type VetKeyVerificationKey = ByteBuf;
 pub type VetKey = ByteBuf;
 
 thread_local! {
-    static ENCRYPTED_MAPS: RefCell<Option<EncryptedMaps>> = RefCell::new(None);
+    static ENCRYPTED_MAPS: RefCell<Option<EncryptedMaps>> = const { RefCell::new(None) };
 }
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
@@ -79,7 +79,7 @@ pub fn get_accessible_shared_map_names(caller: Principal) -> Vec<KeyId> {
 }
 
 pub fn remove_map_values(caller: Principal, key_id: KeyId) -> Result<Vec<MapKey>, String> {
-    match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id.clone(), caller)? {
+    match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id, caller)? {
         Some(AccessRights::ReadWrite) | Some(AccessRights::ReadWriteManage) => Ok(()),
         Some(AccessRights::Read) | None => Err("unauthorized user".to_string()),
     }?;
@@ -87,13 +87,13 @@ pub fn remove_map_values(caller: Principal, key_id: KeyId) -> Result<Vec<MapKey>
     EncryptedMaps::with_borrow_mut(|em| {
         let keys: Vec<_> = em
             .mapkey_vals
-            .range((key_id.clone(), Blob::default())..)
+            .range((key_id, Blob::default())..)
             .take_while(|((k, _), _)| k == &key_id)
             .map(|((_name, key), _value)| key)
             .collect();
 
         for key in keys.iter() {
-            em.mapkey_vals.remove(&(key_id.clone(), key.clone()));
+            em.mapkey_vals.remove(&(key_id, *key));
         }
 
         Ok::<_, ()>(keys)
@@ -104,7 +104,7 @@ pub fn get_encrypted_values_for_map(
     caller: Principal,
     key_id: KeyId,
 ) -> Result<Vec<(MapKey, EncryptedMapValue)>, String> {
-    match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id.clone(), caller)? {
+    match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id, caller)? {
         Some(_) => Ok(()),
         None => Err("unauthorized user".to_string()),
     }?;
@@ -112,7 +112,7 @@ pub fn get_encrypted_values_for_map(
     EncryptedMaps::with_borrow(|ed| {
         Ok::<_, ()>(
             ed.mapkey_vals
-                .range((key_id.clone(), Blob::default())..)
+                .range((key_id, Blob::default())..)
                 .take_while(|((k, _), _)| k == &key_id)
                 .map(|((_, k), v)| (k, v))
                 .collect(),
@@ -125,7 +125,7 @@ pub fn get_encrypted_value(
     key_id: KeyId,
     key: MapKey,
 ) -> Result<Option<EncryptedMapValue>, String> {
-    match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id.clone(), caller)? {
+    match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id, caller)? {
         Some(_) => Ok(()),
         None => Err("unauthorized user".to_string()),
     }?;
@@ -139,7 +139,7 @@ pub fn insert_encrypted_value(
     key: MapKey,
     encrypted_value: EncryptedMapValue,
 ) -> Result<Option<EncryptedMapValue>, String> {
-    match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id.clone(), caller)? {
+    match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id, caller)? {
         Some(AccessRights::ReadWrite) | Some(AccessRights::ReadWriteManage) => Ok(()),
         Some(AccessRights::Read) | None => Err("unauthorized user".to_string()),
     }?;
@@ -154,7 +154,7 @@ pub fn remove_encrypted_value(
     key_id: KeyId,
     key: MapKey,
 ) -> Result<Option<EncryptedMapValue>, String> {
-    match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id.clone(), caller)? {
+    match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id, caller)? {
         Some(AccessRights::ReadWrite) | Some(AccessRights::ReadWriteManage) => Ok(()),
         Some(AccessRights::Read) | None => Err("unauthorized user".to_string()),
     }?;
