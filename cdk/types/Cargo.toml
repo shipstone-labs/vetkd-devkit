@@ -1,5 +1,5 @@
 [package]
-name = "ic-vetkd-cdk-utils"
+name = "ic-vetkd-cdk-types"
 authors.workspace = true
 description.workspace = true
 documentation.workspace = true

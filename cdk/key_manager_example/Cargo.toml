@@ -16,7 +16,7 @@ ic-cdk = { workspace = true }
 ic-cdk-macros = { workspace = true }
 ic-stable-structures = { workspace = true }
 ic-vetkd-cdk-key-manager = { path = "../key_manager" }
-ic-vetkd-cdk-utils = { path = "../utils" }
+ic-vetkd-cdk-types = { path = "../types" }
 ic-vetkd-utils = { workspace = true }
 serde = { workspace = true }
 

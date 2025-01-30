@@ -1150,7 +1150,7 @@ dependencies = [
  "ic-stable-structures",
  "ic-vetkd-cdk-key-manager",
  "ic-vetkd-cdk-test-utils",
- "ic-vetkd-cdk-utils",
+ "ic-vetkd-cdk-types",
  "ic-vetkd-utils",
  "lazy_static",
  "pocket-ic 5.0.0",
@@ -1173,7 +1173,7 @@ dependencies = [
  "ic-stable-structures",
  "ic-vetkd-cdk-encrypted-maps",
  "ic-vetkd-cdk-test-utils",
- "ic-vetkd-cdk-utils",
+ "ic-vetkd-cdk-types",
  "ic-vetkd-utils",
  "pocket-ic 6.0.0",
  "rand",
@@ -1195,7 +1195,7 @@ dependencies = [
  "ic-cdk-macros",
  "ic-stable-structures",
  "ic-vetkd-cdk-test-utils",
- "ic-vetkd-cdk-utils",
+ "ic-vetkd-cdk-types",
  "ic-vetkd-utils",
  "lazy_static",
  "pocket-ic 5.0.0",
@@ -1219,7 +1219,7 @@ dependencies = [
  "ic-stable-structures",
  "ic-vetkd-cdk-key-manager",
  "ic-vetkd-cdk-test-utils",
- "ic-vetkd-cdk-utils",
+ "ic-vetkd-cdk-types",
  "ic-vetkd-utils",
  "pocket-ic 6.0.0",
  "rand",
@@ -1238,7 +1238,7 @@ dependencies = [
  "ic-cdk",
  "ic-cdk-macros",
  "ic-stable-structures",
- "ic-vetkd-cdk-utils",
+ "ic-vetkd-cdk-types",
  "ic-vetkd-utils",
  "lazy_static",
  "rand",
@@ -1251,7 +1251,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ic-vetkd-cdk-utils"
+name = "ic-vetkd-cdk-types"
 version = "0.1.0"
 dependencies = [
  "anyhow",

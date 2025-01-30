@@ -6,7 +6,7 @@ use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemor
 use ic_stable_structures::storable::Blob;
 use ic_stable_structures::DefaultMemoryImpl;
 use ic_vetkd_cdk_key_manager::{self, VetKey, VetKeyVerificationKey};
-use ic_vetkd_cdk_utils::{AccessRights, ByteBuf, TransportKey};
+use ic_vetkd_cdk_types::{AccessRights, ByteBuf, TransportKey};
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 

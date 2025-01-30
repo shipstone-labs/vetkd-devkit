@@ -13,7 +13,7 @@ use std::cell::RefCell;
 use std::fmt::Debug;
 
 use ic_vetkd_cdk_key_manager::KeyId;
-use ic_vetkd_cdk_utils::{
+use ic_vetkd_cdk_types::{
     AccessRights, ByteBuf, EncryptedMapValue, MapKey, MemoryInitializationError, TransportKey,
 };
 

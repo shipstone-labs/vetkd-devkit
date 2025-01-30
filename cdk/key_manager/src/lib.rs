@@ -11,7 +11,7 @@ use ic_cdk::api::management_canister::main::CanisterId;
 use ic_stable_structures::memory_manager::VirtualMemory;
 use ic_stable_structures::storable::{Blob, Bound};
 use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap, Storable};
-use ic_vetkd_cdk_utils::{AccessRights, ByteBuf, KeyName, MemoryInitializationError, TransportKey};
+use ic_vetkd_cdk_types::{AccessRights, ByteBuf, KeyName, MemoryInitializationError, TransportKey};
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::borrow::Cow;

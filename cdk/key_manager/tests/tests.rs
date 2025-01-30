@@ -8,7 +8,7 @@ use ic_vetkd_cdk_test_utils::{
     random_access_rights, random_name, random_self_authenticating_principal,
     random_unique_memory_ids, reproducible_rng,
 };
-use ic_vetkd_cdk_utils::{AccessRights, MemoryInitializationError};
+use ic_vetkd_cdk_types::{AccessRights, MemoryInitializationError};
 
 #[test]
 fn can_init_memory() {

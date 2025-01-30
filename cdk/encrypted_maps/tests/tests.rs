@@ -13,7 +13,7 @@ use strum::IntoEnumIterator;
 
 use ic_vetkd_cdk_encrypted_maps::EncryptedMaps;
 use ic_vetkd_cdk_key_manager::KeyManager;
-use ic_vetkd_cdk_utils::{AccessRights, MemoryInitializationError};
+use ic_vetkd_cdk_types::{AccessRights, MemoryInitializationError};
 
 #[test]
 fn can_init_memory() {

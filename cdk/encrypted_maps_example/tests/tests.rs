@@ -1,7 +1,7 @@
 use candid::{decode_one, encode_args, encode_one, CandidType, Principal};
 use ic_vetkd_cdk_encrypted_maps::{VetKey, VetKeyVerificationKey};
 use ic_vetkd_cdk_test_utils::random_self_authenticating_principal;
-use ic_vetkd_cdk_utils::{AccessRights, ByteBuf, TransportKey};
+use ic_vetkd_cdk_types::{AccessRights, ByteBuf, TransportKey};
 use ic_vetkd_utils::TransportSecretKey;
 use pocket_ic::{PocketIc, PocketIcBuilder, WasmResult};
 use rand::{CryptoRng, Rng, SeedableRng};

@@ -16,7 +16,7 @@ hex = "0.4.3"
 ic-cdk = { workspace = true }
 ic-cdk-macros = { workspace = true }
 ic-stable-structures = { workspace = true }
-ic-vetkd-cdk-utils = { path = "../utils" }
+ic-vetkd-cdk-types = { path = "../types" }
 ic-vetkd-utils = { workspace = true }
 lazy_static = "1.5.0"
 serde = { workspace = true }
