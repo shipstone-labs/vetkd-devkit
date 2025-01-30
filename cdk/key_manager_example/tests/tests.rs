@@ -237,8 +237,9 @@ impl TestEnvironment {
 }
 
 fn load_key_manager_example_canister_wasm() -> Vec<u8> {
-    let wasm_path =
-        Path::new("../../target/wasm32-unknown-unknown/release/ic_vetkd_cdk_key_manager_example.wasm");
+    let wasm_path = Path::new(
+        "../../target/wasm32-unknown-unknown/release/ic_vetkd_cdk_key_manager_example.wasm",
+    );
     let wasm_bytes = std::fs::read(wasm_path).expect(
         "wasm does not exist - run `cargo build --release --target wasm32-unknown-unknown`",
     );
