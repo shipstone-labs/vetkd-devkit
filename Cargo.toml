@@ -1,12 +1,12 @@
 [workspace]
 members = [
-    "encrypted_maps_example",
-    "key_manager_example",
-    "encrypted_maps",
-    "key_manager",
-    "test_utils",
-    "types",
-    "utils",
+    "cdk/encrypted_maps_example",
+    "cdk/key_manager_example",
+    "cdk/encrypted_maps",
+    "cdk/key_manager",
+    "cdk/test_utils",
+    "cdk/types",
+    "cdk/utils",
 ]
 resolver = "2"
 
