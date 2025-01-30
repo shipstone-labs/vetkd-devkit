@@ -5,7 +5,8 @@ members = [
     "encrypted_maps",
     "key_manager",
     "test_utils",
-    "types"
+    "types",
+    "utils",
 ]
 resolver = "2"
 

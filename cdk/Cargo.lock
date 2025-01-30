@@ -1275,6 +1275,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "ic-vetkd-cdk-utils"
+version = "0.1.0"
+dependencies = [
+ "ic-vetkd-utils",
+]
+
+[[package]]
 name = "ic-vetkd-utils"
 version = "0.1.0"
 source = "git+https://github.com/dfinity/ic.git#620e7729d7e20c3dbb3843009188ab69ec4b600c"
