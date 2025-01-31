@@ -60,10 +60,11 @@ async fn get_encrypted_vetkey(
 fn get_user_rights(
     key_owner: Principal,
     key_name: ByteBuf,
+    user: Principal,
 ) -> Result<Option<AccessRights>, String> {
     let key_name = bytebuf_to_blob(key_name)?;
     let key_id = (key_owner, key_name);
-    ic_vetkd_cdk_key_manager::get_user_rights(ic_cdk::caller(), key_id, ic_cdk::caller())
+    ic_vetkd_cdk_key_manager::get_user_rights(ic_cdk::caller(), key_id, user)
 }
 
 #[update]
