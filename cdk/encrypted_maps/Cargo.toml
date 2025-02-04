@@ -33,3 +33,6 @@ ic-vetkd-cdk-test-utils = { path = "../test_utils" }
 pocket-ic = "5.0.0"
 rand = "0.8.4"
 rand_chacha = "0.3.0"
+
+[features]
+expose-testing-api = ["ic-vetkd-cdk-key-manager/expose-testing-api"]

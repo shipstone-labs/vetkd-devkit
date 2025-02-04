@@ -191,12 +191,22 @@ impl TestEnvironment {
         // Make sure the canister is properly initialized
         fast_forward(&pic, 5);
 
-        Self {
+        let env = Self {
             pic,
             example_canister_id,
             principal_0: random_self_authenticating_principal(rng),
             principal_1: random_self_authenticating_principal(rng),
-        }
+        };
+
+        // Set the vetkd mock canister ID in the example canister, requires the
+        // `--features expose-testing-api`.
+        let _: () = env.update(
+            vetkd_mock_canister_id,
+            "set_vetkd_testing_canister_id",
+            encode_one(vetkd_mock_canister_id).unwrap(),
+        );
+
+        env
     }
 
     fn update<T: CandidType + for<'de> candid::Deserialize<'de>>(
@@ -241,7 +251,7 @@ fn load_key_manager_example_canister_wasm() -> Vec<u8> {
         "../../target/wasm32-unknown-unknown/release/ic_vetkd_cdk_key_manager_example.wasm",
     );
     let wasm_bytes = std::fs::read(wasm_path).expect(
-        "wasm does not exist - run `cargo build --release --target wasm32-unknown-unknown`",
+        "wasm does not exist - run `cargo build --release --target wasm32-unknown-unknown --features expose-testing-api`",
     );
 
     wasm_bytes

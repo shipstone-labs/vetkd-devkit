@@ -132,10 +132,11 @@ async fn get_encrypted_vetkey(
 fn get_user_rights(
     map_owner: Principal,
     map_name: ByteBuf,
+    user: Principal,
 ) -> Result<Option<AccessRights>, String> {
     let map_name = bytebuf_to_blob(map_name)?;
     let map_id = (map_owner, map_name);
-    ic_vetkd_cdk_encrypted_maps::get_user_rights(ic_cdk::caller(), map_id, ic_cdk::caller())
+    ic_vetkd_cdk_encrypted_maps::get_user_rights(ic_cdk::caller(), map_id, user)
 }
 
 #[update]
@@ -159,6 +160,12 @@ fn remove_user(
     let map_name = bytebuf_to_blob(map_name)?;
     let map_id = (map_owner, map_name);
     ic_vetkd_cdk_encrypted_maps::remove_user(ic_cdk::caller(), map_id, user)
+}
+
+#[cfg(feature = "expose-testing-api")]
+#[update]
+fn set_vetkd_testing_canister_id(vetkd_testing_canister: Principal) {
+    ic_vetkd_cdk_encrypted_maps::set_vetkd_testing_canister_id(vetkd_testing_canister)
 }
 
 fn bytebuf_to_blob(buf: ByteBuf) -> Result<Blob<32>, String> {

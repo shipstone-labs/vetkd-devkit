@@ -26,3 +26,6 @@ pocket-ic = "6.0.0"
 rand = "0.8.4"
 rand_chacha = "0.3.0"
 reqwest = "0.12.12"
+
+[features]
+expose-testing-api = ["ic-vetkd-cdk-key-manager/expose-testing-api"]

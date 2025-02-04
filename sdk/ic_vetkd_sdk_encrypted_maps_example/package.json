@@ -1,6 +1,5 @@
 {
-    "name": "ic_vetkd_sdk_key_manager",
-    "type": "module",
+    "name": "ic_vetkd_sdk_encrypted_maps_example",
     "files": [
         "dist"
     ],
@@ -13,10 +12,11 @@
     },
     "devDependencies": {
         "@babel/preset-env": "7.26.0",
-        "@babel/preset-typescript": "7.26.0",
-        "jest": "^29.7.0",
+        "@babel/preset-typescript": "^7.26.0",
         "@jest/globals": "^29.7.0",
         "@types/jest": "^29.5.14",
+        "isomorphic-fetch": "3.0.0",
+        "jest": "^29.7.0",
         "ts-jest": "^29.2.5",
         "ts-node": "10.9.2"
     },

@@ -90,6 +90,12 @@ fn remove_user(
     ic_vetkd_cdk_key_manager::remove_user(ic_cdk::caller(), key_id, user)
 }
 
+#[cfg(feature = "expose-testing-api")]
+#[update]
+fn set_vetkd_testing_canister_id(vetkd_testing_canister: Principal) {
+    ic_vetkd_cdk_key_manager::set_vetkd_testing_canister_id(vetkd_testing_canister)
+}
+
 fn bytebuf_to_blob(buf: ByteBuf) -> Result<Blob<32>, String> {
     Blob::try_from(buf.as_ref()).map_err(|_| "too large input".to_string())
 }

@@ -198,3 +198,8 @@ pub fn remove_user(
 ) -> Result<Option<AccessRights>, String> {
     ic_vetkd_cdk_key_manager::remove_user(caller, key_id, user)
 }
+
+#[cfg(feature = "expose-testing-api")]
+pub fn set_vetkd_testing_canister_id(canister_id: Principal) {
+    ic_vetkd_cdk_key_manager::set_vetkd_testing_canister_id(canister_id);
+}

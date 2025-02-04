@@ -10,7 +10,7 @@ export class KeyManager {
 
     async get_encrypted_vetkey(key_owner: Principal, vetkey_name: string): Promise<{ 'Ok': ByteBuf } |
     { 'Err': string }> {
-        return await this.canister_client.get_encryped_vetkey(key_owner, vetkey_name);
+        return await this.canister_client.get_vetkey(key_owner, vetkey_name);
     }
 
     async get_vetkey_verification_key(): Promise<ByteBuf> {
@@ -34,12 +34,12 @@ export interface KeyManagerClient {
     { 'Err': string }>;
     get_user_rights(owner: Principal, vetkey_name: string, user: Principal): Promise<{ 'Ok': [] | [AccessRights] } |
     { 'Err': string }>;
-    get_encryped_vetkey(key_owner: Principal, vetkey_name: string): Promise<{ 'Ok': ByteBuf } |
+    get_vetkey(key_owner: Principal, vetkey_name: string): Promise<{ 'Ok': ByteBuf } |
     { 'Err': string }>;
     get_vetkey_verification_key(): Promise<ByteBuf>;
 }
 
-export type AccessRights = { 'Read' : null } |
-  { 'ReadWrite' : null } |
-  { 'ReadWriteManage' : null };
-export interface ByteBuf { 'inner' : Uint8Array | number[] }
+export type AccessRights = { 'Read': null } |
+{ 'ReadWrite': null } |
+{ 'ReadWriteManage': null };
+export interface ByteBuf { 'inner': Uint8Array | number[] }

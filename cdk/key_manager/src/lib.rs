@@ -25,7 +25,7 @@ use vetkd_api_types::{
     VetKDPublicKeyRequest,
 };
 
-const VETKD_SYSTEM_API_CANISTER_ID: &str = "tqzl2-p7777-77776-aaaaa-cai";
+const VETKD_SYSTEM_API_CANISTER_ID: &str = "aaaaa-aa";
 const KEY_MANAGER_DERIVATION_PATH: &[u8] = b"key_manager";
 
 // On a high level,
@@ -40,6 +40,8 @@ pub type KeyId = (Caller, KeyName);
 
 thread_local! {
     static ENCRYPTED_MAPS: RefCell<Option<KeyManager>> = const { RefCell::new(None) };
+    #[cfg(feature = "expose-testing-api")]
+    static VETKD_TESTING_CANISTER_ID: RefCell<Option<Principal>> = const { RefCell::new(None) };
 }
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
@@ -268,6 +270,12 @@ fn bls12_381_test_key_1() -> VetKDKeyId {
 }
 
 fn vetkd_system_api_canister_id() -> CanisterId {
+    #[cfg(feature = "expose-testing-api")]
+    {
+        if let Some(canister_id) = VETKD_TESTING_CANISTER_ID.with(|cell| cell.borrow().clone()) {
+            return canister_id;
+        }
+    }
     CanisterId::from_str(VETKD_SYSTEM_API_CANISTER_ID).expect("failed to create canister ID")
 }
 
@@ -290,4 +298,24 @@ impl Storable for StorableDerivationPath {
     }
 
     const BOUND: Bound = Bound::Unbounded;
+}
+
+#[cfg(feature = "expose-testing-api")]
+pub fn set_vetkd_testing_canister_id(canister_id: Principal) {
+    VETKD_TESTING_CANISTER_ID.with(|cell| {
+        *cell.borrow_mut() = Some(canister_id);
+    });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_vetkd_canister_id_should_be_management_canister_id() {
+        assert_eq!(
+            vetkd_system_api_canister_id(),
+            CanisterId::from_str("aaaaa-aa").unwrap()
+        );
+    }
 }
