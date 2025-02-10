@@ -106,9 +106,7 @@ pub fn get_shared_user_access_for_key(
     caller: Principal,
     key_id: KeyId,
 ) -> Result<Vec<(Principal, AccessRights)>, String> {
-    if get_user_rights(caller, key_id, caller)?.is_none() {
-        return Err("unauthorized user".to_string());
-    }
+    ensure_user_can_read(caller, key_id)?;
 
     let users: Vec<Principal> = KeyManager::with_borrow(|km| {
         Ok::<_, ()>(
@@ -153,10 +151,7 @@ pub async fn get_encrypted_vetkey(
     key_id: KeyId,
     transport_key: TransportKey,
 ) -> Result<VetKey, String> {
-    let user_rights = get_user_rights(caller, key_id, caller)?;
-    if user_rights.is_none() {
-        return Err("unauthorized user".to_string());
-    }
+    ensure_user_can_read(caller, key_id)?;
 
     let derivation_id = key_id
         .0
@@ -189,19 +184,8 @@ pub fn get_user_rights(
     key_id: KeyId,
     user: Principal,
 ) -> Result<Option<AccessRights>, String> {
-    if caller != key_id.0
-        && KeyManager::with_borrow(|km| {
-            Ok::<_, ()>(km.access_control.get(&(caller, key_id)).is_none())
-        })
-        .unwrap()
-    {
-        return Err("unauthorized user".to_string());
-    }
-
-    if caller == key_id.0 {
-        return Ok(Some(AccessRights::ReadWriteManage));
-    }
-    KeyManager::with_borrow(|km| Ok::<_, ()>(km.access_control.get(&(user, key_id))))
+    ensure_user_can_read(caller, key_id)?;
+    Ok(ensure_user_can_read(user, key_id).ok())
 }
 
 pub fn set_user_rights(
@@ -210,21 +194,14 @@ pub fn set_user_rights(
     user: Principal,
     access_rights: AccessRights,
 ) -> Result<Option<AccessRights>, String> {
+    ensure_user_can_manage(caller, key_id)?;
+
     if caller == key_id.0 && caller == user {
         return Err("cannot change key owner's user rights".to_string());
     }
     KeyManager::with_borrow_mut(|km| {
-        if caller == key_id.0 {
-        } else {
-            match km.access_control.get(&(caller, key_id)) {
-                Some(AccessRights::ReadWriteManage) => {}
-                _ => return Err("unauthorized user".to_string()),
-            };
-        }
-
         km.shared_keys.insert((key_id, user), ());
-
-        Ok(km.access_control.insert((user, key_id), access_rights))
+        Ok::<_, ()>(km.access_control.insert((user, key_id), access_rights))
     })
 }
 
@@ -233,21 +210,13 @@ pub fn remove_user(
     key_id: KeyId,
     user: Principal,
 ) -> Result<Option<AccessRights>, String> {
+    ensure_user_can_manage(caller, key_id)?;
+
     if caller == user && caller == key_id.0 {
         return Err("cannot remove key owner".to_string());
     }
 
-    KeyManager::with_borrow_mut(|km| {
-        if caller == key_id.0 {
-        } else {
-            match km.access_control.get(&(caller, key_id)) {
-                Some(AccessRights::ReadWriteManage) => {}
-                _ => return Err("unauthorized user".to_string()),
-            }
-        };
-
-        Ok(km.access_control.remove(&(user, key_id)))
-    })
+    KeyManager::with_borrow_mut(|km| Ok::<_, ()>(km.access_control.remove(&(user, key_id))))
 }
 
 pub fn is_key_shared(key_id: KeyId) -> Result<bool, String> {
@@ -260,6 +229,35 @@ pub fn is_key_shared(key_id: KeyId) -> Result<bool, String> {
                 .is_some(),
         )
     })
+}
+
+fn ensure_user_can_read(user: Principal, key_id: KeyId) -> Result<AccessRights, String> {
+    let is_owner = user == key_id.0;
+    if is_owner {
+        return Ok(AccessRights::ReadWriteManage);
+    }
+
+    let has_shared_access =
+        KeyManager::with_borrow(|km| Ok::<_, ()>(km.access_control.get(&(user, key_id)))).unwrap();
+    if let Some(access_rights) = has_shared_access {
+        return Ok(access_rights);
+    }
+
+    Err(format!("{user} unauthorized"))
+}
+
+fn ensure_user_can_manage(user: Principal, key_id: KeyId) -> Result<AccessRights, String> {
+    let is_owner = user == key_id.0;
+    if is_owner {
+        return Ok(AccessRights::ReadWriteManage);
+    }
+
+    let has_shared_access =
+        KeyManager::with_borrow(|km| Ok::<_, ()>(km.access_control.get(&(user, key_id)))).unwrap();
+    match has_shared_access {
+        Some(access_rights) if access_rights == AccessRights::ReadWriteManage => Ok(access_rights),
+        _ => Err(format!("{user} unauthorized")),
+    }
 }
 
 fn bls12_381_test_key_1() -> VetKDKeyId {

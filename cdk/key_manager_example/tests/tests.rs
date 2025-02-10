@@ -97,6 +97,7 @@ fn key_sharing_should_work() {
     );
 
     let key_owner = env.principal_0;
+    let not_key_owner = env.principal_1;
     let key_name = random_key_name(rng);
 
     let prev_rights = env
@@ -116,18 +117,18 @@ fn key_sharing_should_work() {
 
     let current_rights_owner = env
         .query::<Result<Option<AccessRights>, String>>(
-            env.principal_0,
+            key_owner,
             "get_user_rights",
-            encode_args((key_owner, key_name.clone(), env.principal_1)).unwrap(),
+            encode_args((key_owner, key_name.clone(), key_owner)).unwrap(),
         )
         .unwrap();
     assert_eq!(current_rights_owner, Some(AccessRights::ReadWriteManage));
 
     let current_rights_shared = env
         .query::<Result<Option<AccessRights>, String>>(
-            env.principal_1,
+            not_key_owner,
             "get_user_rights",
-            encode_args((key_owner, key_name.clone(), env.principal_1)).unwrap(),
+            encode_args((key_owner, key_name.clone(), not_key_owner)).unwrap(),
         )
         .unwrap();
     assert_eq!(current_rights_shared, Some(AccessRights::Read));

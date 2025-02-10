@@ -68,7 +68,7 @@ test('sharing rights are consistent', async () => {
   let key_manager_user = await new_key_manager(id1()).catch((err) => { throw err; });
   let rights = { 'ReadWrite': null };
 
-  //expect((await key_manager_user.get_user_rights(owner, "some key", owner))["Ok"]).to.deep.equal([{ 'ReadWriteManage': null }]);
+  expect((await key_manager_user.get_user_rights(owner, "some key", owner))["Ok"]).to.deep.equal([{ 'ReadWriteManage': null }]);
 
   expect((await key_manager_owner.set_user_rights(owner, "some key", user, rights))["Ok"]).to.deep.equal([rights]);
   expect((await key_manager_user.get_user_rights(owner, "some key", user))["Ok"]).to.deep.equal([rights]);
