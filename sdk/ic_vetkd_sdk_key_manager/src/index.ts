@@ -1,4 +1,5 @@
 import { Principal } from "@dfinity/principal";
+import { TransportSecretKey } from "ic-vetkd-cdk-utils";
 
 export class KeyManager {
     canister_client: KeyManagerClient;
@@ -10,7 +11,23 @@ export class KeyManager {
 
     async get_encrypted_vetkey(key_owner: Principal, vetkey_name: string): Promise<{ 'Ok': ByteBuf } |
     { 'Err': string }> {
-        return await this.canister_client.get_vetkey(key_owner, vetkey_name);
+        // create a random transport key
+        const seed = crypto.getRandomValues(new Uint8Array(32));
+        const tsk = new TransportSecretKey(seed);
+        const encrypted_vetkey = await this.canister_client.get_encrypted_vetkey(key_owner, vetkey_name, tsk.public_key());
+        if ('Err' in encrypted_vetkey) {
+            return encrypted_vetkey;
+        } else {
+            const encrypted_key_bytes = Uint8Array.from(encrypted_vetkey.Ok.inner);
+            const derived_public_key_bytes = new TextEncoder().encode("key_manager");
+            const verification_key = await this.get_vetkey_verification_key();
+            const vetkey_name_bytes = new TextEncoder().encode(vetkey_name);
+            const derivaition_id = new Uint8Array([...key_owner.toUint8Array(), ...vetkey_name_bytes]);
+            const symmetric_key_bytes = 16;
+            const symmetric_key_associated_data = new Uint8Array(0);
+            const vetkey = tsk.decrypt_and_hash(encrypted_key_bytes, Uint8Array.from(verification_key.inner), derivaition_id, symmetric_key_bytes, symmetric_key_associated_data);
+            return { 'Ok': { inner: vetkey } };
+        }
     }
 
     async get_vetkey_verification_key(): Promise<ByteBuf> {
@@ -34,7 +51,7 @@ export interface KeyManagerClient {
     { 'Err': string }>;
     get_user_rights(owner: Principal, vetkey_name: string, user: Principal): Promise<{ 'Ok': [] | [AccessRights] } |
     { 'Err': string }>;
-    get_vetkey(key_owner: Principal, vetkey_name: string): Promise<{ 'Ok': ByteBuf } |
+    get_encrypted_vetkey(key_owner: Principal, vetkey_name: string, transport_key: Uint8Array): Promise<{ 'Ok': ByteBuf } |
     { 'Err': string }>;
     get_vetkey_verification_key(): Promise<ByteBuf>;
 }
