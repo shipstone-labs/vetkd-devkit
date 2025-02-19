@@ -204,7 +204,7 @@ fn add_or_remove_user_by_unauthorized_fails() {
                     (caller, name.clone()),
                     target
                 ),
-                Err("\"unauthorized user\"".to_string())
+                Err("unauthorized user".to_string())
             );
             assert_eq!(
                 ic_vetkd_cdk_encrypted_maps::set_user_rights(
@@ -213,7 +213,7 @@ fn add_or_remove_user_by_unauthorized_fails() {
                     target,
                     AccessRights::Read,
                 ),
-                Err("\"unauthorized user\"".to_string())
+                Err("unauthorized user".to_string())
             );
         }
     }
@@ -518,4 +518,56 @@ fn modify_a_key_value_in_map_by_unauthorized_fails() {
         ),
         Err("unauthorized user".to_string())
     );
+}
+
+#[test]
+fn can_get_owned_map_names() {
+    use rand::Rng;
+
+    let rng = &mut reproducible_rng();
+    let caller = random_self_authenticating_principal(rng);
+    let (memory_id_encrypted_maps, memory_ids_key_manager) = random_unique_memory_ids(rng);
+    let memory_manager = MemoryManager::init(DefaultMemoryImpl::default());
+    let m0 = memory_manager.get(MemoryId::new(memory_id_encrypted_maps));
+    let m1 = memory_manager.get(MemoryId::new(memory_ids_key_manager[0]));
+    let m2 = memory_manager.get(MemoryId::new(memory_ids_key_manager[1]));
+    EncryptedMaps::try_init(m0, m1, m2).unwrap();
+
+    let mut expected_map_names = vec![];
+
+    for _ in 0..7 {
+        let map_names = ic_vetkd_cdk_encrypted_maps::get_owned_non_empty_map_names(caller).unwrap();
+        assert_eq!(map_names.len(), expected_map_names.len());
+        for map_name in expected_map_names.iter() {
+            assert!(map_names.contains(map_name));
+        }
+
+        let name = random_name(rng);
+        expected_map_names.push(name);
+
+        for _ in 1..3 {
+            let key = random_key(rng);
+            let value = random_bytebuf(rng, 0..2_000_000);
+            ic_vetkd_cdk_encrypted_maps::insert_encrypted_value(
+                caller,
+                (caller, name.clone()),
+                key.clone(),
+                value.clone(),
+            )
+            .unwrap();
+        }
+
+        let map_names = ic_vetkd_cdk_encrypted_maps::get_owned_non_empty_map_names(caller).unwrap();
+        assert_eq!(map_names.len(), expected_map_names.len());
+        for map_name in expected_map_names.iter() {
+            assert!(map_names.contains(map_name));
+        }
+
+        let should_remove_map = rng.gen_bool(0.2);
+
+        if should_remove_map {
+            ic_vetkd_cdk_encrypted_maps::remove_map_values(caller, (caller, name.clone())).unwrap();
+            expected_map_names.pop();
+        }
+    }
 }

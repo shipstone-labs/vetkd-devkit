@@ -19,8 +19,8 @@ deploy-test: compile-wasm-test
 	dfx canister create chainkey_testing_canister && \
 	dfx canister create encrypted_maps_example && \
 	dfx build chainkey_testing_canister && \
-	dfx canister install chainkey_testing_canister && \
-	dfx canister install --wasm ../../target/wasm32-unknown-unknown/release/ic_vetkd_cdk_encrypted_maps_example.wasm encrypted_maps_example
+	dfx canister install --upgrade-unchanged --mode auto chainkey_testing_canister && \
+	dfx canister install --upgrade-unchanged --mode auto --wasm ../../target/wasm32-unknown-unknown/release/ic_vetkd_cdk_encrypted_maps_example.wasm encrypted_maps_example
 
 .PHONY: mock
 .SILENT: mock
@@ -36,3 +36,9 @@ export-cmd:
 	CANISTER_ID_ENCRYPTED_MAPS_EXAMPLE=$(shell dfx canister id encrypted_maps_example); \
 	CMD="export CANISTER_ID_ENCRYPTED_MAPS_EXAMPLE=$${CANISTER_ID_ENCRYPTED_MAPS_EXAMPLE}"; \
 	echo "$${CMD}"
+
+.PHONY: clean
+.SILENT: clean
+clean:
+	cargo clean
+	rm -rf .dfx

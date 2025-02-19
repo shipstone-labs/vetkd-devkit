@@ -30,6 +30,11 @@ export class DefaultKeyManagerClient implements KeyManagerClient {
         return this.actor.get_user_rights(owner, string_to_bytebuf(vetkey_name), user);
     }
 
+    remove_user(owner: Principal, vetkey_name: string, user: Principal): Promise<{ 'Ok': [] | [AccessRights] } |
+    { 'Err': string }> {
+        return this.actor.remove_user(owner, string_to_bytebuf(vetkey_name), user);
+    }
+
     async get_encrypted_vetkey(key_owner: Principal, vetkey_name: string, transport_key: Uint8Array): Promise<{ 'Ok': ByteBuf } |
     { 'Err': string }> {
         return await this.actor.get_encrypted_vetkey(key_owner, string_to_bytebuf(vetkey_name), { inner: transport_key });

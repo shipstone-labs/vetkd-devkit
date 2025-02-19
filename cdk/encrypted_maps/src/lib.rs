@@ -78,6 +78,13 @@ pub fn get_accessible_shared_map_names(caller: Principal) -> Vec<KeyId> {
     ic_vetkd_cdk_key_manager::get_accessible_shared_key_ids(caller)
 }
 
+pub fn get_shared_user_access_for_map(
+    caller: Principal,
+    key_id: KeyId,
+) -> Result<Vec<(Principal, AccessRights)>, String> {
+    ic_vetkd_cdk_key_manager::get_shared_user_access_for_key(caller, key_id)
+}
+
 pub fn remove_map_values(caller: Principal, key_id: KeyId) -> Result<Vec<MapKey>, String> {
     match ic_vetkd_cdk_key_manager::get_user_rights(caller, key_id, caller)? {
         Some(AccessRights::ReadWrite) | Some(AccessRights::ReadWriteManage) => Ok(()),
@@ -131,6 +138,25 @@ pub fn get_encrypted_value(
     }?;
 
     EncryptedMaps::with_borrow(|ed| Ok::<_, ()>(ed.mapkey_vals.get(&(key_id, key))))
+}
+
+pub fn get_owned_non_empty_map_names(
+    caller: Principal,
+) -> Result<Vec<ic_vetkd_cdk_types::MapName>, String> {
+    EncryptedMaps::with_borrow_mut(|ed| {
+        let map_names: std::collections::HashSet<Vec<u8>> = ed
+            .mapkey_vals
+            .keys_range(((caller, Blob::default()), Blob::default())..)
+            .take_while(|((principal, _map_name), _key_name)| principal == &caller)
+            .map(|((_principal, map_name), _key_name)| map_name.as_slice().to_vec())
+            .collect();
+        Ok::<_, ()>(
+            map_names
+                .into_iter()
+                .map(|map_name| Blob::<32>::try_from(map_name.as_slice()).unwrap())
+                .collect(),
+        )
+    })
 }
 
 pub fn insert_encrypted_value(

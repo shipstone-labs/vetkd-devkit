@@ -5,16 +5,25 @@ import { _SERVICE as _DEFAULT_ENCRYPTED_MAPS_SERVICE, AccessRights, ByteBuf } fr
 import { EncryptedMapsClient } from "ic_vetkd_sdk_encrypted_maps/src/index";
 
 export class DefaultEncryptedMapsClient implements EncryptedMapsClient {
-    canisterId: string;
     actor: ActorSubclass<_DEFAULT_ENCRYPTED_MAPS_SERVICE>;
 
     constructor(agent: HttpAgent, canisterId: string) {
-        this.canisterId = canisterId;
         this.actor = createActor(canisterId, { agent: agent });
     }
 
     get_accessible_shared_map_names(): Promise<[Principal, ByteBuf][]> {
         return this.actor.get_accessible_shared_map_names();
+    }
+
+    get_shared_user_access_for_map(owner: Principal, map_name: string): Promise<{ 'Ok': Array<[Principal, AccessRights]> } |
+    { 'Err': string }> {
+        return this.actor.get_shared_user_access_for_map(owner, string_to_bytebuf(map_name));
+    }
+
+
+    get_owned_non_empty_map_names(): Promise<{ 'Ok': Array<ByteBuf> } |
+    { 'Err': string }> {
+        return this.actor.get_owned_non_empty_map_names();
     }
 
     get_encrypted_value(map_owner: Principal, map_name: string, map_key: string): Promise<{ 'Ok': [] | [ByteBuf] } |
@@ -59,6 +68,11 @@ export class DefaultEncryptedMapsClient implements EncryptedMapsClient {
     get_user_rights(owner: Principal, map_name: string, user: Principal): Promise<{ 'Ok': [] | [AccessRights] } |
     { 'Err': string }> {
         return this.actor.get_user_rights(owner, string_to_bytebuf(map_name), user);
+    }
+
+    remove_user(owner: Principal, map_name: string, user: Principal): Promise<{ 'Ok': [] | [AccessRights] } |
+    { 'Err': string }> {
+        return this.actor.remove_user(owner, string_to_bytebuf(map_name), user);
     }
 }
 

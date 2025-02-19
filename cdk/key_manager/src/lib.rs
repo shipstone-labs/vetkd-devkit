@@ -100,6 +100,7 @@ pub fn get_accessible_shared_key_ids(caller: Principal) -> Vec<KeyId> {
         )
     })
     .expect("cannot fail")
+    // TODO remove expect becausew this can fail if `KeyManager` is not initialized
 }
 
 pub fn get_shared_user_access_for_key(
@@ -117,7 +118,7 @@ pub fn get_shared_user_access_for_key(
                 .collect(),
         )
     })
-    .expect("cannot fail");
+    .map_err(|e| format!("{e:?}"))?;
 
     users
         .into_iter()
@@ -216,7 +217,10 @@ pub fn remove_user(
         return Err("cannot remove key owner".to_string());
     }
 
-    KeyManager::with_borrow_mut(|km| Ok::<_, ()>(km.access_control.remove(&(user, key_id))))
+    KeyManager::with_borrow_mut(|km| {
+        km.shared_keys.remove(&(key_id, user));
+        Ok::<_, ()>(km.access_control.remove(&(user, key_id)))
+    })
 }
 
 pub fn is_key_shared(key_id: KeyId) -> Result<bool, String> {
@@ -243,7 +247,7 @@ fn ensure_user_can_read(user: Principal, key_id: KeyId) -> Result<AccessRights, 
         return Ok(access_rights);
     }
 
-    Err(format!("{user} unauthorized"))
+    Err("unauthorized user".to_string())
 }
 
 fn ensure_user_can_manage(user: Principal, key_id: KeyId) -> Result<AccessRights, String> {
@@ -256,7 +260,7 @@ fn ensure_user_can_manage(user: Principal, key_id: KeyId) -> Result<AccessRights
         KeyManager::with_borrow(|km| Ok::<_, ()>(km.access_control.get(&(user, key_id)))).unwrap();
     match has_shared_access {
         Some(access_rights) if access_rights == AccessRights::ReadWriteManage => Ok(access_rights),
-        _ => Err(format!("{user} unauthorized")),
+        _ => Err("unauthorized user".to_string()),
     }
 }
 

@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use candid::Principal;
-use ic_cdk::{init, query, update};
+use ic_cdk::{init, query, update, post_upgrade};
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::storable::Blob;
 use ic_stable_structures::DefaultMemoryImpl;
@@ -24,12 +24,27 @@ fn init() {
         .expect("failed to initialize memory");
 }
 
+#[post_upgrade]
+fn post_upgrade() {
+    init();
+}
+
 #[query]
 fn get_accessible_shared_map_names() -> Vec<(Principal, ByteBuf)> {
     ic_vetkd_cdk_encrypted_maps::get_accessible_shared_map_names(ic_cdk::caller())
         .into_iter()
         .map(|map_id| (map_id.0, ByteBuf::from(map_id.1.as_ref().to_vec())))
         .collect()
+}
+
+#[query]
+fn get_shared_user_access_for_map(
+    key_owner: Principal,
+    key_name: ByteBuf,
+) -> Result<Vec<(Principal, AccessRights)>, String> {
+    let key_name = bytebuf_to_blob(key_name)?;
+    let key_id = (key_owner, key_name);
+    ic_vetkd_cdk_encrypted_maps::get_shared_user_access_for_map(ic_cdk::caller(), key_id)
 }
 
 #[query]
@@ -76,6 +91,16 @@ fn remove_map_values(
         removed
             .into_iter()
             .map(|key| ByteBuf::from(key.as_ref().to_vec()))
+            .collect()
+    })
+}
+
+#[query]
+fn get_owned_non_empty_map_names() -> Result<Vec<ByteBuf>, String> {
+    ic_vetkd_cdk_encrypted_maps::get_owned_non_empty_map_names(ic_cdk::caller()).map(|map_names| {
+        map_names
+            .into_iter()
+            .map(|map_name| ByteBuf::from(map_name.as_slice().to_vec()))
             .collect()
     })
 }

@@ -43,6 +43,11 @@ export class KeyManager {
     { 'Err': string }> {
         return await this.canister_client.get_user_rights(owner, vetkey_name, user);
     }
+
+    async remove_user(owner: Principal, vetkey_name: string, user: Principal): Promise<{ 'Ok': [] | [AccessRights] } |
+    { 'Err': string }> {
+        return await this.canister_client.remove_user(owner, vetkey_name, user);
+    }
 }
 
 export interface KeyManagerClient {
@@ -50,6 +55,8 @@ export interface KeyManagerClient {
     set_user_rights(owner: Principal, vetkey_name: string, user: Principal, user_rights: AccessRights): Promise<{ 'Ok': [] | [AccessRights] } |
     { 'Err': string }>;
     get_user_rights(owner: Principal, vetkey_name: string, user: Principal): Promise<{ 'Ok': [] | [AccessRights] } |
+    { 'Err': string }>;
+    remove_user(owner: Principal, vetkey_name: string, user: Principal): Promise<{ 'Ok': [] | [AccessRights] } |
     { 'Err': string }>;
     get_encrypted_vetkey(key_owner: Principal, vetkey_name: string, transport_key: Uint8Array): Promise<{ 'Ok': ByteBuf } |
     { 'Err': string }>;

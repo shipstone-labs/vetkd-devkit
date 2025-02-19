@@ -7,7 +7,7 @@
     "module": "dist/index.es5.js",
     "typings": "dist/types/index.d.ts",
     "dependencies": {
-        "@dfinity/agent": "^2.2.0",
+        "@dfinity/agent": "^2.3.0",
         "idb-keyval": "^6.2.1",
         "typescript": "^5.7.3",
         "vite-plugin-top-level-await": "^1.4.4",
