@@ -20,21 +20,21 @@ function assertEqual(a, b) {
 }
 
 test('creating random TransportSecretKey', () => {
-    let key = TransportSecretKey.random();
+    const key = TransportSecretKey.random();
 
-    let pk = key.publicKeyBytes();
+    const pk = key.publicKeyBytes();
     assertEqual(pk.length, 48);
 });
 
 test('parsing DerivedPublicKey', () => {
-    try {
+
+    expect(() => {
         const invalid = new Uint8Array([1, 2, 3]);
-        let key = new DerivedPublicKey(invalid);
-        assert.fail("DerivedPublicKey accepted invalid encoding");
-    } catch(error) {}
+        return new DerivedPublicKey(invalid);
+    }).toThrow();
 
     const valid = hexToBytes("972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f");
-    let key = new DerivedPublicKey(valid);
+    const key = new DerivedPublicKey(valid);
     assertEqual(valid, key.publicKeyBytes());
 });
 
@@ -42,9 +42,11 @@ test('augmented hash to G1', () => {
     const pk = new DerivedPublicKey(hexToBytes("80e38f040fae321c75cf8faf8c6e9500c92b7cac022ca3eb48fb01c8e91d8c2bc806c2665ed28a0a8c87a4bff717dd3c0c4eb57ad635bc582f89c171b8478f2fe1b806c3faeed7133b13141aaf4a65aa0c5d7902dc80102e91e6f73fe56fa34f"));
     const msg = hexToBytes("25138dfc69267bd861d8ad9f05b9");
 
-    const expected = hexToBytes("8e946e53188c951301b895c228c48cdeebf008d0fbc5b0aa8bff07a30926fb166485137dc372983433032673f74c24e6");
+    const expected = "8e946e53188c951301b895c228c48cdeebf008d0fbc5b0aa8bff07a30926fb166485137dc372983433032673f74c24e6";
 
     const calculated = augmentedHashToG1(pk, msg);
+
+    assertEqual(bytesToHex(calculated.toRawBytes(true)), expected);
 });
 
 test('protocol flow with precomputed data', () => {

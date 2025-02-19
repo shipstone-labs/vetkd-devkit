@@ -111,7 +111,7 @@ export function hashToScalar(input: Uint8Array, domainSep: string): bigint {
       DST: domainSep,
     };
 
-    // @ts-expect-error
+    // @ts-expect-error (https://github.com/paulmillr/noble-curves/issues/179)
     const options = Object.assign({}, bls12_381.G2.CURVE.htfDefaults, params);
 
     const scalars = hash_to_field(input, 1, options);
@@ -132,7 +132,7 @@ export function hashToScalar(input: Uint8Array, domainSep: string): bigint {
 export function deriveSymmetricKey(input: Uint8Array, domainSep: string, outputLength: number): Uint8Array {
     const dst = new Uint8Array(new TextEncoder().encode(domainSep));
 
-    // @ts-expect-error
+    // @ts-expect-error (https://github.com/paulmillr/noble-curves/issues/179)
     const sha256 = bls12_381.G2.CURVE.htfDefaults.hash;
 
     return expand_message_xmd(input, dst, outputLength, sha256);
@@ -203,7 +203,7 @@ export class VetKey {
      * "my-app" is deriving two keys, one for usage "foo" and the other for
      * "bar". You might use as domain separators "my-app-foo" and "my-app-bar".
      */
-    deriveBls12381SecretKey(domainSep: string, outputLength: number): bigint {
+    deriveBls12381SecretKey(domainSep: string) {
         return hashToScalar(this.#bytes, domainSep);
     }
 
@@ -251,17 +251,27 @@ export class EncryptedKey {
      * Decrypt the encrypted key returning a VetKey
      */
     decryptAndVerify(tsk: TransportSecretKey, dpk: DerivedPublicKey, did: Uint8Array): VetKey {
+        // Check that c1 and c2 have the same discrete logarithm, ie that e(c1, g2) == e(g1, c2)
+
+        const g1 = bls12_381.G1.ProjectivePoint.BASE;
+        const neg_g2 = bls12_381.G2.ProjectivePoint.BASE.negate();
+        const gt_one = bls12_381.fields.Fp12.ONE;
+
+        const c1_c2 = bls12_381.pairingBatch([ { g1: this.#c1, g2: neg_g2 }, { g1: g1, g2: this.#c2 }]);
+
+        if(!bls12_381.fields.Fp12.eql(c1_c2, gt_one)) {
+            throw new Error("Invalid VetKey");
+        }
+
         // Compute the purported vetkd k
         const c1_tsk = this.#c1.multiply(bls12_381.G1.normPrivateKeyToScalar(tsk.getSecretKey()));
         const k = this.#c3.subtract(c1_tsk);
 
         // Verify that k is a valid BLS signature
         const msg = augmentedHashToG1(dpk, did);
-        const neg_g2 = bls12_381.G2.ProjectivePoint.BASE.negate();
         const check = bls12_381.pairingBatch([{ g1: k, g2: neg_g2}, { g1: msg, g2: dpk.getPoint() }]);
 
-        const one = bls12_381.fields.Fp12.ONE;
-        const valid = bls12_381.fields.Fp12.eql(check, one);
+        const valid = bls12_381.fields.Fp12.eql(check, gt_one);
 
         if(valid) {
             return new VetKey(k);
@@ -333,7 +343,7 @@ export class IdentityBasedEncryptionCiphertext {
      * Serialize the IBE ciphertext to a bytestring
      */
     serialize(): Uint8Array {
-        let c1bytes = this.#c1.toRawBytes(true);
+        const c1bytes = this.#c1.toRawBytes(true);
         return new Uint8Array([...c1bytes, ...this.#c2, ...this.#c3]);
     }
 
