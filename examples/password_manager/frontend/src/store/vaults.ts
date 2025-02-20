@@ -44,7 +44,6 @@ export async function refreshVaults(
     for (const nameBytes of vaultsOwnedByMe.Ok) {
         ownedNamesString += new TextDecoder().decode(Uint8Array.from(nameBytes.inner)) + ", ";
     }
-    // console.info("in refreshVaults found " + vaultsOwnedByMe.Ok.length + " vaults owned by me: " + ownedNamesString);
 
     const vaultsSharedWithMe = await encryptedMaps.get_accessible_shared_map_names();
 
@@ -60,7 +59,7 @@ export async function refreshVaults(
         vaultIds.push([otherOwner, vaultName]);
     }
 
-    var vaults = new Array();
+    let vaults = new Array();
 
     for (const [otherOwner, vaultName] of vaultIds) {
         const result = await encryptedMaps.get_values_for_map(otherOwner, vaultName);
