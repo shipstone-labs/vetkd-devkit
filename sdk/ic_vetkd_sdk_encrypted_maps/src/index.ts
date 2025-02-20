@@ -60,7 +60,6 @@ export class EncryptedMaps {
         const derived_key_result = await this.get_subkey_and_fetch_and_derive_if_needed(map_owner, map_name, map_key);
         if ("Err" in derived_key_result) { return derived_key_result; }
         const encrypted = await encrypt(Uint8Array.from(cleartext), derived_key_result.Ok);
-        const decrypted = await decrypt(encrypted, derived_key_result.Ok);
         return { "Ok": encrypted };
     }
 
