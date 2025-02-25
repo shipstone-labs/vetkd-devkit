@@ -1,4 +1,4 @@
-pushd ../../cdk/encrypted_maps_example
+pushd backend
     make clean &&
     make mock &&
     eval $(make export-cmd)
