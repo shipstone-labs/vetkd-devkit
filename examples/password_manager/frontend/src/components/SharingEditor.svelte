@@ -32,7 +32,6 @@
         ) as HTMLSelectElement;
         const selectedIndex = selectElement.selectedIndex;
         const selectedValue = selectElement.options[selectedIndex].value;
-        console.info("selected: " + selectedValue);
 
         if (selectedValue === "Read") {
         } else if (selectedValue === "ReadWrite") {

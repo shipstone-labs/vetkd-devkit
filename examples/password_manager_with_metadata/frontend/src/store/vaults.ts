@@ -52,7 +52,6 @@ export async function setPassword(
     tags: string[],
     passwordManager: PasswordManager,
 ) {
-    console.info("calling vaults.ts:addPassword with url: " + url + " and tags: " + JSON.stringify(tags));
     let result = await passwordManager.setPassword(parentVaultOwner, parentVaultName, passwordName, new TextEncoder().encode(password), tags, url);
     if ("Err" in result) {
         throw new Error(result.Err);
@@ -63,7 +62,6 @@ export async function removePassword(
     password: PasswordModel,
     passwordManager: PasswordManager
 ) {
-    // console.info("calling vaults.ts:addPassword with password: " + JSON.stringify(password));
     let result = await passwordManager.removePassword(password.owner, password.parentVaultName, password.passwordName);
     if ("Err" in result) {
         throw new Error(result.Err);
