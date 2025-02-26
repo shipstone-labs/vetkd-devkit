@@ -47,7 +47,7 @@ export async function refreshVaults(
 
     const vaultsSharedWithMe = await encryptedMaps.get_accessible_shared_map_names();
 
-    var vaultIds = new Array<[Principal, string]>();
+    let vaultIds = new Array<[Principal, string]>();
 
     for (const vaultNameBytes of vaultsOwnedByMe.Ok) {
         const vaultName = new TextDecoder().decode(Uint8Array.from(vaultNameBytes.inner));
