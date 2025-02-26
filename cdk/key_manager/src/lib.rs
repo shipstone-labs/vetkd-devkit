@@ -39,7 +39,7 @@ pub type Caller = Principal;
 pub type KeyId = (Caller, KeyName);
 
 thread_local! {
-    static ENCRYPTED_MAPS: RefCell<Option<KeyManager>> = const { RefCell::new(None) };
+    static KEY_MANAGER: RefCell<Option<KeyManager>> = const { RefCell::new(None) };
     #[cfg(feature = "expose-testing-api")]
     static VETKD_TESTING_CANISTER_ID: RefCell<Option<Principal>> = const { RefCell::new(None) };
 }
@@ -53,14 +53,14 @@ pub struct KeyManager {
 
 impl KeyManager {
     pub fn try_init(memory_0: Memory, memory_1: Memory) -> Result<(), MemoryInitializationError> {
-        if ENCRYPTED_MAPS.with(|cell| cell.borrow().is_some()) {
+        if KEY_MANAGER.with(|cell| cell.borrow().is_some()) {
             return Err(MemoryInitializationError::AlreadyInitialized);
         }
 
         let access_control = StableBTreeMap::init(memory_0);
         let map_existance = StableBTreeMap::init(memory_1);
 
-        ENCRYPTED_MAPS.with(|cell| {
+        KEY_MANAGER.with(|cell| {
             *cell.borrow_mut() = Some(KeyManager {
                 access_control,
                 shared_keys: map_existance,
@@ -73,7 +73,7 @@ impl KeyManager {
     pub fn with_borrow<R, E: Debug>(
         f: impl FnOnce(&KeyManager) -> Result<R, E>,
     ) -> Result<R, String> {
-        ENCRYPTED_MAPS.with_borrow(|cell| match cell.as_ref() {
+        KEY_MANAGER.with_borrow(|cell| match cell.as_ref() {
             Some(db) => f(db).map_err(|e| format!("{e:?}")),
             None => Err("memory not initialized".to_string()),
         })
@@ -82,7 +82,7 @@ impl KeyManager {
     pub fn with_borrow_mut<R, E: Debug>(
         f: impl FnOnce(&mut KeyManager) -> Result<R, E>,
     ) -> Result<R, String> {
-        ENCRYPTED_MAPS.with_borrow_mut(|cell| match cell.as_mut() {
+        KEY_MANAGER.with_borrow_mut(|cell| match cell.as_mut() {
             Some(db) => f(db).map_err(|e| format!("{e:?}")),
             None => Err("memory not initialized".to_string()),
         })
