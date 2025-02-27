@@ -68,6 +68,24 @@ export class TransportSecretKey {
 }
 
 /**
+ * Prefix a bytestring with its length
+ */
+function prefixWithLen(input: Uint8Array): Uint8Array {
+    let length = input.length;
+
+    const result = new Uint8Array(8 + length);
+
+    for (let i = 7; i >= 0; i--) {
+        result[i] = length & 0xff;
+        length >>>= 8;
+    }
+
+    result.set(input, 8);
+
+    return result;
+}
+
+/**
  * VetKD derived public key
  *
  * An unencrypted VetKey is a BLS signature generated with a canister-specific
@@ -82,8 +100,35 @@ export class DerivedPublicKey {
      * Normally the bytes provided here will have been returned by
      * the `vetkd_public_key` management canister interface.
      */
-    constructor(bytes: Uint8Array) {
-        this.#pk = bls12_381.G2.ProjectivePoint.fromHex(bytes);
+    static deserialize(bytes: Uint8Array): DerivedPublicKey {
+        return new DerivedPublicKey(bls12_381.G2.ProjectivePoint.fromHex(bytes));
+    }
+
+    /**
+     * Perform second-stage derivation of a public key
+     *
+     * To create the derived public key in VetKD, a two step derivation is performed. The first step
+     * creates a key that is specific to the canister that is making VetKD requests to the
+     * management canister, sometimes called canister master key. The second step incorporates the
+     * "derivation context" value provided to the `vetkd_public_key` management canister interface.
+     *
+     * If `vetkd_public_key` is invoked with an empty derivation context, it simply returns the
+     * canister master key. Then the second derivation step can be done offline, using this
+     * function. This is useful if you wish to derive multiple keys without having to interact with
+     * the IC each time.
+     *
+     * If `context` is empty, then this simply returns the underlying key. This matches the behavior
+     * of `vetkd_public_key`
+     */
+    deriveKey(context: Uint8Array): DerivedPublicKey {
+        if(context.length === 0) {
+            return this;
+        } else {
+            const dst = "ic-vetkd-bls12-381-g2-context";
+            const offset = hashToScalar(prefixWithLen(context), dst);
+            const g2_offset = bls12_381.G2.ProjectivePoint.BASE.multiply(offset);
+            return new DerivedPublicKey(this.getPoint().add(g2_offset));
+        }
     }
 
     /**
@@ -105,6 +150,14 @@ export class DerivedPublicKey {
     getPoint(): G2Point {
         return this.#pk;
     }
+
+    /**
+     * @internal constructor
+     */
+    constructor(pk: G2Point) {
+        this.#pk = pk;
+    }
+
 }
 
 /**
