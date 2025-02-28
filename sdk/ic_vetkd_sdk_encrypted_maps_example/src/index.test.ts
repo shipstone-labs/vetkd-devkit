@@ -4,7 +4,7 @@ import { expect, test } from 'vitest'
 import fetch from 'isomorphic-fetch';
 import { Ed25519KeyIdentity } from "@dfinity/identity";
 import { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
-import { randomBytes } from 'crypto'
+import { randomBytes } from 'node:crypto'
 
 function randomId(): Ed25519KeyIdentity {
   return Ed25519KeyIdentity.generate(randomBytes(32));

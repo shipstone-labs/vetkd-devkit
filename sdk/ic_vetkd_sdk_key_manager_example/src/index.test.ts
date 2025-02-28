@@ -4,7 +4,7 @@ import fetch from 'isomorphic-fetch';
 import { expect, test } from 'vitest'
 import { KeyManager } from "ic_vetkd_sdk_key_manager/src";
 import { DefaultKeyManagerClient } from "./index";
-import { randomBytes } from "crypto";
+import { randomBytes } from "node:crypto";
 
 function randomId(): Ed25519KeyIdentity {
   return Ed25519KeyIdentity.generate(randomBytes(32));
