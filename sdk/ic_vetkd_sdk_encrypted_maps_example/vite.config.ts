@@ -26,10 +26,5 @@ export default defineConfig({
         supported: {
             'top-level-await': true //browsers can handle top-level-await features
         },
-    },
-    test: {
-        environment: "happy-dom",
-        setupFiles: ['test/setup.ts'],
-        testTimeout: 60000
     }
 });

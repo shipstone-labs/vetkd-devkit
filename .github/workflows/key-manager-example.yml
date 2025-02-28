@@ -9,7 +9,6 @@ on:
       - cdk/key-manager-example/**
       - .github/workflows/provision-darwin.sh
       - .github/workflows/provision-linux.sh
-      - .github/workflows/provision-pocket-ic-server.sh
       - .github/workflows/key-manager-example.yml
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,10 +24,12 @@ jobs:
           brew install llvm
       - name: Key Manager Example Darwin
         run: |
-          dfx start --background
+          dfx start --background -vv
           pushd cdk/key_manager_example
           dfx deploy
-          cargo test
+          popd
+          pushd sdk/ic_vetkd_key_manager_example
+          npm test
   key-manager-example-linux:
     runs-on: ubuntu-20.04
     steps:
@@ -37,7 +38,7 @@ jobs:
         run: bash .github/workflows/provision-linux.sh
       - name: Key Manager Example Linux
         run: |
-          dfx start --background
+          dfx start --background -vv
           pushd cdk/key_manager_example
           dfx deploy
           cargo test
