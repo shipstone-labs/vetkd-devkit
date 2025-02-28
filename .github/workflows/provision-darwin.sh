@@ -10,33 +10,6 @@ curl --location --output install-brew.sh "https://raw.githubusercontent.com/Home
 bash install-brew.sh
 rm install-brew.sh
 
-# Install DFINITY SDK.
-curl --location --output install-dfx.sh "https://raw.githubusercontent.com/dfinity/sdk/master/public/install-dfxvm.sh"
-DFX_VERSION=${DFX_VERSION:=0.25.0} DFXVM_INIT_YES=true bash install-dfx.sh
-rm install-dfx.sh
-echo "$HOME/Library/Application Support/org.dfinity.dfx/bin" >> $GITHUB_PATH
-source "$HOME/Library/Application Support/org.dfinity.dfx/env"
-dfx cache install
-
-# check the current ic-commit found in the main branch, check if it differs from the one in this PR branch
-# if so, update the  dfx cache with the latest ic artifacts
-if [ -f "${GITHUB_WORKSPACE}/.ic-commit" ]; then
-    stable_sha=$(curl https://raw.githubusercontent.com/dfinity/examples/master/.ic-commit)
-    current_sha=$(sed <"$GITHUB_WORKSPACE/.ic-commit" 's/#.*$//' | sed '/^$/d')
-    arch="x86_64-darwin"
-    if [ "$current_sha" != "$stable_sha" ]; then
-      export current_sha
-      export arch
-      sh "$GITHUB_WORKSPACE/.github/workflows/update-dfx-cache.sh"
-    fi
-fi
-
-# Install ic-repl
-version=0.7.0
-curl --location --output ic-repl "https://github.com/chenyan2002/ic-repl/releases/download/$version/ic-repl-macos"
-mv ./ic-repl /usr/local/bin/ic-repl
-chmod a+x /usr/local/bin/ic-repl
-
 # Install cmake
 brew install cmake
 
@@ -44,13 +17,6 @@ brew install cmake
 curl --location --output install-rustup.sh "https://sh.rustup.rs"
 bash install-rustup.sh -y
 rustup target add wasm32-unknown-unknown
-
-# Install matchers
-matchers_version=1.2.0
-curl -fsSLO "https://github.com/kritzcreek/motoko-matchers/archive/refs/tags/v${matchers_version}.tar.gz" 
-tar -xzf "v${matchers_version}.tar.gz" --directory "$(dfx cache show)"
-rm "v${matchers_version}.tar.gz"
-mv "$(dfx cache show)/motoko-matchers-${matchers_version}" "$(dfx cache show)/motoko-matchers"
 
 # Install wasmtime
 wasmtime_version=0.33.1
