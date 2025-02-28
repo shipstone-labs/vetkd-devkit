@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
       - name: Provision Linux
         run: bash .github/workflows/provision-linux.sh
       - name: Run Clippy Linux
@@ -26,6 +29,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
       - name: Provision Linux
         run: bash .github/workflows/provision-linux.sh
       - name: Run Tests Linux
@@ -38,6 +44,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
       - name: Provision Darwin
         run: |
           bash .github/workflows/provision-darwin.sh
