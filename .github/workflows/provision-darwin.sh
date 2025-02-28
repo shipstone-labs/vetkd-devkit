@@ -10,6 +10,12 @@ curl --location --output install-brew.sh "https://raw.githubusercontent.com/Home
 bash install-brew.sh
 rm install-brew.sh
 
+# Install Node.
+version=${NODE_VERSION:=14.21.3}
+curl --location --output node.pkg "https://nodejs.org/dist/v$version/node-v$version.pkg"
+sudo installer -pkg node.pkg -store -target /
+rm node.pkg
+
 # Install DFINITY SDK.
 curl --location --output install-dfx.sh "https://raw.githubusercontent.com/dfinity/sdk/master/public/install-dfxvm.sh"
 DFX_VERSION=${DFX_VERSION:=0.25.0} DFXVM_INIT_YES=true bash install-dfx.sh
