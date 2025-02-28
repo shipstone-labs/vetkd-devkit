@@ -27,7 +27,10 @@ jobs:
           pushd cdk/encrypted_maps_example
           dfx start --background
           dfx deploy
-          cargo test
+          popd
+          pushd sdk/ic_vetkd_sdk_encrypted_maps_example
+          npm install
+          npm test
   encrypted-maps-example-linux:
     runs-on: ubuntu-20.04
     steps:
@@ -39,4 +42,7 @@ jobs:
           pushd cdk/encrypted_maps_example
           dfx start --background
           dfx deploy
-          cargo test
+          popd
+          pushd sdk/ic_vetkd_sdk_encrypted_maps_example
+          npm install
+          npm test

@@ -28,7 +28,8 @@ jobs:
           dfx start --background -vv
           dfx deploy
           popd
-          pushd sdk/ic_vetkd_key_manager_example
+          pushd sdk/ic_vetkd_sdk_key_manager_example
+          npm install
           npm test
   key-manager-example-linux:
     runs-on: ubuntu-20.04
@@ -41,4 +42,7 @@ jobs:
           pushd cdk/key_manager_example
           dfx start --background -vv
           dfx deploy
-          cargo test
+          popd
+          pushd sdk/ic_vetkd_sdk_key_manager_example
+          npm install
+          npm test
