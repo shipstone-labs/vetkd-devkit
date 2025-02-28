@@ -24,8 +24,8 @@ jobs:
           brew install llvm
       - name: Encrypted Maps Example Darwin
         run: |
-          dfx start --background
           pushd cdk/encrypted_maps_example
+          dfx start --background
           dfx deploy
           cargo test
   encrypted-maps-example-linux:
@@ -36,7 +36,7 @@ jobs:
         run: bash .github/workflows/provision-linux.sh
       - name: Encrypted Maps Example Linux
         run: |
-          dfx start --background
           pushd cdk/encrypted_maps_example
+          dfx start --background
           dfx deploy
           cargo test
