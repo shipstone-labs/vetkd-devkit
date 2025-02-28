@@ -1,5 +1,6 @@
 {
   "name": "ic_vetkd_sdk_key_manager_example",
+  "version": "0.1.0",
   "type": "module",
   "files": [
     "dist"
@@ -7,6 +8,10 @@
   "main": "dist/index.umd.js",
   "module": "dist/index.es5.js",
   "typings": "dist/types/index.d.ts",
+  "peerDependencies": {
+    "ic-vetkd-cdk-utils": "^0.1.0",
+    "ic_vetkd_sdk_key_manager": "^0.1.0"
+  },
   "dependencies": {
     "@dfinity/agent": "^2.3.0",
     "@types/node": "^22.13.0",
