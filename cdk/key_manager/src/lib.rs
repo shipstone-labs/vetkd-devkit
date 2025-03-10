@@ -247,7 +247,7 @@ fn ensure_user_can_read(user: Principal, key_id: KeyId) -> Result<AccessRights, 
         return Ok(access_rights);
     }
 
-    Err("unauthorized user".to_string())
+    Err("unauthorized".to_string())
 }
 
 fn ensure_user_can_manage(user: Principal, key_id: KeyId) -> Result<AccessRights, String> {
@@ -260,7 +260,7 @@ fn ensure_user_can_manage(user: Principal, key_id: KeyId) -> Result<AccessRights
         KeyManager::with_borrow(|km| Ok::<_, ()>(km.access_control.get(&(user, key_id)))).unwrap();
     match has_shared_access {
         Some(access_rights) if access_rights == AccessRights::ReadWriteManage => Ok(access_rights),
-        _ => Err("unauthorized user".to_string()),
+        _ => Err("unauthorized".to_string()),
     }
 }
 

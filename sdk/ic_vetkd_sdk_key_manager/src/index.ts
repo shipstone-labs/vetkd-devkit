@@ -12,7 +12,7 @@ export class KeyManager {
     async get_encrypted_vetkey(key_owner: Principal, vetkey_name: string): Promise<{ 'Ok': ByteBuf } |
     { 'Err': string }> {
         // create a random transport key
-        const seed = crypto.getRandomValues(new Uint8Array(32));
+        const seed = window.crypto.getRandomValues(new Uint8Array(32));
         const tsk = new TransportSecretKey(seed);
         const encrypted_vetkey = await this.canister_client.get_encrypted_vetkey(key_owner, vetkey_name, tsk.public_key());
         if ('Err' in encrypted_vetkey) {

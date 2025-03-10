@@ -30,7 +30,7 @@ strum_macros = "0.26.3"
 assert_matches = "1.5.0"
 ic-agent = "0.38.2"
 ic-vetkd-cdk-test-utils = { path = "../test_utils" }
-pocket-ic = "5.0.0"
+pocket-ic = { workspace = true }
 rand = "0.8.4"
 rand_chacha = "0.3.0"
 

@@ -22,7 +22,7 @@ serde = { workspace = true }
 
 [dev-dependencies]
 ic-vetkd-cdk-test-utils = { path = "../test_utils" }
-pocket-ic = "6.0.0"
+pocket-ic = { workspace = true }
 rand = "0.8.4"
 rand_chacha = "0.3.0"
 reqwest = "0.12.12"

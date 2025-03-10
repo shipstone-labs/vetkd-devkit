@@ -9,7 +9,6 @@ on:
       - cdk/encrypted-maps-example/**
       - .github/workflows/provision-darwin.sh
       - .github/workflows/provision-linux.sh
-      - .github/workflows/provision-pocket-ic-server.sh
       - .github/workflows/encrypted-maps-example.yml
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,25 +22,29 @@ jobs:
         run: |
           bash .github/workflows/provision-darwin.sh
           brew install llvm
-      - name: Provision PocketIC
-        run: bash .github/workflows/provision-pocket-ic-server.sh
       - name: Encrypted Maps Example Darwin
         run: |
-          dfx start --background
           pushd cdk/encrypted_maps_example
-          dfx deploy
-          cargo test
+          dfx start --background
+          make mock
+          eval $(make export-cmd)
+          popd
+          pushd sdk/ic_vetkd_sdk_encrypted_maps_example
+          npm install
+          npm test
   encrypted-maps-example-linux:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
       - name: Provision Linux
         run: bash .github/workflows/provision-linux.sh
-      - name: Provision PocketIC
-        run: bash .github/workflows/provision-pocket-ic-server.sh
       - name: Encrypted Maps Example Linux
         run: |
-          dfx start --background
           pushd cdk/encrypted_maps_example
-          dfx deploy
-          cargo test
+          dfx start --background
+          make mock
+          eval $(make export-cmd)
+          popd
+          pushd sdk/ic_vetkd_sdk_encrypted_maps_example
+          npm install
+          npm test

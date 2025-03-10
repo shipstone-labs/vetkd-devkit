@@ -1,36 +1,37 @@
 import { HttpAgent } from "@dfinity/agent";
-import { DefaultEncryptedMapsClient } from "../src/index";
+import { DefaultEncryptedMapsClient } from "./index";
 import { expect, test } from 'vitest'
 import fetch from 'isomorphic-fetch';
 import { Ed25519KeyIdentity } from "@dfinity/identity";
 import { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
-import { get } from "idb-keyval";
+import { randomBytes } from 'node:crypto'
 
-function id0(): Ed25519KeyIdentity {
-  return Ed25519KeyIdentity.generate(Uint8Array.from(Array(32).fill(1)));
+function randomId(): Ed25519KeyIdentity {
+  return Ed25519KeyIdentity.generate(randomBytes(32));
 }
 
-function id1(): Ed25519KeyIdentity {
-  return Ed25519KeyIdentity.generate(Uint8Array.from(Array(32).fill(2)));
+function ids(): [Ed25519KeyIdentity, Ed25519KeyIdentity] {
+  return [randomId(), randomId()];
 }
 
 async function new_encrypted_maps(id: Ed25519KeyIdentity): Promise<EncryptedMaps> {
-  const host = 'http://127.0.0.1:4943';
+  const host = 'http://127.0.0.1:8000';
   const agent = await HttpAgent.create({ fetch, host, identity: id, shouldFetchRootKey: true });
   let canisterId = process.env.CANISTER_ID_ENCRYPTED_MAPS_EXAMPLE as string;
   return new EncryptedMaps(new DefaultEncryptedMapsClient(agent, canisterId));
 }
 
 test('get_accessible_shared_map_names', async () => {
-  let canisterId = process.env.CANISTER_ID_ENCRYPTED_MAPS_EXAMPLE as string;
-  let encrypted_maps = await new_encrypted_maps(id0());
+  const id = randomId();
+  let encrypted_maps = await new_encrypted_maps(id);
   let names = await encrypted_maps.get_accessible_shared_map_names();
   expect(names.length === 0).toBeTruthy();
 });
 
 test('can get vetkey', async () => {
-  let encrypted_maps = await new_encrypted_maps(id0());
-  let owner = id0().getPrincipal();
+  const id = randomId();
+  let encrypted_maps = await new_encrypted_maps(id);
+  let owner = id.getPrincipal();
   let vetkey = await encrypted_maps.get_symmetric_vetkey(owner, "some key");
   expect('Ok' in vetkey).to.equal(true);
   // no trivial key output
@@ -41,8 +42,9 @@ test('can get vetkey', async () => {
 });
 
 test('vetkey encryption roundtrip', async () => {
-  let encrypted_maps = await new_encrypted_maps(id0());
-  let owner = id0().getPrincipal();
+  const id = randomId();
+  let encrypted_maps = await new_encrypted_maps(id);
+  let owner = id.getPrincipal();
   const plaintext = Uint8Array.from([1, 2, 3, 4]);
 
   let encryption_result = await encrypted_maps.encrypt_for(owner, "some map", "some key", plaintext);
@@ -60,20 +62,23 @@ test('vetkey encryption roundtrip', async () => {
 });
 
 test('cannot get unauthorized vetkey', async () => {
-  let encrypted_maps = await new_encrypted_maps(id0());
-  let owner = id0().getPrincipal();
-  expect((await encrypted_maps.get_symmetric_vetkey(id1().getPrincipal(), "some key"))["Err"]).to.equal("unauthorized user");
+  const [id0, id1] = ids();
+  let encrypted_maps = await new_encrypted_maps(id0);
+  expect((await encrypted_maps.get_symmetric_vetkey(id1.getPrincipal(), "some key"))["Err"]).to.equal("unauthorized");
 });
 
 test('can share a key', async () => {
-  let owner = id0().getPrincipal();
-  let user = id1().getPrincipal();
-  let encrypted_maps_owner = await new_encrypted_maps(id0());
-  let encrypted_maps_user = await new_encrypted_maps(id1());
+  const [id0, id1] = ids();
+  let owner = id0.getPrincipal();
+  let user = id1.getPrincipal();
+  let encrypted_maps_owner = await new_encrypted_maps(id0);
+  let encrypted_maps_user = await new_encrypted_maps(id1);
   let vetkey_owner = await encrypted_maps_owner.get_symmetric_vetkey(owner, "some key");
-  let rights = { 'ReadWrite': null };
 
-  expect((await encrypted_maps_owner.set_user_rights(owner, "some key", user, rights))["Ok"]).to.deep.equal([rights]);
+  expect("Ok" in await encrypted_maps_owner.remove_user(owner, "some_key", user));
+
+  let rights = { 'ReadWrite': null };
+  expect((await encrypted_maps_owner.set_user_rights(owner, "some key", user, rights))["Ok"]).to.deep.equal([]);
 
   let vetkey_user = await encrypted_maps_user.get_symmetric_vetkey(owner, "some key");
 
@@ -81,8 +86,9 @@ test('can share a key', async () => {
 });
 
 test('set value should work', async () => {
-  let encrypted_maps = await new_encrypted_maps(id0());
-  let owner = id0().getPrincipal();
+  const id = randomId();
+  let encrypted_maps = await new_encrypted_maps(id);
+  let owner = id.getPrincipal();
   const plaintext = new TextEncoder().encode("Hello, world!");
   const map_key = "some key";
   const map_name = "some map";
@@ -139,8 +145,9 @@ test('set value should work', async () => {
 });
 
 test('get value should work', async () => {
-  let encrypted_maps = await new_encrypted_maps(id0());
-  let owner = id0().getPrincipal();
+  const id = randomId();
+  let encrypted_maps = await new_encrypted_maps(id);
+  let owner = id.getPrincipal();
 
   const remove_result = encrypted_maps.remove_encrypted_value(owner, "some map", "some key");
   if ("Err" in remove_result) {
@@ -167,11 +174,12 @@ test('get value should work', async () => {
 });
 
 test('get-set roundtrip should be consistent', async () => {
-  let encrypted_maps = await new_encrypted_maps(id0());
-  let owner = id0().getPrincipal();
+  const id = randomId();
+  let encrypted_maps = await new_encrypted_maps(id);
+  let owner = id.getPrincipal();
   let data = new TextEncoder().encode("Hello, world!");
 
-  encrypted_maps.set_value(owner, "some map", "some key", data);
+  await encrypted_maps.set_value(owner, "some map", "some key", data);
   let result = await encrypted_maps.get_value(owner, "some map", "some key");
   if ("Err" in result) {
     throw new Error(result.Err);
@@ -183,10 +191,10 @@ test('get-set roundtrip should be consistent', async () => {
 });
 
 // test('sharing rights are consistent', async () => {
-//   let owner = id0().getPrincipal();
-//   let user = id1().getPrincipal();
-//   let encrypted_maps_owner = new_encrypted_maps(id0());
-//   let encrypted_maps_user = new_encrypted_maps(id1());
+//   let owner = id0.getPrincipal();
+//   let user = id1.getPrincipal();
+//   let encrypted_maps_owner = new_encrypted_maps(id0);
+//   let encrypted_maps_user = new_encrypted_maps(id1);
 //   let rights = { 'ReadWrite': null };
 
 //   expect((await encrypted_maps_user.get_user_rights(owner, "some key", owner))["Ok"]).to.deep.equal([{ 'ReadWriteManage': null }]);
