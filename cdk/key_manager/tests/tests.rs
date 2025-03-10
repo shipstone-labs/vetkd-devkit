@@ -144,7 +144,7 @@ fn add_or_remove_user_by_unauthorized_fails() {
                     (caller, name.clone()),
                     target
                 ),
-                Err(format!("{unauthorized_caller} unauthorized"))
+                Err("unauthorized".to_string())
             );
             assert_eq!(
                 ic_vetkd_cdk_key_manager::set_user_rights(
@@ -153,7 +153,7 @@ fn add_or_remove_user_by_unauthorized_fails() {
                     target,
                     AccessRights::Read,
                 ),
-                Err(format!("{unauthorized_caller} unauthorized"))
+                Err("unauthorized".to_string())
             );
         }
     }

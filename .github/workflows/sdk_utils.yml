@@ -1,0 +1,44 @@
+name: SDK Utils Linux
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - sdk/ic_vetkd_sdk_utils/**
+      - .github/workflows/sdk_utils.yml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  sdk_utils_tests_linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup
+        run: |
+          sudo apt-get install nodejs
+      - name: Run SDK Tests
+        run: |
+          set -eExuo pipefail
+          cd sdk/ic_vetkd_sdk_utils
+          npm install
+          npm run build
+          npm run test
+          npm run lint
+
+  sdk_utils_tests_mac:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup
+        run: |
+          brew install nodejs
+      - name: Run SDK Tests
+        run: |
+          set -eExuo pipefail
+          cd sdk/ic_vetkd_sdk_utils
+          npm install
+          npm run build
+          npm run test
+          npm run lint

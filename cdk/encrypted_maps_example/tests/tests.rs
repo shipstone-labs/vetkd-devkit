@@ -3,7 +3,7 @@ use ic_vetkd_cdk_encrypted_maps::{VetKey, VetKeyVerificationKey};
 use ic_vetkd_cdk_test_utils::random_self_authenticating_principal;
 use ic_vetkd_cdk_types::{AccessRights, ByteBuf, TransportKey};
 use ic_vetkd_utils::TransportSecretKey;
-use pocket_ic::{PocketIc, PocketIcBuilder, WasmResult};
+use pocket_ic::{PocketIc, PocketIcBuilder};
 use rand::{CryptoRng, Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use std::path::Path;
@@ -118,7 +118,7 @@ fn key_sharing_should_work() {
         .query::<Result<Option<AccessRights>, String>>(
             env.principal_0,
             "get_user_rights",
-            encode_args((key_owner, key_name.clone(), env.principal_1)).unwrap(),
+            encode_args((key_owner, key_name.clone(), env.principal_0)).unwrap(),
         )
         .unwrap();
     assert_eq!(current_rights_owner, Some(AccessRights::ReadWriteManage));
@@ -219,10 +219,7 @@ impl TestEnvironment {
             .pic
             .update_call(self.example_canister_id, caller, method_name, args);
         match reply {
-            Ok(WasmResult::Reply(data)) => decode_one(&data).expect("failed to decode reply"),
-            Ok(WasmResult::Reject(error_message)) => {
-                panic!("canister rejected the message: {error_message}")
-            }
+            Ok(data) => decode_one(&data).expect("failed to decode reply"),
             Err(user_error) => panic!("canister returned a user error: {user_error}"),
         }
     }
@@ -237,10 +234,7 @@ impl TestEnvironment {
             .pic
             .query_call(self.example_canister_id, caller, method_name, args);
         match reply {
-            Ok(WasmResult::Reply(data)) => decode_one(&data).expect("failed to decode reply"),
-            Ok(WasmResult::Reject(error_message)) => {
-                panic!("canister rejected the message: {error_message}")
-            }
+            Ok(data) => decode_one(&data).expect("failed to decode reply"),
             Err(user_error) => panic!("canister returned a user error: {user_error}"),
         }
     }

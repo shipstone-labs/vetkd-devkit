@@ -101,7 +101,7 @@ fn unauthorized_delete_map_values_fails() {
     )
     .unwrap();
     let result = ic_vetkd_cdk_encrypted_maps::remove_map_values(unauthorized, (caller, name));
-    assert_eq!(result, Err("unauthorized user".to_string()));
+    assert_eq!(result, Err("unauthorized".to_string()));
 }
 
 #[test]
@@ -204,7 +204,7 @@ fn add_or_remove_user_by_unauthorized_fails() {
                     (caller, name.clone()),
                     target
                 ),
-                Err("unauthorized user".to_string())
+                Err("unauthorized".to_string())
             );
             assert_eq!(
                 ic_vetkd_cdk_encrypted_maps::set_user_rights(
@@ -213,7 +213,7 @@ fn add_or_remove_user_by_unauthorized_fails() {
                     target,
                     AccessRights::Read,
                 ),
-                Err("unauthorized user".to_string())
+                Err("unauthorized".to_string())
             );
         }
     }
@@ -261,7 +261,7 @@ fn add_a_key_to_map_by_unauthorized_fails() {
             key.clone(),
             value.clone()
         ),
-        Err("unauthorized user".to_string())
+        Err("unauthorized".to_string())
     );
 
     let readonly_caller = random_self_authenticating_principal(rng);
@@ -342,7 +342,7 @@ fn remove_of_key_from_map_by_unauthorized_fails() {
             (caller, name.clone()),
             key.clone()
         ),
-        Err("unauthorized user".to_string())
+        Err("unauthorized".to_string())
     );
 
     let readonly_caller = random_self_authenticating_principal(rng);
@@ -494,7 +494,7 @@ fn modify_a_key_value_in_map_by_unauthorized_fails() {
             key.clone(),
             new_value.clone()
         ),
-        Err("unauthorized user".to_string())
+        Err("unauthorized".to_string())
     );
 
     let readonly_caller = random_self_authenticating_principal(rng);
