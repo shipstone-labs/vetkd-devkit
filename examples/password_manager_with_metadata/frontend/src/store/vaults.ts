@@ -52,7 +52,7 @@ export async function setPassword(
     tags: string[],
     passwordManager: PasswordManager,
 ) {
-    let result = await passwordManager.setPassword(parentVaultOwner, parentVaultName, passwordName, new TextEncoder().encode(password), tags, url);
+    const result = await passwordManager.setPassword(parentVaultOwner, parentVaultName, passwordName, new TextEncoder().encode(password), tags, url);
     if ("Err" in result) {
         throw new Error(result.Err);
     }
@@ -62,7 +62,7 @@ export async function removePassword(
     password: PasswordModel,
     passwordManager: PasswordManager
 ) {
-    let result = await passwordManager.removePassword(password.owner, password.parentVaultName, password.passwordName);
+    const result = await passwordManager.removePassword(password.owner, password.parentVaultName, password.passwordName);
     if ("Err" in result) {
         throw new Error(result.Err);
     }

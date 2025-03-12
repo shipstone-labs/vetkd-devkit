@@ -41,7 +41,7 @@ export class PasswordManager {
             return vaultsOwnedByMeResult;
         }
 
-        let vaultIds = new Array<[Principal, string]>();
+        const vaultIds = new Array<[Principal, string]>();
         for (const vaultNameBytes of vaultsOwnedByMeResult.Ok) {
             const vaultName = new TextDecoder().decode(Uint8Array.from(vaultNameBytes.inner));
             vaultIds.push([owner, vaultName]);
@@ -51,7 +51,7 @@ export class PasswordManager {
             vaultIds.push([otherOwner, vaultName]);
         }
 
-        let vaults = new Array();
+        const vaults = [];
 
         for (const [otherOwner, vaultName] of vaultIds) {
             const result = await this.canisterClient.get_encrypted_values_for_map_with_metadata(otherOwner, { inner: new TextEncoder().encode(vaultName) });
@@ -59,7 +59,7 @@ export class PasswordManager {
                 throw new Error(result.Err);
             }
 
-            let passwords = new Array<[string, PasswordModel]>();
+            const passwords = new Array<[string, PasswordModel]>();
             for (const [passwordNameBytebuf, encryptedData, passwordMetadata] of result.Ok) {
                 const passwordNameString = new TextDecoder().decode(Uint8Array.from(passwordNameBytebuf.inner));
                 const data = await this.encryptedMaps.decrypt_for(otherOwner, vaultName, passwordNameString, Uint8Array.from(encryptedData.inner));
