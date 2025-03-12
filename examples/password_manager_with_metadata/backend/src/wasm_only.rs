@@ -9,7 +9,10 @@ use ic_vetkd_cdk_types::{AccessRights, ByteBuf, EncryptedMapValue, TransportKey}
 use std::cell::RefCell;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
-type StableMetadataMap = StableBTreeMap<(Principal, Blob<32>, Blob<32>), PasswordMetadata, Memory>;
+type MapOwner = Principal;
+type MapName = Blob<32>;
+type MapKey = Blob<32>;
+type StableMetadataMap = StableBTreeMap<(MapOwner, MapName, MapKey), PasswordMetadata, Memory>;
 
 thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
