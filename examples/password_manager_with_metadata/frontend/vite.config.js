@@ -7,6 +7,7 @@ import tailwindcss from 'tailwindcss'
 import autoprefixer from "autoprefixer";
 import css from 'rollup-plugin-css-only';
 import typescript from '@rollup/plugin-typescript';
+import viteCompression from 'vite-plugin-compression';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -17,9 +18,9 @@ export default defineConfig({
     css({ output: "bundle.css" }),
     eslint(),
     typescript({
-      sourceMap: true,
       inlineSources: true,
     }),
+    viteCompression()
   ],
   esbuild: {
     supported: {

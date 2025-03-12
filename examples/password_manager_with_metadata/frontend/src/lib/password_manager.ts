@@ -167,8 +167,7 @@ export class PasswordManager {
 export async function createPasswordManager(
     agentOptions?: HttpAgentOptions,
 ): Promise<PasswordManager> {
-    const CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA =
-        process.env.CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA;
+    const { CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA } = process.env;
     if (!CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA) {
         console.error(
             "CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA is not defined",

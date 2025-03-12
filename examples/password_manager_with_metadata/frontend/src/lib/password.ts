@@ -26,37 +26,6 @@ export function passwordFromContent(
 }
 
 export function summarize(password: PasswordModel, maxLength = 50) {
-    const div = document.createElement("div");
-    div.innerHTML = password.content;
-
-    let text = div.innerText;
-    const title = extractTitleFromDomEl(div);
-    if (title) {
-        text = text.replace(title, "");
-    }
-
+    const text = password.content.replace(/<[^>]+>/, "");
     return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
-}
-
-function extractTitleFromDomEl(el: HTMLElement) {
-    const title = el.querySelector("h1");
-    if (title) {
-        return title.innerText;
-    }
-
-    const blockElements = el.querySelectorAll(
-        "h1,h2,p,li",
-    ) as NodeListOf<HTMLElement>;
-    for (const el of blockElements) {
-        if (el.innerText?.trim().length > 0) {
-            return el.innerText.trim();
-        }
-    }
-    return "";
-}
-
-export function extractTitle(html: string) {
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    return extractTitleFromDomEl(div);
 }

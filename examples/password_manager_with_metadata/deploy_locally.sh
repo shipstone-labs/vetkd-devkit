@@ -12,7 +12,6 @@ dfx ping &> /dev/null || dfx start --background --clean >> /dev/null
 # management canister ID for the VetKD interface with the chainkey testing
 # canister. Then, export the environment variable of the canister ID.
 pushd backend
-    make clean &&
     make mock &&
     eval $(make export-cmd)
 popd

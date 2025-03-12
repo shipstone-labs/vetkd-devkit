@@ -1,11 +1,9 @@
 <script lang="ts">
     import { type VaultModel, summarize } from "../lib/vault";
     import { link, location } from "svelte-spa-router";
-    import Password from "./Password.svelte";
-    import { createEventDispatcher, onDestroy } from "svelte";
+    import { onDestroy } from "svelte";
     import { vaultsStore } from "../store/vaults";
     import { Principal } from "@dfinity/principal";
-    import type { PasswordModel } from "../lib/password";
     import Header from "./Header.svelte";
     import Spinner from "./Spinner.svelte";
     import GiOpenTreasureChest from "svelte-icons/gi/GiOpenTreasureChest.svelte";
@@ -121,7 +119,7 @@ dark:bg-base-100 hover:-translate-y-2 transition-transform"
                         href={`/edit/vaults/${vault.owner}/${vault.name}/${password[1].passwordName}`}
                     >
                         <div class="pointer-events-none">
-                            <h2 class="text-lg font-bold mb-2 line-clamp-3">
+                            <h2 class="text-lg font-bold mb-2 line-clamp-3" style="word-break: break-all;">
                                 {password[1].passwordName}: "{password[1]
                                     .content}"
                             </h2>
