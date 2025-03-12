@@ -1,9 +1,9 @@
 import { writable } from 'svelte/store';
-import { passwordFromContent, type PasswordModel } from '../lib/password';
-import { vaultFromContent, type VaultModel } from '../lib/vault';
+import { type PasswordModel } from '../lib/password';
+import { type VaultModel } from '../lib/vault';
 import { auth } from './auth';
 import { showError } from './notifications';
-import { type AccessRights, EncryptedMaps } from 'ic_vetkd_sdk_encrypted_maps/src';
+import { type AccessRights } from 'ic_vetkd_sdk_encrypted_maps/src';
 import type { Principal } from '@dfinity/principal';
 import type { PasswordManager } from '../lib/password_manager';
 

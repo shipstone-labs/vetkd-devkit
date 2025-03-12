@@ -19,7 +19,9 @@ try {
     } else {
         throw new Error('Draft not found');
     }
-} catch { }
+} catch {
+    // ignore error
+}
 
 export const draft = writable<DraftModel>(initialDraft);
 

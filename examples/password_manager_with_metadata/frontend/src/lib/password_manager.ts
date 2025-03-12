@@ -1,7 +1,6 @@
 
 import "./init.ts";
-import { type ActorSubclass, HttpAgent, type HttpAgentOptions, } from '@dfinity/agent';
-import { DefaultEncryptedMapsClient } from '../../../../../sdk/ic_vetkd_sdk_encrypted_maps_example/src/index';
+import { type ActorSubclass, type HttpAgentOptions, } from '@dfinity/agent';
 import { EncryptedMaps } from 'ic_vetkd_sdk_encrypted_maps/src';
 import { createEncryptedMaps } from "./encrypted_maps";
 import type { Principal } from "@dfinity/principal";
