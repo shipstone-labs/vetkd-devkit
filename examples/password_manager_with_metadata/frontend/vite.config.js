@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import eslint from 'vite-plugin-eslint'
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 import tailwindcss from 'tailwindcss'
@@ -14,6 +15,7 @@ export default defineConfig({
     wasm(),
     topLevelAwait(),
     css({ output: "bundle.css" }),
+    eslint(),
     typescript({
       sourceMap: true,
       inlineSources: true,
