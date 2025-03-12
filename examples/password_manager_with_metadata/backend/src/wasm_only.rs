@@ -12,6 +12,8 @@ type Memory = VirtualMemory<DefaultMemoryImpl>;
 type MapOwner = Principal;
 type MapName = Blob<32>;
 type MapKey = Blob<32>;
+// To understand the intuition how a stable map over a tuple type works, see
+// https://mmapped.blog/posts/14-stable-structures#stable-btree.
 type StableMetadataMap = StableBTreeMap<(MapOwner, MapName, MapKey), PasswordMetadata, Memory>;
 
 thread_local! {
