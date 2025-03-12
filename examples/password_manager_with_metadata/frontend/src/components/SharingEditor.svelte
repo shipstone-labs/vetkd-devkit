@@ -145,7 +145,8 @@
 {:else}
     <p class="mt-3">
         This vault is <span class="font-bold">shared</span> with you. It is
-        owned by <span class="italic font-bold">{editedVault.owner}</span>.
+        owned by
+        <span class="italic font-bold">{editedVault.owner}</span>.
     </p>
     <p class="mt-3">Users with whom the vault is shared:</p>
 {/if}
