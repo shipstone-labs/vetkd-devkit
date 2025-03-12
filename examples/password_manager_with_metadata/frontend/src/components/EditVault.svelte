@@ -1,8 +1,6 @@
 <script lang="ts">
-    import { replace } from "svelte-spa-router";
-    import Router from "svelte-spa-router";
     import { Editor, placeholder } from "typewriter-editor";
-    import { extractTitle, type VaultModel } from "../lib/vault";
+    import { type VaultModel } from "../lib/vault";
     import { vaultsStore, refreshVaults } from "../store/vaults";
     import Header from "./Header.svelte";
     import SharingEditor from "./SharingEditor.svelte";
