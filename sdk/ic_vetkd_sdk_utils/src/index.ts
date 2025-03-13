@@ -1,8 +1,10 @@
 import { bls12_381 } from '@noble/curves/bls12-381';
 import { ProjPointType } from '@noble/curves/abstract/weierstrass';
 import { Fp, Fp2, Fp12 } from '@noble/curves/abstract/tower';
-import { expand_message_xmd, hash_to_field } from '@noble/curves/abstract/hash-to-curve';
+import { hash_to_field } from '@noble/curves/abstract/hash-to-curve';
 import { shake256 } from '@noble/hashes/sha3';
+import { hkdf } from '@noble/hashes/hkdf';
+import { sha256 } from '@noble/hashes/sha256';
 
 export type G1Point = ProjPointType<Fp>;
 export type G2Point = ProjPointType<Fp2>;
@@ -136,13 +138,9 @@ export function hashToScalar(input: Uint8Array, domainSep: string): bigint {
  * "my-app" is deriving two keys, one for usage "foo" and the other for
  * "bar". You might use as domain separators "my-app-foo" and "my-app-bar".
  */
-export function deriveSymmetricKey(input: Uint8Array, domainSep: string, outputLength: number): Uint8Array {
-    const dst = new Uint8Array(new TextEncoder().encode(domainSep));
-
-    // @ts-expect-error (https://github.com/paulmillr/noble-curves/issues/179)
-    const sha256 = bls12_381.G2.CURVE.htfDefaults.hash;
-
-    return expand_message_xmd(input, dst, outputLength, sha256);
+export function deriveSymmetricKey(input: Uint8Array, domainSep: Uint8Array | string, outputLength: number): Uint8Array {
+    const no_salt = new Uint8Array();
+    return hkdf(sha256, input, no_salt, domainSep, outputLength);
 }
 
 /**
@@ -184,7 +182,7 @@ export class VetKey {
      * Use the raw bytes only if your design makes use of the fact that VetKeys
      * are BLS signatures (eg for random beacon or threshold BLS signature
      * generation). If you are using VetKD for key distribution, instead use
-     * deriveSymmetricKey.
+     * deriveSymmetricKey or asHkdfCryptoKey
      */
     signatureBytes(): Uint8Array {
         return this.#bytes;
@@ -198,8 +196,27 @@ export class VetKey {
      * "my-app" is deriving two keys, one for usage "foo" and the other for
      * "bar". You might use as domain separators "my-app-foo" and "my-app-bar".
      */
-    deriveSymmetricKey(domainSep: string, outputLength: number): Uint8Array {
+    deriveSymmetricKey(domainSep: Uint8Array | string, outputLength: number): Uint8Array {
         return deriveSymmetricKey(this.#bytes, domainSep, outputLength);
+    }
+
+    /**
+     * Return a WebCrypto CryptoKey handle suitable for further key derivation
+     *
+     * The CryptoKey is not exportable
+     */
+    async asHkdfCryptoKey(): Promise<CryptoKey> {
+        const exportable = false;
+        return window.crypto.subtle.importKey("raw", this.#bytes, "HKDF", exportable, ["deriveKey"]);
+    }
+
+    /**
+     * Deserialize a VetKey from the 48 byte encoding of the BLS signature
+     *
+     * This deserializes the same value as returned by signatureBytes
+     */
+    static deserialize(bytes: Uint8Array): VetKey {
+        return new VetKey(bls12_381.G1.ProjectivePoint.fromHex(bytes));
     }
 
     /**
