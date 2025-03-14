@@ -9,7 +9,6 @@ if (typeof window === 'undefined') {
 }
 
 beforeAll(() => {
-    console.log("beforeAll");
     Object.defineProperty(window, 'crypto', {
         value: crypto.webcrypto,
         writable: true,
