@@ -45,16 +45,27 @@ test('parsing DerivedPublicKey', () => {
 
     expect(() => {
         const invalid = new Uint8Array([1, 2, 3]);
-        return new DerivedPublicKey(invalid);
+        return DerivedPublicKey.deserialize(invalid);
     }).toThrow();
 
     const valid = hexToBytes("972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f");
-    const key = new DerivedPublicKey(valid);
+    const key = DerivedPublicKey.deserialize(valid);
     assertEqual(valid, key.publicKeyBytes());
 });
 
+test('DerivedPublicKey subderivation', () => {
+    const canisterKey = DerivedPublicKey.deserialize(hexToBytes("972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f"));
+
+    const context = hexToBytes("f00fee");
+
+    const derivedKey = canisterKey.deriveKey(context);
+
+    assertEqual(bytesToHex(derivedKey.publicKeyBytes()),
+                "8bf4d77b519852e5bd4bf9b7dd236737112e9da12f982b61f7d474a99642f2da2b76d2910efd24e3cd1a12e6fa9b45890dd3f8a2a600d80cb8d13ea7057e29ba675924377f4cc6083b141bcf396d9c6e29efee56638a9c7bc1bc3832c07853c8");
+});
+
 test('augmented hash to G1', () => {
-    const pk = new DerivedPublicKey(hexToBytes("80e38f040fae321c75cf8faf8c6e9500c92b7cac022ca3eb48fb01c8e91d8c2bc806c2665ed28a0a8c87a4bff717dd3c0c4eb57ad635bc582f89c171b8478f2fe1b806c3faeed7133b13141aaf4a65aa0c5d7902dc80102e91e6f73fe56fa34f"));
+    const pk = DerivedPublicKey.deserialize(hexToBytes("80e38f040fae321c75cf8faf8c6e9500c92b7cac022ca3eb48fb01c8e91d8c2bc806c2665ed28a0a8c87a4bff717dd3c0c4eb57ad635bc582f89c171b8478f2fe1b806c3faeed7133b13141aaf4a65aa0c5d7902dc80102e91e6f73fe56fa34f"));
     const msg = hexToBytes("25138dfc69267bd861d8ad9f05b9");
 
     const expected = "8e946e53188c951301b895c228c48cdeebf008d0fbc5b0aa8bff07a30926fb166485137dc372983433032673f74c24e6";
@@ -73,7 +84,7 @@ test('protocol flow with precomputed data', () => {
 
     const did = hexToBytes("6d657373616765");
 
-    const dpk = new DerivedPublicKey(hexToBytes("972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f"));
+    const dpk = DerivedPublicKey.deserialize(hexToBytes("972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f"));
 
     const ek = new EncryptedKey(hexToBytes("b1a13757eaae15a3c8884fc1a3453f8a29b88984418e65f1bd21042ce1d6809b2f8a49f7326c1327f2a3921e8ff1d6c3adde2a801f1f88de98ccb40c62e366a279e7aec5875a0ce2f2a9f3e109d9cb193f0197eadb2c5f5568ee4d6a87e115910662e01e604087246be8b081fc6b8a06b4b0100ed1935d8c8d18d9f70d61718c5dba23a641487e72b3b25884eeede8feb3c71599bfbcebe60d29408795c85b4bdf19588c034d898e7fc513be8dbd04cac702a1672f5625f5833d063b05df7503"));
 
