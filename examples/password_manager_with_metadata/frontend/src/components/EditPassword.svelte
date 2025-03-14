@@ -15,7 +15,7 @@
 
     export let currentRoute = "";
     const unsubscribe = location.subscribe((value) => {
-        currentRoute = value;
+        currentRoute = decodeURI(value);
     });
     onDestroy(unsubscribe);
 

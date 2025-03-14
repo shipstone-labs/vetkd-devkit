@@ -2,8 +2,6 @@
     import { type VaultModel } from "../lib/vault";
     import { vaultsStore } from "../store/vaults";
     import Header from "./Header.svelte";
-    import Password from "./Password.svelte";
-    import Vault from "./Vault.svelte";
     import Spinner from "./Spinner.svelte";
     import { link } from "svelte-spa-router";
 

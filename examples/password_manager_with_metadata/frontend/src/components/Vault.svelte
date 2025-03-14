@@ -22,7 +22,7 @@
 
     export let currentRoute = "";
     const unsubscribeCurrentRoute = location.subscribe((value) => {
-        currentRoute = value;
+        currentRoute = decodeURI(value);
     });
     onDestroy(unsubscribeCurrentRoute);
 
