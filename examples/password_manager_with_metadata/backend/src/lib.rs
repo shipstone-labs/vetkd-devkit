@@ -124,7 +124,7 @@ fn get_encrypted_values_for_map_with_metadata(
                 .map(|((_, _, key), metadata)| (key, metadata));
 
             iter_metadata
-                .zip(map_values.into_iter())
+                .zip(map_values)
                 .map(|((key_left, metadata), (key_right, encrypted_value))| {
                     debug_assert_eq!(key_left, key_right);
                     (
