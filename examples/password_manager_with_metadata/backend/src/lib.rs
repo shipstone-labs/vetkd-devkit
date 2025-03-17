@@ -123,10 +123,8 @@ fn get_encrypted_values_for_map_with_metadata(
                 .take_while(|((owner, name, _), _)| owner == &map_owner && name == &map_name)
                 .map(|((_, _, key), metadata)| (key, metadata));
 
-            let iter_values = map_values.into_iter().map(|(key, value)| (key, value));
-
             iter_metadata
-                .zip(iter_values)
+                .zip(map_values.into_iter())
                 .map(|((key_left, metadata), (key_right, encrypted_value))| {
                     debug_assert_eq!(key_left, key_right);
                     (
