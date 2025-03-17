@@ -7,7 +7,6 @@
 //! vetkey hash.
 
 use candid::Principal;
-use ic_cdk::api::call::CallResult;
 use ic_cdk::api::management_canister::main::CanisterId;
 use ic_stable_structures::memory_manager::VirtualMemory;
 use ic_stable_structures::storable::{Blob, Bound};
@@ -16,7 +15,7 @@ use ic_vetkd_cdk_types::{AccessRights, ByteBuf, KeyName, TransportKey};
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::borrow::Cow;
-use std::future::Future;
+use std::future::{Future, IntoFuture};
 use std::str::FromStr;
 
 #[cfg(feature = "expose-testing-api")]
@@ -105,10 +104,7 @@ impl KeyManager {
 
     pub fn get_vetkey_verification_key(
         &self,
-    ) -> futures::future::Map<
-        impl Future<Output = CallResult<(VetKDPublicKeyReply,)>> + Send + Sync,
-        impl FnOnce(CallResult<(VetKDPublicKeyReply,)>) -> VetKeyVerificationKey,
-    > {
+    ) -> impl Future<Output = VetKeyVerificationKey> + Send + Sync {
         use futures::future::FutureExt;
 
         let request = VetKDPublicKeyRequest {
@@ -123,10 +119,12 @@ impl KeyManager {
             (request,),
         );
 
-        future.map(|call_result| {
-            let (reply,) = call_result.expect("call to vetkd_public_key failed");
-            VetKeyVerificationKey::from(reply.public_key)
-        })
+        future
+            .map(|call_result| {
+                let (reply,) = call_result.expect("call to vetkd_public_key failed");
+                VetKeyVerificationKey::from(reply.public_key)
+            })
+            .into_future()
     }
 
     pub fn get_encrypted_vetkey(
@@ -134,13 +132,7 @@ impl KeyManager {
         caller: Principal,
         key_id: KeyId,
         transport_key: TransportKey,
-    ) -> Result<
-        futures::future::Map<
-            impl Future<Output = CallResult<(VetKDEncryptedKeyReply,)>> + Send + Sync,
-            impl FnOnce(CallResult<(VetKDEncryptedKeyReply,)>) -> VetKey,
-        >,
-        String,
-    > {
+    ) -> Result<impl Future<Output = VetKey> + Send + Sync, String> {
         use futures::future::FutureExt;
 
         self.ensure_user_can_read(caller, key_id)?;
@@ -166,10 +158,12 @@ impl KeyManager {
             (request,),
         );
 
-        Ok(future.map(|call_result| {
-            let (reply,) = call_result.expect("call to vetkd_encrypted_key failed");
-            VetKey::from(reply.encrypted_key)
-        }))
+        Ok(future
+            .map(|call_result| {
+                let (reply,) = call_result.expect("call to vetkd_encrypted_key failed");
+                VetKey::from(reply.encrypted_key)
+            })
+            .into_future())
     }
 
     pub fn get_user_rights(
