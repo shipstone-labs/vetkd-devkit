@@ -15,7 +15,7 @@ use ic_vetkd_cdk_types::{AccessRights, ByteBuf, KeyName, TransportKey};
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::borrow::Cow;
-use std::future::{Future, IntoFuture};
+use std::future::Future;
 use std::str::FromStr;
 
 #[cfg(feature = "expose-testing-api")]
@@ -119,12 +119,10 @@ impl KeyManager {
             (request,),
         );
 
-        future
-            .map(|call_result| {
-                let (reply,) = call_result.expect("call to vetkd_public_key failed");
-                VetKeyVerificationKey::from(reply.public_key)
-            })
-            .into_future()
+        future.map(|call_result| {
+            let (reply,) = call_result.expect("call to vetkd_public_key failed");
+            VetKeyVerificationKey::from(reply.public_key)
+        })
     }
 
     pub fn get_encrypted_vetkey(
@@ -158,12 +156,10 @@ impl KeyManager {
             (request,),
         );
 
-        Ok(future
-            .map(|call_result| {
-                let (reply,) = call_result.expect("call to vetkd_encrypted_key failed");
-                VetKey::from(reply.encrypted_key)
-            })
-            .into_future())
+        Ok(future.map(|call_result| {
+            let (reply,) = call_result.expect("call to vetkd_encrypted_key failed");
+            VetKey::from(reply.encrypted_key)
+        }))
     }
 
     pub fn get_user_rights(
