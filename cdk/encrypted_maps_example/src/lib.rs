@@ -199,9 +199,7 @@ fn remove_user(
 #[cfg(feature = "expose-testing-api")]
 #[update]
 fn set_vetkd_testing_canister_id(vetkd_testing_canister: Principal) {
-    ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
-        ic_vetkd_cdk_encrypted_maps::set_vetkd_testing_canister_id(vetkd_testing_canister)
-    })
+    ic_vetkd_cdk_encrypted_maps::set_vetkd_testing_canister_id(vetkd_testing_canister)
 }
 
 fn bytebuf_to_blob(buf: ByteBuf) -> Result<Blob<32>, String> {
