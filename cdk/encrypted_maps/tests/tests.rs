@@ -18,6 +18,7 @@ use ic_vetkd_cdk_types::AccessRights;
 
 #[test]
 fn can_init_memory() {
+    // prevent the compiler from optimizing away the function call
     std::hint::black_box(random_encrypted_maps(&mut reproducible_rng()));
 }
 
