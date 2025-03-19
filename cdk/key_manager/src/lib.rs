@@ -1,10 +1,28 @@
-//! Types for V1 encrypted maps. V1 uses one vetkey per map that each authorized
-//! user can access. The encryption keys for the map-keys are derived from the
-//! vetkey hash.
+//! # VetKD CDK - KeyManager
 //!
-//! APIs for V1 encrypted maps. V1 uses one vetkey per map that each authorized
-//! user can access. The encryption keys for the map-keys are derived from the
-//! vetkey hash.
+//! ## Overview
+//!
+//! The **KeyManager** is a support library for **vetKeys**, an Internet Computer (ICP) feature
+//! that enables the derivation of **encrypted cryptographic keys**. This library simplifies
+//! the process of key retrieval, encryption, and controlled sharing, ensuring secure and
+//! efficient key management for canisters and users.
+//!
+//! ## Core Features
+//!
+//! - **Request an Encrypted Key:** Users can derive any number of **encrypted cryptographic keys**,
+//!   secured using a **transport key**. Each key is associated with a unique **key id**.
+//! - **Manage Key Sharing:** A user can **share their keys** with other users while controlling access rights.
+//! - **Access Control Management:** Users can define and enforce **fine-grained permissions**
+//!   (read, write, manage) for each key.
+//! - **Uses Stable Storage:** The library persists key access information using **StableBTreeMap**,
+//!   ensuring reliability across canister upgrades.
+//!
+//! ## KeyManager Architecture
+//!
+//! The **KeyManager** consists of two primary components:
+//!
+//! 1. **Access Control Map** (`access_control`): Maps `(Caller, KeyId)` to `AccessRights`, defining permissions for each user.
+//! 2. **Shared Keys Map** (`shared_keys`): Tracks which users have access to shared keys.
 
 use candid::Principal;
 use ic_cdk::api::management_canister::main::CanisterId;
@@ -53,6 +71,8 @@ pub struct KeyManager {
 }
 
 impl KeyManager {
+    /// Initializes the KeyManager with stable storage.
+    /// This function must be called exactly once before any other KeyManager operation can be invoked.
     pub fn init(
         domain_separator: &str,
         memory_domain_separator: Memory,
@@ -69,6 +89,7 @@ impl KeyManager {
         }
     }
 
+    /// Retrieves all key IDs shared with the given caller.
     pub fn get_accessible_shared_key_ids(&self, caller: Principal) -> Vec<KeyId> {
         self.access_control
             .range((caller, (Principal::management_canister(), Blob::default()))..)
@@ -77,6 +98,7 @@ impl KeyManager {
             .collect()
     }
 
+    /// Retrieves a list of users with whom a given key has been shared, along with their access rights.
     pub fn get_shared_user_access_for_key(
         &self,
         caller: Principal,
@@ -125,6 +147,7 @@ impl KeyManager {
         })
     }
 
+    /// Retrieves an encrypted vetkey for caller and key id.
     pub fn get_encrypted_vetkey(
         &self,
         caller: Principal,
@@ -162,6 +185,7 @@ impl KeyManager {
         }))
     }
 
+    /// Retrieves the access rights a given user has to a specific key.
     pub fn get_user_rights(
         &self,
         caller: Principal,
@@ -172,6 +196,8 @@ impl KeyManager {
         Ok(self.ensure_user_can_read(user, key_id).ok())
     }
 
+    /// Grants or modifies access rights for a user to a given key.
+    /// Only the key owner or a user with management rights can perform this action.
     pub fn set_user_rights(
         &mut self,
         caller: Principal,
@@ -188,6 +214,8 @@ impl KeyManager {
         Ok(self.access_control.insert((user, key_id), access_rights))
     }
 
+    /// Revokes a user's access to a shared key.
+    /// The key owner cannot remove their own access.
     pub fn remove_user(
         &mut self,
         caller: Principal,
@@ -204,6 +232,7 @@ impl KeyManager {
         Ok(self.access_control.remove(&(user, key_id)))
     }
 
+    /// Checks whether a given key has been shared with at least one user.
     pub fn is_key_shared(&self, key_id: KeyId) -> bool {
         self.shared_keys
             .range(&(key_id, Principal::management_canister())..)
@@ -212,6 +241,8 @@ impl KeyManager {
             .is_some()
     }
 
+    /// Ensures that a user has read access to a key before proceeding.
+    /// Returns an error if the user is not authorized.
     fn ensure_user_can_read(&self, user: Principal, key_id: KeyId) -> Result<AccessRights, String> {
         let is_owner = user == key_id.0;
         if is_owner {
@@ -226,6 +257,8 @@ impl KeyManager {
         Err("unauthorized".to_string())
     }
 
+    /// Ensures that a user has management access to a key before proceeding.
+    /// Returns an error if the user is not authorized.
     fn ensure_user_can_manage(
         &self,
         user: Principal,

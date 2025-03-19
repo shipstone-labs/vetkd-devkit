@@ -1,1 +1,0 @@
-# vetkd canister development kit
