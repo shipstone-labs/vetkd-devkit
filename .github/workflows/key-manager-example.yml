@@ -6,7 +6,8 @@ on:
       - main
   pull_request:
     paths:
-      - cdk/key-manager-example/**
+      - cdk/{key_manager_example,utils,types,test_utils}/**
+      - sdk/ic_vetkd_sdk_{key_manager,key_manager_example,utils}/**
       - .github/workflows/provision-darwin.sh
       - .github/workflows/provision-linux.sh
       - .github/workflows/key-manager-example.yml
@@ -17,7 +18,7 @@ jobs:
   key-manager-example-darwin:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Provision Darwin
         run: |
           bash .github/workflows/provision-darwin.sh
@@ -34,7 +35,7 @@ jobs:
   key-manager-example-linux:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Provision Linux
         run: bash .github/workflows/provision-linux.sh
       - name: Key Manager Example Linux
