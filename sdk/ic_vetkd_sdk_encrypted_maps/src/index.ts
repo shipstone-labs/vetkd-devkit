@@ -1,6 +1,6 @@
 import { Principal } from "@dfinity/principal";
 import { get, set } from 'idb-keyval';
-import { TransportSecretKey } from "ic-vetkd-cdk-utils/ic_vetkd_cdk_utils";
+import { TransportSecretKey } from "ic-vetkd-cdk-utils";
 
 export class EncryptedMaps {
     canister_client: EncryptedMapsClient;
