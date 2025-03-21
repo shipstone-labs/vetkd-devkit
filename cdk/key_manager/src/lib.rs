@@ -27,12 +27,9 @@
 use candid::Principal;
 use ic_cdk::api::management_canister::main::CanisterId;
 use ic_stable_structures::memory_manager::VirtualMemory;
-use ic_stable_structures::storable::{Blob, Bound};
+use ic_stable_structures::storable::Blob;
 use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap, StableCell, Storable};
 use ic_vetkd_cdk_types::{AccessRights, ByteBuf, KeyName, TransportKey};
-use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
-use std::borrow::Cow;
 use std::future::Future;
 use std::str::FromStr;
 
@@ -232,15 +229,6 @@ impl KeyManager {
         Ok(self.access_control.remove(&(user, key_id)))
     }
 
-    /// Checks whether a given key has been shared with at least one user.
-    pub fn is_key_shared(&self, key_id: KeyId) -> bool {
-        self.shared_keys
-            .range(&(key_id, Principal::management_canister())..)
-            .take_while(|((k, _), _)| k == &key_id)
-            .next()
-            .is_some()
-    }
-
     /// Ensures that a user has read access to a key before proceeding.
     /// Returns an error if the user is not authorized.
     fn ensure_user_can_read(&self, user: Principal, key_id: KeyId) -> Result<AccessRights, String> {
@@ -294,27 +282,6 @@ fn vetkd_system_api_canister_id() -> CanisterId {
         }
     }
     CanisterId::from_str(VETKD_SYSTEM_API_CANISTER_ID).expect("failed to create canister ID")
-}
-
-#[serde_as]
-#[derive(Serialize, Deserialize)]
-struct StorableDerivationPath {
-    #[serde_as(as = "Vec<serde_with::Bytes>")]
-    derivation_path: Vec<Vec<u8>>,
-}
-
-impl Storable for StorableDerivationPath {
-    fn to_bytes(&self) -> Cow<[u8]> {
-        Cow::Owned(serde_cbor::to_vec(&self.derivation_path).expect("failed to serialize"))
-    }
-
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        let derivation_path =
-            serde_cbor::from_slice(bytes.as_ref()).expect("failed to deserialize");
-        Self { derivation_path }
-    }
-
-    const BOUND: Bound = Bound::Unbounded;
 }
 
 #[cfg(feature = "expose-testing-api")]

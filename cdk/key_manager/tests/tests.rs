@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use assert_matches::assert_matches;
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager},
@@ -18,7 +20,87 @@ fn can_init_memory() {
 }
 
 #[test]
-fn can_add_user_to_map() {
+fn get_accessible_shared_key_ids_works_correctly() {
+    let rng = &mut reproducible_rng();
+    let user_to_be_added = random_self_authenticating_principal(rng);
+    let mut key_manager = random_key_manager(rng);
+
+    let mut map_ids = BTreeSet::new();
+
+    for _ in 0..10 {
+        let caller = random_self_authenticating_principal(rng);
+        let access_rights = random_access_rights(rng);
+        let name = random_name(rng);
+
+        assert_eq!(
+            key_manager.set_user_rights(
+                caller,
+                (caller, name.clone()),
+                user_to_be_added,
+                access_rights
+            ),
+            Ok(None)
+        );
+
+        map_ids.insert((caller, name));
+        let computed_map_ids: BTreeSet<_> = key_manager
+            .get_accessible_shared_key_ids(user_to_be_added)
+            .into_iter()
+            .collect();
+
+        assert_eq!(computed_map_ids, map_ids);
+    }
+}
+
+#[test]
+fn can_get_shared_user_access_for_key() {
+    let rng = &mut reproducible_rng();
+    let caller = random_self_authenticating_principal(rng);
+    let name = random_name(rng);
+    let mut key_manager = random_key_manager(rng);
+
+    let mut shared_access = BTreeSet::new();
+
+    for _ in 0..10 {
+        let user_to_be_added = random_self_authenticating_principal(rng);
+        let access_rights = random_access_rights(rng);
+
+        let computed_shared_access: BTreeSet<_> = key_manager
+            .get_shared_user_access_for_key(caller, (caller, name.clone()))
+            .unwrap()
+            .into_iter()
+            .collect();
+
+        assert_eq!(shared_access, computed_shared_access);
+
+        assert_eq!(
+            key_manager.set_user_rights(
+                caller,
+                (caller, name.clone()),
+                user_to_be_added,
+                access_rights
+            ),
+            Ok(None)
+        );
+
+        shared_access.insert((user_to_be_added, access_rights));
+    }
+}
+
+#[test]
+fn get_shared_user_access_for_key_fails_for_unauthorized() {
+    let rng = &mut reproducible_rng();
+    let unauthorized = random_self_authenticating_principal(rng);
+    let key_id = (random_self_authenticating_principal(rng), random_name(rng));
+    let key_manager = random_key_manager(rng);
+    assert_eq!(
+        key_manager.get_shared_user_access_for_key(unauthorized, key_id),
+        Err("unauthorized".to_string())
+    );
+}
+
+#[test]
+fn can_add_user_to_key() {
     let rng = &mut reproducible_rng();
     let caller = random_self_authenticating_principal(rng);
     let name = random_name(rng);
@@ -27,6 +109,12 @@ fn can_add_user_to_map() {
 
     let user_to_be_added = random_self_authenticating_principal(rng);
     let access_rights = random_access_rights(rng);
+
+    assert_eq!(
+        key_manager.get_user_rights(caller, (caller, name.clone()), user_to_be_added),
+        Ok(None)
+    );
+
     assert_eq!(
         key_manager.set_user_rights(
             caller,
@@ -36,6 +124,12 @@ fn can_add_user_to_map() {
         ),
         Ok(None)
     );
+
+    assert_eq!(
+        key_manager.get_user_rights(caller, (caller, name.clone()), user_to_be_added),
+        Ok(Some(access_rights))
+    );
+
     assert_eq!(
         key_manager.set_user_rights(caller, (caller, name), user_to_be_added, access_rights),
         Ok(Some(access_rights))
@@ -43,7 +137,67 @@ fn can_add_user_to_map() {
 }
 
 #[test]
-fn can_remove_user_from_map() {
+fn get_and_set_user_rights_fails_for_unauthorized() {
+    let rng = &mut reproducible_rng();
+    let unauthorized = random_self_authenticating_principal(rng);
+    let key_id = (random_self_authenticating_principal(rng), random_name(rng));
+    let mut key_manager = random_key_manager(rng);
+    assert_eq!(
+        key_manager.get_user_rights(unauthorized, key_id, unauthorized),
+        Err("unauthorized".to_string())
+    );
+    assert_eq!(
+        key_manager.set_user_rights(unauthorized, key_id, unauthorized, AccessRights::Read),
+        Err("unauthorized".to_string())
+    );
+}
+
+#[test]
+fn cannot_alter_owner_rights() {
+    let rng = &mut reproducible_rng();
+    let caller = random_self_authenticating_principal(rng);
+    let name = random_name(rng);
+    let mut key_manager = random_key_manager(rng);
+
+    assert_eq!(
+        key_manager.set_user_rights(caller, (caller, name.clone()), caller, AccessRights::Read),
+        Err("cannot change key owner's user rights".to_string())
+    );
+
+    assert_eq!(
+        key_manager.remove_user(caller, (caller, name), caller),
+        Err("cannot remove key owner".to_string())
+    );
+}
+
+#[test]
+fn other_user_can_manage_key() {
+    let rng = &mut reproducible_rng();
+    let owner = random_self_authenticating_principal(rng);
+    let user1 = random_self_authenticating_principal(rng);
+    let user2 = random_self_authenticating_principal(rng);
+    let name = random_name(rng);
+    let mut key_manager = random_key_manager(rng);
+
+    let key_id = (owner, name);
+
+    key_manager
+        .set_user_rights(owner, key_id.clone(), user1, AccessRights::ReadWriteManage)
+        .unwrap();
+    key_manager
+        .set_user_rights(owner, key_id.clone(), user2, AccessRights::ReadWriteManage)
+        .unwrap();
+
+    key_manager
+        .remove_user(user2, key_id.clone(), user1)
+        .unwrap();
+    key_manager
+        .remove_user(user2, key_id.clone(), user2)
+        .unwrap();
+}
+
+#[test]
+fn can_remove_user_from_key() {
     let rng = &mut reproducible_rng();
     let caller = random_self_authenticating_principal(rng);
     let name = random_name(rng);
@@ -63,6 +217,10 @@ fn can_remove_user_from_map() {
     assert_eq!(
         key_manager.remove_user(caller, (caller, name), user_to_be_added,),
         Ok(Some(access_rights))
+    );
+    assert_eq!(
+        key_manager.get_user_rights(caller, (caller, name), user_to_be_added),
+        Ok(None)
     );
 }
 
@@ -140,11 +298,3 @@ fn random_key_manager<R: Rng + CryptoRng>(rng: &mut R) -> KeyManager {
         memory_manager.get(MemoryId::new(memory_ids_key_manager[2])),
     )
 }
-
-// TODO tests
-// - create key
-// - retrieve vetkey
-// - retrieve vetkey and verification and and verify
-// - add a user to a key
-// - remove a user from a key
-// - change user rights for a key
