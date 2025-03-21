@@ -17,14 +17,14 @@ ic-cdk-macros = { workspace = true }
 ic-stable-structures = { workspace = true }
 ic-vetkd-cdk-encrypted-maps = { path = "../encrypted_maps" }
 ic-vetkd-cdk-types = { path = "../types" }
-ic-vetkd-utils = { workspace = true }
 serde = { workspace = true }
 
 [dev-dependencies]
 ic-vetkd-cdk-test-utils = { path = "../test_utils" }
+ic-vetkd-utils = { workspace = true }
 pocket-ic = { workspace = true }
-rand = "0.8.4"
-rand_chacha = "0.3.0"
+rand = { workspace = true }
+rand_chacha = { workspace = true }
 reqwest = "0.12.12"
 
 [features]
