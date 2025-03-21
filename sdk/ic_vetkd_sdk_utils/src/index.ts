@@ -377,7 +377,7 @@ export class VetKey {
     }
 }
 
-export class EncryptedKey {
+export class EncryptedVetKey {
     readonly #c1: G1Point;
     readonly #c2: G2Point;
     readonly #c3: G1Point;
@@ -388,7 +388,7 @@ export class EncryptedKey {
      */
     constructor(bytes: Uint8Array) {
         if(bytes.length !== G1_BYTES + G2_BYTES + G1_BYTES) {
-            throw new Error("Invalid EncryptedKey serialization");
+            throw new Error("Invalid EncryptedVetKey serialization");
         }
 
         this.#c1 = bls12_381.G1.ProjectivePoint.fromHex(bytes.subarray(0, G1_BYTES));
