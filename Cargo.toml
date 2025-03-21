@@ -15,6 +15,7 @@ resolver = "2"
 authors = ["The Internet Computer Project Developers"]
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
 description = "Verifiably encrypted threshold key derivation (VetKD) canister development kit (CDK)"
 documentation = "https://crates.io/vetkd_cdk"
 
