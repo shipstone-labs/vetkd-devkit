@@ -9,7 +9,8 @@
     "preview": "vite preview"
   },
   "peerDependencies": {
-    "ic_vetkd_sdk_encrypted_maps": "^0.1.0"
+    "ic_vetkd_sdk_encrypted_maps": "^0.1.0",
+    "ic_vetkd_sdk_encrypted_maps_example": "^0.1.0"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
