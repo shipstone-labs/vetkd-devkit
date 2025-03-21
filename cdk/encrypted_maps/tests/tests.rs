@@ -512,7 +512,7 @@ fn can_get_owned_map_names() {
             assert!(map_names.contains(map_name));
         }
 
-        let should_remove_map = rng.gen_bool(0.2);
+        let should_remove_map = rng.random_bool(0.2);
 
         if should_remove_map {
             encrypted_maps
