@@ -101,7 +101,7 @@ impl KeyManager {
         caller: Principal,
         key_id: KeyId,
     ) -> Result<Vec<(Principal, AccessRights)>, String> {
-        self.ensure_user_can_read(caller, key_id)?;
+        self.ensure_user_can_manage(caller, key_id)?;
 
         let users: Vec<_> = self
             .shared_keys
@@ -189,7 +189,7 @@ impl KeyManager {
         key_id: KeyId,
         user: Principal,
     ) -> Result<Option<AccessRights>, String> {
-        self.ensure_user_can_read(caller, key_id)?;
+        self.ensure_user_can_manage(caller, key_id)?;
         Ok(self.ensure_user_can_read(user, key_id).ok())
     }
 
