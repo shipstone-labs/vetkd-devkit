@@ -7,12 +7,18 @@ use rand::{CryptoRng, Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use std::convert::TryFrom;
 
+#[must_use]
 pub fn reproducible_rng() -> ChaCha20Rng {
     let seed = rand::thread_rng().gen();
     println!("RNG seed: {seed:?}");
     ChaCha20Rng::from_seed(seed)
 }
 
+/// Generates a set of unique memory IDs for testing purposes.
+/// 
+/// # Panics
+/// 
+/// Panics if the collection of unique memory IDs cannot be converted to a fixed-size array.
 pub fn random_unique_memory_ids<R: Rng + CryptoRng>(rng: &mut R) -> (u8, [u8; 3]) {
     const MAX_MEMORY_ID: u8 = 254;
     let mut set = std::collections::HashSet::<u8>::new();
@@ -35,6 +41,11 @@ pub fn random_name<R: Rng + CryptoRng>(rng: &mut R) -> KeyName {
     random_blob(rng)
 }
 
+/// Generates a random blob of fixed size for testing.
+/// 
+/// # Panics
+/// 
+/// Panics if the generated data cannot be converted to a Blob.
 pub fn random_blob<R: Rng + CryptoRng, const N: usize>(rng: &mut R) -> Blob<N> {
     let mut result = [0u8; N];
     rng.fill_bytes(&mut result);
@@ -58,12 +69,16 @@ pub fn random_self_authenticating_principal<R: Rng + CryptoRng>(rng: &mut R) -> 
     Principal::self_authenticating::<&[u8]>(fake_public_key.as_ref())
 }
 
+#[allow(clippy::never_loop)]
 pub fn random_access_rights<R: Rng + CryptoRng>(rng: &mut R) -> AccessRights {
-    loop {
-        if let Some(ar) = AccessRights::from_repr(rng.gen()) {
-            return ar;
-        }
-    }
+    let data = rng.gen_range(0..=2);
+    let rights = match data {
+        0 => ic_vetkd_cdk_types::Rights::Read,
+        1 => ic_vetkd_cdk_types::Rights::ReadWrite,
+        2 => ic_vetkd_cdk_types::Rights::ReadWriteManage,
+        _ => unreachable!(),
+    };
+    AccessRights::new(rights, None, None)
 }
 
 pub fn random_utf8_string<R: Rng + CryptoRng>(rng: &mut R, len: usize) -> String {

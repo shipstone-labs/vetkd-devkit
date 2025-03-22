@@ -107,7 +107,7 @@ fn key_sharing_should_work() {
                 key_owner,
                 key_name.clone(),
                 env.principal_1,
-                AccessRights::Read,
+                AccessRights::read_only(),
             ))
             .unwrap(),
         )
@@ -121,7 +121,10 @@ fn key_sharing_should_work() {
             encode_args((key_owner, key_name.clone(), env.principal_0)).unwrap(),
         )
         .unwrap();
-    assert_eq!(current_rights_owner, Some(AccessRights::ReadWriteManage));
+    assert_eq!(
+        current_rights_owner,
+        Some(AccessRights::read_write_manage())
+    );
 
     let current_rights_shared = env
         .query::<Result<Option<AccessRights>, String>>(
@@ -130,7 +133,7 @@ fn key_sharing_should_work() {
             encode_args((key_owner, key_name.clone(), env.principal_1)).unwrap(),
         )
         .unwrap();
-    assert_eq!(current_rights_shared, Some(AccessRights::Read));
+    assert_eq!(current_rights_shared, Some(AccessRights::read_only()));
 
     let mut get_vetkey = |caller: Principal| -> Vec<u8> {
         let transport_key = random_transport_key(rng);

@@ -27,11 +27,12 @@ fn get_accessible_shared_key_ids() -> Vec<(Principal, ByteBuf)> {
 }
 
 #[query]
+#[allow(clippy::needless_pass_by_value)]
 fn get_shared_user_access_for_key(
     key_owner: Principal,
     key_name: ByteBuf,
 ) -> Result<Vec<(Principal, AccessRights)>, String> {
-    let key_name = bytebuf_to_blob(key_name)?;
+    let key_name = bytebuf_to_blob(&key_name)?;
     let key_id = (key_owner, key_name);
     KEY_MANAGER.with_borrow(|km| km.get_shared_user_access_for_key(ic_cdk::caller(), key_id))
 }
@@ -39,17 +40,18 @@ fn get_shared_user_access_for_key(
 #[update]
 async fn get_vetkey_verification_key() -> VetKeyVerificationKey {
     KEY_MANAGER
-        .with_borrow(|km| km.get_vetkey_verification_key())
+        .with_borrow(ic_vetkd_cdk_key_manager::KeyManager::get_vetkey_verification_key)
         .await
 }
 
 #[update]
+#[allow(clippy::needless_pass_by_value)]
 async fn get_encrypted_vetkey(
     key_owner: Principal,
     key_name: ByteBuf,
     transport_key: TransportKey,
 ) -> Result<VetKey, String> {
-    let key_name = bytebuf_to_blob(key_name)?;
+    let key_name = bytebuf_to_blob(&key_name)?;
     let key_id = (key_owner, key_name);
     Ok(KEY_MANAGER
         .with_borrow(|km| km.get_encrypted_vetkey(ic_cdk::caller(), key_id, transport_key))?
@@ -57,36 +59,39 @@ async fn get_encrypted_vetkey(
 }
 
 #[query]
+#[allow(clippy::needless_pass_by_value)]
 fn get_user_rights(
     key_owner: Principal,
     key_name: ByteBuf,
     user: Principal,
 ) -> Result<Option<AccessRights>, String> {
-    let key_name = bytebuf_to_blob(key_name)?;
+    let key_name = bytebuf_to_blob(&key_name)?;
     let key_id = (key_owner, key_name);
     KEY_MANAGER.with_borrow(|km| km.get_user_rights(ic_cdk::caller(), key_id, user))
 }
 
 #[update]
+#[allow(clippy::needless_pass_by_value)]
 fn set_user_rights(
     key_owner: Principal,
     key_name: ByteBuf,
     user: Principal,
     access_rights: AccessRights,
 ) -> Result<Option<AccessRights>, String> {
-    let key_name = bytebuf_to_blob(key_name)?;
+    let key_name = bytebuf_to_blob(&key_name)?;
     let key_id = (key_owner, key_name);
     KEY_MANAGER
         .with_borrow_mut(|km| km.set_user_rights(ic_cdk::caller(), key_id, user, access_rights))
 }
 
 #[update]
+#[allow(clippy::needless_pass_by_value)]
 fn remove_user(
     key_owner: Principal,
     key_name: ByteBuf,
     user: Principal,
 ) -> Result<Option<AccessRights>, String> {
-    let key_name = bytebuf_to_blob(key_name)?;
+    let key_name = bytebuf_to_blob(&key_name)?;
     let key_id = (key_owner, key_name);
     KEY_MANAGER.with_borrow_mut(|km| km.remove_user(ic_cdk::caller(), key_id, user))
 }
@@ -97,7 +102,7 @@ fn set_vetkd_testing_canister_id(vetkd_testing_canister: Principal) {
     ic_vetkd_cdk_key_manager::set_vetkd_testing_canister_id(vetkd_testing_canister)
 }
 
-fn bytebuf_to_blob(buf: ByteBuf) -> Result<Blob<32>, String> {
+fn bytebuf_to_blob(buf: &ByteBuf) -> Result<Blob<32>, String> {
     Blob::try_from(buf.as_ref()).map_err(|_| "too large input".to_string())
 }
 
