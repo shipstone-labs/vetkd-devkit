@@ -5,7 +5,7 @@ use ic_stable_structures::storable::Blob;
 use ic_stable_structures::{storable::Bound, Storable};
 use ic_stable_structures::{BTreeMap as StableBTreeMap, DefaultMemoryImpl};
 use ic_vetkd_cdk_encrypted_maps::{EncryptedMaps, VetKey, VetKeyVerificationKey};
-use ic_vetkd_cdk_types::{AccessRights, ByteBuf, EncryptedMapValue, TransportKey};
+use ic_vetkd_cdk_types::{now, AccessRights, ByteBuf, EncryptedMapValue, TransportKey};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -21,8 +21,9 @@ pub struct PasswordMetadata {
 }
 
 impl PasswordMetadata {
+    #[must_use]
     pub fn new(caller: Principal, tags: Vec<String>, url: String) -> Self {
-        let time_now = ic_cdk::api::time();
+        let time_now = now();
         Self {
             creation_date: time_now,
             last_modification_date: time_now,
@@ -33,8 +34,9 @@ impl PasswordMetadata {
         }
     }
 
+    #[must_use]
     pub fn update(self, caller: Principal, tags: Vec<String>, url: String) -> Self {
-        let time_now = ic_cdk::api::time();
+        let time_now = now();
         Self {
             creation_date: self.creation_date,
             last_modification_date: time_now,
@@ -93,6 +95,7 @@ fn get_accessible_shared_map_names() -> Vec<(Principal, ByteBuf)> {
 }
 
 #[query]
+#[allow(clippy::needless_pass_by_value)]
 fn get_shared_user_access_for_map(
     map_owner: Principal,
     map_name: ByteBuf,
@@ -107,11 +110,12 @@ fn get_shared_user_access_for_map(
 }
 
 #[query]
+#[allow(clippy::needless_pass_by_value)]
 fn get_encrypted_values_for_map_with_metadata(
     map_owner: Principal,
     map_name: ByteBuf,
 ) -> Result<Vec<(ByteBuf, EncryptedMapValue, PasswordMetadata)>, String> {
-    let map_name = bytebuf_to_blob(map_name)?;
+    let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
     let encrypted_values_result = ENCRYPTED_MAPS.with_borrow(|encrypted_maps| {
         encrypted_maps.get_encrypted_values_for_map(ic_cdk::caller(), map_id)
@@ -150,6 +154,7 @@ fn get_owned_non_empty_map_names() -> Vec<ByteBuf> {
 }
 
 #[update]
+#[allow(clippy::needless_pass_by_value)]
 fn insert_encrypted_value_with_metadata(
     map_owner: Principal,
     map_name: ByteBuf,
@@ -159,19 +164,25 @@ fn insert_encrypted_value_with_metadata(
     url: String,
 ) -> Result<Option<(EncryptedMapValue, PasswordMetadata)>, String> {
     let caller = ic_cdk::caller();
-    let map_name = bytebuf_to_blob(map_name)?;
+    let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
-    let map_key = bytebuf_to_blob(map_key)?;
+    let map_key = bytebuf_to_blob(&map_key)?;
     ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
         encrypted_maps
             .insert_encrypted_value(caller, map_id, map_key, value)
             .map(|opt_prev_value| {
+                // Clone tags and url up front to avoid borrow issues
+                let tags_clone = tags.clone();
+                let url_clone = url.clone();
+                
                 METADATA.with_borrow_mut(|metadata| {
                     let metadata_key = (map_owner, map_name, map_key);
                     let metadata_value = metadata
                         .get(&metadata_key)
-                        .map(|m| m.update(caller, tags.clone(), url.clone()))
-                        .unwrap_or(PasswordMetadata::new(caller, tags, url));
+                        .map_or_else(
+                            || PasswordMetadata::new(caller, tags, url),
+                            |m| m.update(caller, tags_clone, url_clone)
+                        );
                     opt_prev_value.zip(metadata.insert(metadata_key, metadata_value))
                 })
             })
@@ -179,14 +190,15 @@ fn insert_encrypted_value_with_metadata(
 }
 
 #[update]
+#[allow(clippy::needless_pass_by_value)]
 fn remove_encrypted_value_with_metadata(
     map_owner: Principal,
     map_name: ByteBuf,
     map_key: ByteBuf,
 ) -> Result<Option<(EncryptedMapValue, PasswordMetadata)>, String> {
-    let map_name = bytebuf_to_blob(map_name)?;
+    let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
-    let map_key = bytebuf_to_blob(map_key)?;
+    let map_key = bytebuf_to_blob(&map_key)?;
     ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
         encrypted_maps
             .remove_encrypted_value(ic_cdk::caller(), map_id, map_key)
@@ -202,7 +214,7 @@ fn remove_encrypted_value_with_metadata(
 #[update]
 async fn get_vetkey_verification_key() -> VetKeyVerificationKey {
     ENCRYPTED_MAPS
-        .with_borrow(|encrypted_maps| encrypted_maps.get_vetkey_verification_key())
+        .with_borrow(EncryptedMaps::get_vetkey_verification_key)
         .await
 }
 
@@ -212,7 +224,7 @@ async fn get_encrypted_vetkey(
     map_name: ByteBuf,
     transport_key: TransportKey,
 ) -> Result<VetKey, String> {
-    let map_name = bytebuf_to_blob(map_name)?;
+    let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
     Ok(ENCRYPTED_MAPS
         .with_borrow(|encrypted_maps| {
@@ -222,12 +234,13 @@ async fn get_encrypted_vetkey(
 }
 
 #[query]
+#[allow(clippy::needless_pass_by_value)]
 fn get_user_rights(
     map_owner: Principal,
     map_name: ByteBuf,
     user: Principal,
 ) -> Result<Option<AccessRights>, String> {
-    let map_name = bytebuf_to_blob(map_name)?;
+    let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
     ENCRYPTED_MAPS.with_borrow(|encrypted_maps| {
         encrypted_maps.get_user_rights(ic_cdk::caller(), map_id, user)
@@ -235,13 +248,14 @@ fn get_user_rights(
 }
 
 #[update]
+#[allow(clippy::needless_pass_by_value)]
 fn set_user_rights(
     map_owner: Principal,
     map_name: ByteBuf,
     user: Principal,
     access_rights: AccessRights,
 ) -> Result<Option<AccessRights>, String> {
-    let map_name = bytebuf_to_blob(map_name)?;
+    let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
     ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
         encrypted_maps.set_user_rights(ic_cdk::caller(), map_id, user, access_rights)
@@ -249,12 +263,13 @@ fn set_user_rights(
 }
 
 #[update]
+#[allow(clippy::needless_pass_by_value)]
 fn remove_user(
     map_owner: Principal,
     map_name: ByteBuf,
     user: Principal,
 ) -> Result<Option<AccessRights>, String> {
-    let map_name = bytebuf_to_blob(map_name)?;
+    let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
     ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
         encrypted_maps.remove_user(ic_cdk::caller(), map_id, user)
@@ -267,7 +282,7 @@ fn set_vetkd_testing_canister_id(vetkd_testing_canister: Principal) {
     ic_vetkd_cdk_encrypted_maps::set_vetkd_testing_canister_id(vetkd_testing_canister)
 }
 
-fn bytebuf_to_blob(buf: ByteBuf) -> Result<Blob<32>, String> {
+fn bytebuf_to_blob(buf: &ByteBuf) -> Result<Blob<32>, String> {
     Blob::try_from(buf.as_ref()).map_err(|_| "too large input".to_string())
 }
 

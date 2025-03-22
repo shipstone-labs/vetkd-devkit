@@ -1,0 +1,5 @@
+[build]
+rustflags = ["--allow", "clippy::multiple-crate-versions"]
+
+[clippy]
+ignore = ["clippy::multiple-crate-versions", "clippy::cargo-common-metadata"]

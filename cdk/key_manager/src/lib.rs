@@ -1,8 +1,8 @@
-//! # VetKD CDK - KeyManager
+//! # `VetKD` CDK - `KeyManager`
 //!
 //! ## Overview
 //!
-//! The **KeyManager** is a support library for **vetKeys**, an Internet Computer (ICP) feature
+//! The **`KeyManager`** is a support library for **vetKeys**, an Internet Computer (ICP) feature
 //! that enables the derivation of **encrypted cryptographic keys**. This library simplifies
 //! the process of key retrieval, encryption, and controlled sharing, ensuring secure and
 //! efficient key management for canisters and users.
@@ -14,12 +14,12 @@
 //! - **Manage Key Sharing:** A user can **share their keys** with other users while controlling access rights.
 //! - **Access Control Management:** Users can define and enforce **fine-grained permissions**
 //!   (read, write, manage) for each key.
-//! - **Uses Stable Storage:** The library persists key access information using **StableBTreeMap**,
+//! - **Uses Stable Storage:** The library persists key access information using **`StableBTreeMap`**,
 //!   ensuring reliability across canister upgrades.
 //!
-//! ## KeyManager Architecture
+//! ## `KeyManager` Architecture
 //!
-//! The **KeyManager** consists of two primary components:
+//! The **`KeyManager`** consists of two primary components:
 //!
 //! 1. **Access Control Map** (`access_control`): Maps `(Caller, KeyId)` to `AccessRights`, defining permissions for each user.
 //! 2. **Shared Keys Map** (`shared_keys`): Tracks which users have access to shared keys.
@@ -29,7 +29,7 @@ use ic_cdk::api::management_canister::main::CanisterId;
 use ic_stable_structures::memory_manager::VirtualMemory;
 use ic_stable_structures::storable::Blob;
 use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap, StableCell, Storable};
-use ic_vetkd_cdk_types::{AccessRights, ByteBuf, KeyName, TransportKey};
+use ic_vetkd_cdk_types::{now, AccessRights, ByteBuf, KeyName, Rights, TransportKey};
 use std::future::Future;
 use std::str::FromStr;
 
@@ -68,8 +68,13 @@ pub struct KeyManager {
 }
 
 impl KeyManager {
-    /// Initializes the KeyManager with stable storage.
-    /// This function must be called exactly once before any other KeyManager operation can be invoked.
+    /// Initializes the `KeyManager` with stable storage.
+    /// This function must be called exactly once before any other `KeyManager` operation can be invoked.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the domain separator cannot be initialized in stable storage.
+    #[must_use]
     pub fn init(
         domain_separator: &str,
         memory_domain_separator: Memory,
@@ -79,7 +84,7 @@ impl KeyManager {
         let domain_separator =
             StableCell::init(memory_domain_separator, domain_separator.to_string())
                 .expect("failed to initialize domain separator");
-        KeyManager {
+        Self {
             domain_separator,
             access_control: StableBTreeMap::init(memory_access_control),
             shared_keys: StableBTreeMap::init(memory_shared_keys),
@@ -87,6 +92,9 @@ impl KeyManager {
     }
 
     /// Retrieves all key IDs shared with the given caller.
+    ///
+    /// Returns a list of key IDs that the caller has access to.
+    #[must_use]
     pub fn get_accessible_shared_key_ids(&self, caller: Principal) -> Vec<KeyId> {
         self.access_control
             .range((caller, (Principal::management_canister(), Blob::default()))..)
@@ -96,6 +104,14 @@ impl KeyManager {
     }
 
     /// Retrieves a list of users with whom a given key has been shared, along with their access rights.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the caller doesn't have read permission for the key.
+    ///
+    /// # Panics
+    ///
+    /// Panics if a user without access rights is found in the shared keys list (should never happen).
     pub fn get_shared_user_access_for_key(
         &self,
         caller: Principal,
@@ -103,15 +119,10 @@ impl KeyManager {
     ) -> Result<Vec<(Principal, AccessRights)>, String> {
         self.ensure_user_can_read(caller, key_id)?;
 
-        let users: Vec<_> = self
-            .shared_keys
+        self.shared_keys
             .range((key_id, Principal::management_canister())..)
-            .take_while(|((k, _), _)| k == &key_id)
-            .map(|((_, user), _)| user)
-            .collect();
-
-        users
-            .into_iter()
+            .take_while(|((k, _), ())| k == &key_id)
+            .map(|((_, user), ())| user)
             .map(|user| {
                 self.get_user_rights(caller, key_id, user)
                     .map(|opt_user_rights| {
@@ -121,6 +132,13 @@ impl KeyManager {
             .collect::<Result<Vec<_>, _>>()
     }
 
+    /// Retrieves the VET key verification key from the system API.
+    ///
+    /// Returns a future that resolves to the verification key.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the call to the `vetkd_public_key` API fails.
     pub fn get_vetkey_verification_key(
         &self,
     ) -> impl Future<Output = VetKeyVerificationKey> + Send + Sync {
@@ -145,6 +163,14 @@ impl KeyManager {
     }
 
     /// Retrieves an encrypted vetkey for caller and key id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the caller doesn't have read permission for the key.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the call to the `vetkd_encrypted_key` API fails.
     pub fn get_encrypted_vetkey(
         &self,
         caller: Principal,
@@ -160,7 +186,7 @@ impl KeyManager {
             .as_slice()
             .iter()
             .chain(key_id.1.as_ref().iter())
-            .cloned()
+            .copied()
             .collect();
 
         let request = VetKDEncryptedKeyRequest {
@@ -183,6 +209,10 @@ impl KeyManager {
     }
 
     /// Retrieves the access rights a given user has to a specific key.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the caller doesn't have read permission for the key.
     pub fn get_user_rights(
         &self,
         caller: Principal,
@@ -190,11 +220,20 @@ impl KeyManager {
         user: Principal,
     ) -> Result<Option<AccessRights>, String> {
         self.ensure_user_can_read(caller, key_id)?;
-        Ok(self.ensure_user_can_read(user, key_id).ok())
+        if let Ok(access_rights) = self.ensure_user_can_read(user, key_id) {
+            return Ok(Some(access_rights));
+        }
+        Ok(None)
     }
 
     /// Grants or modifies access rights for a user to a given key.
     /// Only the key owner or a user with management rights can perform this action.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The caller doesn't have manage permission for the key
+    /// - The caller is trying to change their own rights as key owner
     pub fn set_user_rights(
         &mut self,
         caller: Principal,
@@ -213,6 +252,12 @@ impl KeyManager {
 
     /// Revokes a user's access to a shared key.
     /// The key owner cannot remove their own access.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The caller doesn't have manage permission for the key
+    /// - The caller is the key owner and trying to remove themselves
     pub fn remove_user(
         &mut self,
         caller: Principal,
@@ -234,11 +279,38 @@ impl KeyManager {
     fn ensure_user_can_read(&self, user: Principal, key_id: KeyId) -> Result<AccessRights, String> {
         let is_owner = user == key_id.0;
         if is_owner {
-            return Ok(AccessRights::ReadWriteManage);
+            return Ok(AccessRights::read_write_manage());
         }
 
         let has_shared_access = self.access_control.get(&(user, key_id));
         if let Some(access_rights) = has_shared_access {
+            if let Some(start) = access_rights.get_start() {
+                if start > now() {
+                    return Err("unauthorized".to_string());
+                }
+            }
+            if let Some(end) = access_rights.get_end() {
+                if end <= now() {
+                    return Err("unauthorized".to_string());
+                }
+            }
+            return Ok(access_rights);
+        }
+
+        // Allow anonymous access if it exists for the content.
+        // Recognize 2vxsx-fae as an "everyone" user.
+        let has_shared_access = self.access_control.get(&(Principal::anonymous(), key_id));
+        if let Some(access_rights) = has_shared_access {
+            if let Some(start) = access_rights.get_start() {
+                if start > now() {
+                    return Err("unauthorized".to_string());
+                }
+            }
+            if let Some(end) = access_rights.get_end() {
+                if end <= now() {
+                    return Err("unauthorized".to_string());
+                }
+            }
             return Ok(access_rights);
         }
 
@@ -254,16 +326,28 @@ impl KeyManager {
     ) -> Result<AccessRights, String> {
         let is_owner = user == key_id.0;
         if is_owner {
-            return Ok(AccessRights::ReadWriteManage);
+            return Ok(AccessRights::read_write_manage());
         }
 
         let has_shared_access = self.access_control.get(&(user, key_id));
-        match has_shared_access {
-            Some(access_rights) if access_rights == AccessRights::ReadWriteManage => {
-                Ok(access_rights)
+        if let Some(access_rights) = has_shared_access {
+            if let Some(start) = access_rights.get_start() {
+                if start < now() {
+                    return Err("unauthorized".to_string());
+                }
             }
-            _ => Err("unauthorized".to_string()),
+            if let Some(end) = access_rights.get_end() {
+                if end >= now() {
+                    return Err("unauthorized".to_string());
+                }
+            }
+            if access_rights.rights == Rights::ReadWriteManage {
+                return Ok(access_rights);
+            }
         }
+        // We do not want to allow anonymous management access ever.
+
+        Err("unauthorized".to_string())
     }
 }
 
