@@ -77,9 +77,10 @@ thread_local! {
         MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1))),
         MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2))),
         MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(3))),
+        Some(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4))))
     ));
     static METADATA: RefCell<StableMetadataMap> = RefCell::new(StableBTreeMap::new(
-        MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4))),
+        MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(5))),
     ));
 }
 
@@ -174,15 +175,13 @@ fn insert_encrypted_value_with_metadata(
                 // Clone tags and url up front to avoid borrow issues
                 let tags_clone = tags.clone();
                 let url_clone = url.clone();
-                
+
                 METADATA.with_borrow_mut(|metadata| {
                     let metadata_key = (map_owner, map_name, map_key);
-                    let metadata_value = metadata
-                        .get(&metadata_key)
-                        .map_or_else(
-                            || PasswordMetadata::new(caller, tags, url),
-                            |m| m.update(caller, tags_clone, url_clone)
-                        );
+                    let metadata_value = metadata.get(&metadata_key).map_or_else(
+                        || PasswordMetadata::new(caller, tags, url),
+                        |m| m.update(caller, tags_clone, url_clone),
+                    );
                     opt_prev_value.zip(metadata.insert(metadata_key, metadata_value))
                 })
             })
@@ -227,7 +226,7 @@ async fn get_encrypted_vetkey(
     let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
     Ok(ENCRYPTED_MAPS
-        .with_borrow(|encrypted_maps| {
+        .with_borrow_mut(|encrypted_maps| {
             encrypted_maps.get_encrypted_vetkey(ic_cdk::caller(), map_id, transport_key)
         })?
         .await)

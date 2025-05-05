@@ -16,7 +16,15 @@ type MapId = (Principal, ByteBuf);
 thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
-        static ENCRYPTED_MAPS: RefCell<EncryptedMaps> = RefCell::new(EncryptedMaps::init("encrypted_maps", id_to_memory(0), id_to_memory(1), id_to_memory(2), id_to_memory(3)));
+        static ENCRYPTED_MAPS: RefCell<EncryptedMaps> = RefCell::new(EncryptedMaps::init(
+            "encrypted_maps", 
+            id_to_memory(0), 
+            id_to_memory(1), 
+            id_to_memory(2), 
+            id_to_memory(3), 
+            id_to_memory(4), 
+            Some(id_to_memory(5))
+        ));
 }
 
 #[query]
@@ -108,7 +116,27 @@ fn remove_map_values(
     let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
     let result = ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
-        encrypted_maps.remove_map_values(ic_cdk::caller(), map_id)
+        // Default to soft delete to preserve the data
+        encrypted_maps.remove_map_values(ic_cdk::caller(), map_id, true)
+    });
+    result.map(|removed| {
+        removed
+            .into_iter()
+            .map(|key| ByteBuf::from(key.as_ref().to_vec()))
+            .collect()
+    })
+}
+
+#[update]
+fn hard_delete_map_values(
+    map_owner: Principal,
+    map_name: ByteBuf,
+) -> Result<Vec<EncryptedMapValue>, String> {
+    let map_name = bytebuf_to_blob(&map_name)?;
+    let map_id = (map_owner, map_name);
+    let result = ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
+        // Hard delete - data is permanently removed
+        encrypted_maps.remove_map_values(ic_cdk::caller(), map_id, false)
     });
     result.map(|removed| {
         removed
@@ -157,7 +185,22 @@ fn remove_encrypted_value(
     let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
     ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
-        encrypted_maps.remove_encrypted_value(ic_cdk::caller(), map_id, bytebuf_to_blob(&map_key)?)
+        // Default to soft delete to preserve the data
+        encrypted_maps.remove_encrypted_value(ic_cdk::caller(), map_id, bytebuf_to_blob(&map_key)?, true)
+    })
+}
+
+#[update]
+fn hard_delete_encrypted_value(
+    map_owner: Principal,
+    map_name: ByteBuf,
+    map_key: ByteBuf,
+) -> Result<Option<EncryptedMapValue>, String> {
+    let map_name = bytebuf_to_blob(&map_name)?;
+    let map_id = (map_owner, map_name);
+    ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
+        // Hard delete - data is permanently removed
+        encrypted_maps.remove_encrypted_value(ic_cdk::caller(), map_id, bytebuf_to_blob(&map_key)?, false)
     })
 }
 
@@ -177,7 +220,7 @@ async fn get_encrypted_vetkey(
     let map_name = bytebuf_to_blob(&map_name)?;
     let map_id = (map_owner, map_name);
     Ok(ENCRYPTED_MAPS
-        .with_borrow(|encrypted_maps| {
+        .with_borrow_mut(|encrypted_maps| {
             encrypted_maps.get_encrypted_vetkey(ic_cdk::caller(), map_id, transport_key)
         })?
         .await)
@@ -227,6 +270,50 @@ fn remove_user(
 #[update]
 fn set_vetkd_testing_canister_id(vetkd_testing_canister: Principal) {
     ic_vetkd_cdk_encrypted_maps::set_vetkd_testing_canister_id(vetkd_testing_canister)
+}
+
+#[query]
+fn get_tombstones(
+    map_owner: Principal,
+    map_name: ByteBuf,
+) -> Result<Vec<(ByteBuf, ic_vetkd_cdk_encrypted_maps::TombstoneEntry)>, String> {
+    let map_name = bytebuf_to_blob(&map_name)?;
+    let map_id = (map_owner, map_name);
+    let result = ENCRYPTED_MAPS.with_borrow(|encrypted_maps| {
+        encrypted_maps.get_tombstones_for_map(ic_cdk::caller(), map_id)
+    });
+    result.map(|tombstones| {
+        tombstones
+            .into_iter()
+            .map(|(key, tombstone)| (ByteBuf::from(key.as_ref().to_vec()), tombstone))
+            .collect()
+    })
+}
+
+#[update]
+fn restore_value(
+    map_owner: Principal,
+    map_name: ByteBuf,
+    map_key: ByteBuf,
+) -> Result<Option<EncryptedMapValue>, String> {
+    let map_name = bytebuf_to_blob(&map_name)?;
+    let map_id = (map_owner, map_name);
+    ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
+        encrypted_maps.restore_value(ic_cdk::caller(), map_id, bytebuf_to_blob(&map_key)?)
+    })
+}
+
+#[update]
+fn purge_tombstone(
+    map_owner: Principal,
+    map_name: ByteBuf,
+    map_key: ByteBuf,
+) -> Result<Option<ic_vetkd_cdk_encrypted_maps::TombstoneEntry>, String> {
+    let map_name = bytebuf_to_blob(&map_name)?;
+    let map_id = (map_owner, map_name);
+    ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
+        encrypted_maps.purge_tombstone(ic_cdk::caller(), map_id, bytebuf_to_blob(&map_key)?)
+    })
 }
 
 fn bytebuf_to_blob(buf: &ByteBuf) -> Result<Blob<32>, String> {

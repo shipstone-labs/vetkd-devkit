@@ -29,7 +29,9 @@ use ic_cdk::api::management_canister::main::CanisterId;
 use ic_stable_structures::memory_manager::VirtualMemory;
 use ic_stable_structures::storable::Blob;
 use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap, StableCell, Storable};
-use ic_vetkd_cdk_types::{now, AccessRights, ByteBuf, KeyName, Rights, TransportKey};
+use ic_vetkd_cdk_types::{
+    now, AccessRights, AuditEntry, AuditLog, ByteBuf, KeyName, Rights, TransportKey,
+};
 use std::future::Future;
 use std::str::FromStr;
 
@@ -65,6 +67,7 @@ pub struct KeyManager {
     pub domain_separator: StableCell<String, Memory>,
     pub access_control: StableBTreeMap<(Caller, KeyId), AccessRights, Memory>,
     pub shared_keys: StableBTreeMap<(KeyId, Caller), (), Memory>,
+    pub audit_logs: Option<StableBTreeMap<KeyId, AuditLog, Memory>>,
 }
 
 impl KeyManager {
@@ -80,14 +83,17 @@ impl KeyManager {
         memory_domain_separator: Memory,
         memory_access_control: Memory,
         memory_shared_keys: Memory,
+        memory_audit_log: Option<Memory>,
     ) -> Self {
         let domain_separator =
             StableCell::init(memory_domain_separator, domain_separator.to_string())
                 .expect("failed to initialize domain separator");
+        let audit_logs = memory_audit_log.map(StableBTreeMap::init);
         Self {
             domain_separator,
             access_control: StableBTreeMap::init(memory_access_control),
             shared_keys: StableBTreeMap::init(memory_shared_keys),
+            audit_logs,
         }
     }
 
@@ -172,14 +178,33 @@ impl KeyManager {
     ///
     /// Panics if the call to the `vetkd_encrypted_key` API fails.
     pub fn get_encrypted_vetkey(
-        &self,
+        &mut self,
         caller: Principal,
         key_id: KeyId,
         transport_key: TransportKey,
     ) -> Result<impl Future<Output = VetKey> + Send + Sync, String> {
         use futures::future::FutureExt;
 
-        self.ensure_user_can_read(caller, key_id)?;
+        let access_rights = self.ensure_user_can_read(caller, key_id)?;
+        
+        // Check if this is the first access to this key (implicit creation)
+        // We consider a key created when the owner first accesses it and it has no access records
+        let is_owner = caller == key_id.0;
+        let no_shared_records = !self.shared_keys.range((key_id, Principal::management_canister())..)
+            .take_while(|((k, _), _)| k == &key_id)
+            .any(|_| true);
+            
+        // If this is the owner's first access, log a creation event
+        if is_owner && no_shared_records {
+            self.add_audit_log(key_id, move || {
+                AuditEntry::created(now(), caller)
+            });
+        }
+
+        // Log the access - using closure to avoid allocation if audit is disabled
+        self.add_audit_log(key_id, move || {
+            AuditEntry::access_vet_key(now(), caller, access_rights)
+        });
 
         let derivation_id = key_id
             .0
@@ -246,6 +271,12 @@ impl KeyManager {
         if caller == key_id.0 && caller == user {
             return Err("cannot change key owner's user rights".to_string());
         }
+
+        // Log the share action - using closure to avoid allocation if audit is disabled
+        self.add_audit_log(key_id, move || {
+            AuditEntry::share(now(), caller, user, access_rights)
+        });
+
         self.shared_keys.insert((key_id, user), ());
         Ok(self.access_control.insert((user, key_id), access_rights))
     }
@@ -270,6 +301,22 @@ impl KeyManager {
             return Err("cannot remove key owner".to_string());
         }
 
+        // If we're removing the owner's access rights from someone else,
+        // consider this effectively deleting the key, since the owner is the primary access point
+        let is_key_owner = user == key_id.0;
+        
+        if is_key_owner {
+            // Log a key deletion event if we're removing the owner's access
+            self.add_audit_log(key_id, move || {
+                AuditEntry::deleted(now(), caller)
+            });
+        } else {
+            // Otherwise, log the standard unshare action
+            self.add_audit_log(key_id, move || {
+                AuditEntry::unshare(now(), caller, user)
+            });
+        }
+
         self.shared_keys.remove(&(key_id, user));
         Ok(self.access_control.remove(&(user, key_id)))
     }
@@ -284,12 +331,12 @@ impl KeyManager {
 
         let has_shared_access = self.access_control.get(&(user, key_id));
         if let Some(access_rights) = has_shared_access {
-            if let Some(start) = access_rights.get_start() {
+            if let Some(start) = access_rights.start() {
                 if start > now() {
                     return Err("unauthorized".to_string());
                 }
             }
-            if let Some(end) = access_rights.get_end() {
+            if let Some(end) = access_rights.end() {
                 if end <= now() {
                     return Err("unauthorized".to_string());
                 }
@@ -301,12 +348,12 @@ impl KeyManager {
         // Recognize 2vxsx-fae as an "everyone" user.
         let has_shared_access = self.access_control.get(&(Principal::anonymous(), key_id));
         if let Some(access_rights) = has_shared_access {
-            if let Some(start) = access_rights.get_start() {
+            if let Some(start) = access_rights.start() {
                 if start > now() {
                     return Err("unauthorized".to_string());
                 }
             }
-            if let Some(end) = access_rights.get_end() {
+            if let Some(end) = access_rights.end() {
                 if end <= now() {
                     return Err("unauthorized".to_string());
                 }
@@ -331,12 +378,12 @@ impl KeyManager {
 
         let has_shared_access = self.access_control.get(&(user, key_id));
         if let Some(access_rights) = has_shared_access {
-            if let Some(start) = access_rights.get_start() {
+            if let Some(start) = access_rights.start() {
                 if start < now() {
                     return Err("unauthorized".to_string());
                 }
             }
-            if let Some(end) = access_rights.get_end() {
+            if let Some(end) = access_rights.end() {
                 if end >= now() {
                     return Err("unauthorized".to_string());
                 }
@@ -348,6 +395,37 @@ impl KeyManager {
         // We do not want to allow anonymous management access ever.
 
         Err("unauthorized".to_string())
+    }
+
+    /// Adds an audit log entry for a specific key ID.
+    ///
+    /// This method takes a closure that produces an audit entry, which is only called
+    /// if audit logging is enabled. This avoids unnecessary allocations when auditing is disabled.
+    ///
+    /// # Arguments
+    ///
+    /// * `key_id` - The ID of the key to which the audit log entry belongs
+    /// * `audit_fn` - A closure that returns an AuditEntry when called
+    pub fn add_audit_log<F>(&mut self, key_id: KeyId, audit_fn: F)
+    where
+        F: FnOnce() -> AuditEntry,
+    {
+        if let Some(audit_logs) = &mut self.audit_logs {
+            // Only create the AuditEntry if we have audit logs enabled
+            let audit = audit_fn();
+            
+            match audit_logs.get(&key_id) {
+                Some(existing_logs) => {
+                    let mut new_logs = AuditLog(existing_logs.0.clone());
+                    new_logs.0.push(audit);
+                    audit_logs.insert(key_id, new_logs);
+                }
+                None => {
+                    let new_logs = AuditLog(vec![audit]);
+                    audit_logs.insert(key_id, new_logs);
+                }
+            }
+        }
     }
 }
 

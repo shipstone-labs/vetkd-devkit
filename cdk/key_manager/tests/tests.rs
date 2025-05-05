@@ -252,12 +252,14 @@ fn can_instantiate_two_key_managers() {
         memory_manager.get(MemoryId::new(0)),
         memory_manager.get(MemoryId::new(1)),
         memory_manager.get(MemoryId::new(2)),
+        Some(memory_manager.get(MemoryId::new(3))),
     );
     let key_manager_2 = KeyManager::init(
         "key_manager_2",
-        memory_manager.get(MemoryId::new(3)),
         memory_manager.get(MemoryId::new(4)),
         memory_manager.get(MemoryId::new(5)),
+        memory_manager.get(MemoryId::new(6)),
+        Some(memory_manager.get(MemoryId::new(7))),
     );
     // prevent the compiler from optimizing away the function call
     std::hint::black_box((key_manager_1, key_manager_2));
@@ -272,5 +274,6 @@ fn random_key_manager<R: Rng + CryptoRng>(rng: &mut R) -> KeyManager {
         memory_manager.get(MemoryId::new(memory_ids_key_manager[0])),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[1])),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[2])),
+        Some(memory_manager.get(MemoryId::new(memory_ids_key_manager[3]))),
     )
 }

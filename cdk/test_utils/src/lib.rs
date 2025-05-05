@@ -15,14 +15,14 @@ pub fn reproducible_rng() -> ChaCha20Rng {
 }
 
 /// Generates a set of unique memory IDs for testing purposes.
-/// 
+///
 /// # Panics
-/// 
+///
 /// Panics if the collection of unique memory IDs cannot be converted to a fixed-size array.
-pub fn random_unique_memory_ids<R: Rng + CryptoRng>(rng: &mut R) -> (u8, [u8; 3]) {
+pub fn random_unique_memory_ids<R: Rng + CryptoRng>(rng: &mut R) -> (u8, [u8; 4]) {
     const MAX_MEMORY_ID: u8 = 254;
     let mut set = std::collections::HashSet::<u8>::new();
-    let mut unique_memory_ids = [0; 4];
+    let mut unique_memory_ids = [0; 5];
     while set.len() != unique_memory_ids.len() {
         set.insert(rng.gen_range(0..=MAX_MEMORY_ID));
     }
@@ -33,6 +33,7 @@ pub fn random_unique_memory_ids<R: Rng + CryptoRng>(rng: &mut R) -> (u8, [u8; 3]
         unique_memory_ids[1],
         unique_memory_ids[2],
         unique_memory_ids[3],
+        unique_memory_ids[4],
     ];
     (memory_id_encrypted_maps, memory_ids_key_manager)
 }
@@ -42,9 +43,9 @@ pub fn random_name<R: Rng + CryptoRng>(rng: &mut R) -> KeyName {
 }
 
 /// Generates a random blob of fixed size for testing.
-/// 
+///
 /// # Panics
-/// 
+///
 /// Panics if the generated data cannot be converted to a Blob.
 pub fn random_blob<R: Rng + CryptoRng, const N: usize>(rng: &mut R) -> Blob<N> {
     let mut result = [0u8; N];
