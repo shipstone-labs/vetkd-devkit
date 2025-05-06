@@ -26,6 +26,7 @@ pocket-ic = { workspace = true }
 rand = "0.8.4"
 rand_chacha = "0.3.0"
 reqwest = "0.12.12"
+ic-vetkd-cdk-types = { path = "../types", features = ["mock-time"] }
 
 [features]
 expose-testing-api = ["ic-vetkd-cdk-encrypted-maps/expose-testing-api"]

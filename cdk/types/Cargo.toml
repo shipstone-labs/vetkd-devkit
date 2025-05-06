@@ -30,3 +30,7 @@ ic-agent = "0.38.2"
 pocket-ic = "5.0.0"
 rand = "0.8.4"
 rand_chacha = "0.3.0"
+
+[features]
+default = []
+mock-time = []
