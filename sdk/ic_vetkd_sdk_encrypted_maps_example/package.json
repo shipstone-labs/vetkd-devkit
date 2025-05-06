@@ -9,7 +9,7 @@
     "module": "dist/index.es5.js",
     "typings": "dist/types/index.d.ts",
     "peerDependencies": {
-        "ic_vetkd_sdk_encrypted_maps": "^0.1.0"
+        "ic_vetkd_sdk_encrypted_maps": "workspace:*"
     },
     "dependencies": {
         "@dfinity/agent": "^2.3.0",

@@ -9,7 +9,7 @@
   "module": "dist/index.es5.js",
   "typings": "dist/types/index.d.ts",
   "peerDependencies": {
-    "ic_vetkd_sdk_key_manager": "^0.1.0"
+    "ic_vetkd_sdk_key_manager": "workspace:*"
   },
   "dependencies": {
     "@dfinity/agent": "^2.3.0",

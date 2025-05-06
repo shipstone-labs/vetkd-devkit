@@ -1,0 +1,6 @@
+
+linkWorkspacePackages: "deep"
+preferWorkspacePackages: true
+packages:
+  - "sdk/*"
+  - "cdk/utils/pkg"
