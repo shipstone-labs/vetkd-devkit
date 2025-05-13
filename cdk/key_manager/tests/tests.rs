@@ -33,12 +33,7 @@ fn get_accessible_shared_key_ids_works_correctly() {
         let name = random_name(rng);
 
         assert_eq!(
-            key_manager.set_user_rights(
-                caller,
-                (caller, name.clone()),
-                user_to_be_added,
-                access_rights
-            ),
+            key_manager.set_user_rights(caller, (caller, name), user_to_be_added, access_rights),
             Ok(None)
         );
 
@@ -66,7 +61,7 @@ fn can_get_shared_user_access_for_key() {
         let access_rights = random_access_rights(rng);
 
         let computed_shared_access: BTreeSet<_> = key_manager
-            .get_shared_user_access_for_key(caller, (caller, name.clone()))
+            .get_shared_user_access_for_key(caller, (caller, name))
             .unwrap()
             .into_iter()
             .collect();
@@ -74,12 +69,7 @@ fn can_get_shared_user_access_for_key() {
         assert_eq!(shared_access, computed_shared_access);
 
         assert_eq!(
-            key_manager.set_user_rights(
-                caller,
-                (caller, name.clone()),
-                user_to_be_added,
-                access_rights
-            ),
+            key_manager.set_user_rights(caller, (caller, name), user_to_be_added, access_rights),
             Ok(None)
         );
 
@@ -111,22 +101,17 @@ fn can_add_user_to_key() {
     let access_rights = random_access_rights(rng);
 
     assert_eq!(
-        key_manager.get_user_rights(caller, (caller, name.clone()), user_to_be_added),
+        key_manager.get_user_rights(caller, (caller, name), user_to_be_added),
         Ok(None)
     );
 
     assert_eq!(
-        key_manager.set_user_rights(
-            caller,
-            (caller, name.clone()),
-            user_to_be_added,
-            access_rights
-        ),
+        key_manager.set_user_rights(caller, (caller, name), user_to_be_added, access_rights),
         Ok(None)
     );
 
     assert_eq!(
-        key_manager.get_user_rights(caller, (caller, name.clone()), user_to_be_added),
+        key_manager.get_user_rights(caller, (caller, name), user_to_be_added),
         Ok(Some(access_rights))
     );
 
@@ -147,7 +132,12 @@ fn get_and_set_user_rights_fails_for_unauthorized() {
         Err("unauthorized".to_string())
     );
     assert_eq!(
-        key_manager.set_user_rights(unauthorized, key_id, unauthorized, AccessRights::Read),
+        key_manager.set_user_rights(
+            unauthorized,
+            key_id,
+            unauthorized,
+            AccessRights::read_only()
+        ),
         Err("unauthorized".to_string())
     );
 }
@@ -160,7 +150,7 @@ fn cannot_alter_owner_rights() {
     let mut key_manager = random_key_manager(rng);
 
     assert_eq!(
-        key_manager.set_user_rights(caller, (caller, name.clone()), caller, AccessRights::Read),
+        key_manager.set_user_rights(caller, (caller, name), caller, AccessRights::read_only()),
         Err("cannot change key owner's user rights".to_string())
     );
 
@@ -182,18 +172,14 @@ fn other_user_can_manage_key() {
     let key_id = (owner, name);
 
     key_manager
-        .set_user_rights(owner, key_id.clone(), user1, AccessRights::ReadWriteManage)
+        .set_user_rights(owner, key_id, user1, AccessRights::read_write_manage())
         .unwrap();
     key_manager
-        .set_user_rights(owner, key_id.clone(), user2, AccessRights::ReadWriteManage)
+        .set_user_rights(owner, key_id, user2, AccessRights::read_write_manage())
         .unwrap();
 
-    key_manager
-        .remove_user(user2, key_id.clone(), user1)
-        .unwrap();
-    key_manager
-        .remove_user(user2, key_id.clone(), user2)
-        .unwrap();
+    key_manager.remove_user(user2, key_id, user1).unwrap();
+    key_manager.remove_user(user2, key_id, user2).unwrap();
 }
 
 #[test]
@@ -206,12 +192,7 @@ fn can_remove_user_from_key() {
     let user_to_be_added = random_self_authenticating_principal(rng);
     let access_rights = random_access_rights(rng);
     assert_eq!(
-        key_manager.set_user_rights(
-            caller,
-            (caller, name.clone()),
-            user_to_be_added,
-            access_rights,
-        ),
+        key_manager.set_user_rights(caller, (caller, name), user_to_be_added, access_rights,),
         Ok(None)
     );
     assert_eq!(
@@ -233,16 +214,11 @@ fn add_or_remove_user_by_unauthorized_fails() {
 
     let mut unauthorized_callers = vec![random_self_authenticating_principal(rng)];
 
-    for access_rights in [AccessRights::Read, AccessRights::ReadWrite] {
+    for access_rights in [AccessRights::read_only(), AccessRights::read_write()] {
         let user_to_be_added = random_self_authenticating_principal(rng);
 
         assert_matches!(
-            key_manager.set_user_rights(
-                caller,
-                (caller, name.clone()),
-                user_to_be_added,
-                access_rights,
-            ),
+            key_manager.set_user_rights(caller, (caller, name), user_to_be_added, access_rights,),
             Ok(_)
         );
 
@@ -252,15 +228,15 @@ fn add_or_remove_user_by_unauthorized_fails() {
     for unauthorized_caller in unauthorized_callers {
         for target in [random_self_authenticating_principal(rng), caller] {
             assert_eq!(
-                key_manager.remove_user(unauthorized_caller, (caller, name.clone()), target),
+                key_manager.remove_user(unauthorized_caller, (caller, name), target),
                 Err("unauthorized".to_string())
             );
             assert_eq!(
                 key_manager.set_user_rights(
                     unauthorized_caller,
-                    (caller, name.clone()),
+                    (caller, name),
                     target,
-                    AccessRights::Read,
+                    AccessRights::read_only(),
                 ),
                 Err("unauthorized".to_string())
             );
@@ -276,12 +252,14 @@ fn can_instantiate_two_key_managers() {
         memory_manager.get(MemoryId::new(0)),
         memory_manager.get(MemoryId::new(1)),
         memory_manager.get(MemoryId::new(2)),
+        Some(memory_manager.get(MemoryId::new(3))),
     );
     let key_manager_2 = KeyManager::init(
         "key_manager_2",
-        memory_manager.get(MemoryId::new(3)),
         memory_manager.get(MemoryId::new(4)),
         memory_manager.get(MemoryId::new(5)),
+        memory_manager.get(MemoryId::new(6)),
+        Some(memory_manager.get(MemoryId::new(7))),
     );
     // prevent the compiler from optimizing away the function call
     std::hint::black_box((key_manager_1, key_manager_2));
@@ -296,5 +274,6 @@ fn random_key_manager<R: Rng + CryptoRng>(rng: &mut R) -> KeyManager {
         memory_manager.get(MemoryId::new(memory_ids_key_manager[0])),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[1])),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[2])),
+        Some(memory_manager.get(MemoryId::new(memory_ids_key_manager[3]))),
     )
 }

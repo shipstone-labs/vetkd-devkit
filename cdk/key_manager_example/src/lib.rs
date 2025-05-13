@@ -13,7 +13,7 @@ type Memory = VirtualMemory<DefaultMemoryImpl>;
 thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
-    static KEY_MANAGER: RefCell<KeyManager> = RefCell::new(KeyManager::init("key_manager", id_to_memory(0), id_to_memory(1), id_to_memory(2)));
+    static KEY_MANAGER: RefCell<KeyManager> = RefCell::new(KeyManager::init("key_manager", id_to_memory(0), id_to_memory(1), id_to_memory(2), Some(id_to_memory(3))));
 }
 
 #[query]
@@ -27,11 +27,12 @@ fn get_accessible_shared_key_ids() -> Vec<(Principal, ByteBuf)> {
 }
 
 #[query]
+#[allow(clippy::needless_pass_by_value)]
 fn get_shared_user_access_for_key(
     key_owner: Principal,
     key_name: ByteBuf,
 ) -> Result<Vec<(Principal, AccessRights)>, String> {
-    let key_name = bytebuf_to_blob(key_name)?;
+    let key_name = bytebuf_to_blob(&key_name)?;
     let key_id = (key_owner, key_name);
     KEY_MANAGER.with_borrow(|km| km.get_shared_user_access_for_key(ic_cdk::caller(), key_id))
 }
@@ -39,54 +40,64 @@ fn get_shared_user_access_for_key(
 #[update]
 async fn get_vetkey_verification_key() -> VetKeyVerificationKey {
     KEY_MANAGER
-        .with_borrow(|km| km.get_vetkey_verification_key())
+        .with_borrow(ic_vetkd_cdk_key_manager::KeyManager::get_vetkey_verification_key)
         .await
 }
 
 #[update]
+#[allow(clippy::needless_pass_by_value)]
 async fn get_encrypted_vetkey(
     key_owner: Principal,
     key_name: ByteBuf,
     transport_key: TransportKey,
 ) -> Result<VetKey, String> {
-    let key_name = bytebuf_to_blob(key_name)?;
+    let key_name = bytebuf_to_blob(&key_name)?;
     let key_id = (key_owner, key_name);
-    Ok(KEY_MANAGER
-        .with_borrow(|km| km.get_encrypted_vetkey(ic_cdk::caller(), key_id, transport_key))?
-        .await)
+
+    // Use KEY_MANAGER.with_borrow_mut to ensure we get a mutable reference
+    // This is required because get_encrypted_vetkey now requires &mut self
+    // to support audit logging
+    let encrypted_vetkey_future = KEY_MANAGER
+        .with_borrow_mut(|km| km.get_encrypted_vetkey(ic_cdk::caller(), key_id, transport_key))?;
+
+    // Now await the future
+    Ok(encrypted_vetkey_future.await)
 }
 
 #[query]
+#[allow(clippy::needless_pass_by_value)]
 fn get_user_rights(
     key_owner: Principal,
     key_name: ByteBuf,
     user: Principal,
 ) -> Result<Option<AccessRights>, String> {
-    let key_name = bytebuf_to_blob(key_name)?;
+    let key_name = bytebuf_to_blob(&key_name)?;
     let key_id = (key_owner, key_name);
     KEY_MANAGER.with_borrow(|km| km.get_user_rights(ic_cdk::caller(), key_id, user))
 }
 
 #[update]
+#[allow(clippy::needless_pass_by_value)]
 fn set_user_rights(
     key_owner: Principal,
     key_name: ByteBuf,
     user: Principal,
     access_rights: AccessRights,
 ) -> Result<Option<AccessRights>, String> {
-    let key_name = bytebuf_to_blob(key_name)?;
+    let key_name = bytebuf_to_blob(&key_name)?;
     let key_id = (key_owner, key_name);
     KEY_MANAGER
         .with_borrow_mut(|km| km.set_user_rights(ic_cdk::caller(), key_id, user, access_rights))
 }
 
 #[update]
+#[allow(clippy::needless_pass_by_value)]
 fn remove_user(
     key_owner: Principal,
     key_name: ByteBuf,
     user: Principal,
 ) -> Result<Option<AccessRights>, String> {
-    let key_name = bytebuf_to_blob(key_name)?;
+    let key_name = bytebuf_to_blob(&key_name)?;
     let key_id = (key_owner, key_name);
     KEY_MANAGER.with_borrow_mut(|km| km.remove_user(ic_cdk::caller(), key_id, user))
 }
@@ -97,7 +108,7 @@ fn set_vetkd_testing_canister_id(vetkd_testing_canister: Principal) {
     ic_vetkd_cdk_key_manager::set_vetkd_testing_canister_id(vetkd_testing_canister)
 }
 
-fn bytebuf_to_blob(buf: ByteBuf) -> Result<Blob<32>, String> {
+fn bytebuf_to_blob(buf: &ByteBuf) -> Result<Blob<32>, String> {
     Blob::try_from(buf.as_ref()).map_err(|_| "too large input".to_string())
 }
 
