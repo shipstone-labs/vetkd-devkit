@@ -1,23 +1,25 @@
 <script lang="ts">
-    import type { Editor } from "typewriter-editor";
-    import asRoot from "typewriter-editor/lib/asRoot.js";
-    import BubbleMenu from "typewriter-editor/lib/BubbleMenu.svelte";
-    import Heading from "svelte-icons/fa/FaHeading.svelte";
-    import Bold from "svelte-icons/fa/FaBold.svelte";
-    import Italic from "svelte-icons/fa/FaItalic.svelte";
-    import FaListUl from "svelte-icons/fa/FaListUl.svelte";
+import type { Editor } from "typewriter-editor";
+import asRoot from "typewriter-editor/lib/asRoot.js";
+import BubbleMenu from "typewriter-editor/lib/BubbleMenu.svelte";
+import Heading from "svelte-icons/fa/FaHeading.svelte";
+import Bold from "svelte-icons/fa/FaBold.svelte";
+import Italic from "svelte-icons/fa/FaItalic.svelte";
+import FaListUl from "svelte-icons/fa/FaListUl.svelte";
 
-    export let editor: Editor;
-    export let disabled: boolean = false;
+export let editor: Editor;
+// biome-ignore lint/style/useConst: Svelte mods don't show through
+export let disabled = false;
 
-    let classNames: string = "";
-    export { classNames as class };
+// biome-ignore lint/style/useConst: Svelte mods don't show through
+let classNames = "";
+export { classNames as class };
 
-    function focus(el: HTMLElement) {
-        el.focus();
-    }
+function focus(el: HTMLElement) {
+	el.focus();
+}
 
-    $: editor.enabled = !disabled;
+$: editor.enabled = !disabled;
 </script>
 
 <BubbleMenu for={null} {editor} let:commands offset={8}>

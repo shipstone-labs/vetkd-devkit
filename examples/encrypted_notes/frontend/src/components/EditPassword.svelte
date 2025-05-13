@@ -83,7 +83,7 @@ async function save() {
 			});
 			return;
 		}
-	} else if (passwordName != originalPassword.passwordName) {
+	} else if (passwordName !== originalPassword.passwordName) {
 		move = true;
 	} else {
 		move = false;
@@ -149,12 +149,7 @@ async function save() {
 
 	if (move) {
 		replace(
-			"/edit/vaults/" +
-				parentVaultOwner +
-				"/" +
-				parentVaultName +
-				"/" +
-				passwordName,
+			`/edit/vaults/${parentVaultOwner}/${parentVaultName}/${passwordName}`,
 		);
 	}
 }
@@ -205,7 +200,7 @@ $: {
 			)
 			.passwords.find((p) => p[0] === passwordName);
 
-		if (!!searchedForPassword) {
+		if (searchedForPassword) {
 			originalPassword = { ...searchedForPassword[1] };
 			url = originalPassword.metadata.url;
 			tags = originalPassword.metadata.tags;

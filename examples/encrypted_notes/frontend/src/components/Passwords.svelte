@@ -6,7 +6,7 @@ import Password from "./Password.svelte";
 import Spinner from "./Spinner.svelte";
 import { link } from "svelte-spa-router";
 
-// biome-ignore lint/style/useConst: <explanation>
+// biome-ignore lint/style/useConst: Svelte mods don't show through
 let filter = "";
 let filteredVaults: VaultModel[];
 
