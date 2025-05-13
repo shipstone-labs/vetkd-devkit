@@ -52,6 +52,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.21(postcss@8.5.3)
+      ic_vetkd_sdk_encrypted_maps:
+        specifier: workspace:*
+        version: link:../../../sdk/ic_vetkd_sdk_encrypted_maps
       prettier:
         specifier: 3.5.3
         version: 3.5.3
