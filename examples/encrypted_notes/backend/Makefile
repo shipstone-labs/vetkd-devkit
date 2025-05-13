@@ -33,7 +33,7 @@ mock: deploy-test
 .PHONY: export-cmd
 .SILENT: export-cmd
 export-cmd:
-	CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA=$(shell dfx canister id password_manager_with_metadata); \
+	CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA=$(shell dfx canister id encrypted_notes); \
 	CMD="export CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA=$${CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA}"; \
 	echo "$${CMD}"
 

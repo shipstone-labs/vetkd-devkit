@@ -4,3 +4,6 @@ preferWorkspacePackages: true
 packages:
   - "sdk/*"
   - "cdk/utils/pkg"
+  - "examples/encrypted_notes/frontend"
+  - "examples/password_manager/frontend"
+  - "examples/password_manager_with_metadata/frontend"

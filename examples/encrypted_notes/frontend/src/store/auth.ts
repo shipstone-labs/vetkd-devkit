@@ -4,7 +4,7 @@ import { AuthClient } from "@dfinity/auth-client";
 import type { JsonnableDelegationChain } from "@dfinity/identity/lib/cjs/identity/delegation";
 import { replace } from "svelte-spa-router";
 import {
-    PasswordManager,
+    type PasswordManager,
     createPasswordManager,
 } from "../lib/password_manager.js";
 
@@ -51,15 +51,16 @@ export function login() {
         currentAuth.client.login({
             maxTimeToLive: BigInt(1800) * BigInt(1_000_000_000),
             identityProvider:
-                process.env.DFX_NETWORK === "ic"
+                import.meta.env.DFX_NETWORK === "ic"
                     ? "https://identity.ic0.app/#authorize"
-                    : `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:8000/#authorize`,
+                    : `http://${import.meta.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:8000/#authorize`,
             onSuccess: () => {
                 authenticate(currentAuth.client);
             },
             onError: (e) =>
                 console.error(
-                    "Failed to authenticate with internet identity: " + e,
+                    "Failed to authenticate with internet identity: ",
+                    e,
                 ),
         });
     }
@@ -118,7 +119,7 @@ function handleSessionTimeout() {
                 logout();
             }, expirationTimeMs - Date.now());
         } catch (e) {
-            console.error("Could not handle delegation expiry: " + e);
+            console.error("Could not handle delegation expiry: ", e);
         }
     });
 }

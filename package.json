@@ -1,8 +1,9 @@
 {
-    "private": true,
-    "workspaces": [
-        "cdk/utils/pkg",
-        "sdk/*",
-        "examples/password_manager/frontend"
-    ]
+	"private": true,
+	"workspaces": [
+		"cdk/utils/pkg",
+		"sdk/*",
+		"examples/password_manager",
+		"examples/encrypted_notes"
+	]
 }
