@@ -1,12 +1,12 @@
 <script lang="ts">
-    import { fly } from "svelte/transition";
-    import DisclaimerCopy from "./DisclaimerCopy.svelte";
-    let isDismissed = !!window.localStorage.getItem("disclaimer-dismissed");
+import { fly } from "svelte/transition";
+import DisclaimerCopy from "./DisclaimerCopy.svelte";
+let isDismissed = !!window.localStorage.getItem("disclaimer-dismissed");
 
-    function dismiss() {
-        window.localStorage.setItem("disclaimer-dismissed", "yes");
-        isDismissed = true;
-    }
+function dismiss() {
+  window.localStorage.setItem("disclaimer-dismissed", "yes");
+  isDismissed = true;
+}
 </script>
 
 {#if !isDismissed}

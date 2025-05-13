@@ -2,35 +2,35 @@ import { writable } from "svelte/store";
 import { auth } from "./auth";
 
 interface DraftModel {
-    content: string;
+  content: string;
 }
 
 let initialDraft: DraftModel = {
-    content: "",
+  content: "",
 };
 
 try {
-    const getDraft = localStorage.getItem("draft");
-    if (getDraft) {
-        const savedDraft: DraftModel = JSON.parse(getDraft);
-        if ("content" in savedDraft && "tags" in savedDraft) {
-            initialDraft = savedDraft;
-        }
-    } else {
-        throw new Error("Draft not found");
+  const getDraft = localStorage.getItem("draft");
+  if (getDraft) {
+    const savedDraft: DraftModel = JSON.parse(getDraft);
+    if ("content" in savedDraft && "tags" in savedDraft) {
+      initialDraft = savedDraft;
     }
+  } else {
+    throw new Error("Draft not found");
+  }
 } catch {
-    // ignore error
+  // ignore error
 }
 
 export const draft = writable<DraftModel>(initialDraft);
 
 draft.subscribe((draft) => {
-    localStorage.setItem("draft", JSON.stringify(draft));
+  localStorage.setItem("draft", JSON.stringify(draft));
 });
 
 auth.subscribe(($auth) => {
-    if ($auth.state === "anonymous") {
-        draft.set(initialDraft);
-    }
+  if ($auth.state === "anonymous") {
+    draft.set(initialDraft);
+  }
 });

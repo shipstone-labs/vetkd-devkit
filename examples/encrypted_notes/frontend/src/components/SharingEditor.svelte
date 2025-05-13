@@ -2,10 +2,10 @@
 import type { VaultModel } from "../lib/vault";
 import { auth } from "../store/auth";
 import {
-	addUser,
-	refreshVaults,
-	removeUser,
-	vaultsStore,
+  addUser,
+  refreshVaults,
+  removeUser,
+  vaultsStore,
 } from "../store/vaults";
 import { addNotification, showError } from "../store/notifications";
 import { Principal } from "@dfinity/principal";
@@ -23,115 +23,115 @@ let adding = false;
 let removing = false;
 
 async function add() {
-	if ($auth.state !== "initialized") {
-		throw new Error("not logged in");
-	}
-	adding = true;
-	let accessRights: AccessRights = { Read: null };
+  if ($auth.state !== "initialized") {
+    throw new Error("not logged in");
+  }
+  adding = true;
+  let accessRights: AccessRights = { Read: null };
 
-	const selectElement = document.getElementById(
-		"access-rights-select",
-	) as HTMLSelectElement;
-	const selectedIndex = selectElement.selectedIndex;
-	const selectedValue = selectElement.options[selectedIndex].value;
+  const selectElement = document.getElementById(
+    "access-rights-select",
+  ) as HTMLSelectElement;
+  const selectedIndex = selectElement.selectedIndex;
+  const selectedValue = selectElement.options[selectedIndex].value;
 
-	if (selectedValue === "Read") {
-	} else if (selectedValue === "ReadWrite") {
-		accessRights = { ReadWrite: null };
-	} else if (selectedValue === "ReadWriteManage") {
-		accessRights = { ReadWriteManage: null };
-	}
+  if (selectedValue === "Read") {
+  } else if (selectedValue === "ReadWrite") {
+    accessRights = { ReadWrite: null };
+  } else if (selectedValue === "ReadWriteManage") {
+    accessRights = { ReadWriteManage: null };
+  }
 
-	try {
-		await addUser(
-			editedVault.owner,
-			editedVault.name,
-			Principal.fromText(newSharing),
-			accessRights,
-			$auth.passwordManager,
-		);
-		addNotification({
-			type: "success",
-			message: "User successfully added",
-		});
-		editedVault.users.push([Principal.fromText(newSharing), accessRights]);
-		newSharing = "";
-		newSharingInput.focus();
-	} catch (e) {
-		showError(e, "Could not add user.");
-	} finally {
-		adding = false;
-	}
-	await refreshVaults(
-		$auth.client.getIdentity().getPrincipal(),
-		$auth.passwordManager,
-	).catch((e) => showError(e, "Could not refresh vaults."));
+  try {
+    await addUser(
+      editedVault.owner,
+      editedVault.name,
+      Principal.fromText(newSharing),
+      accessRights,
+      $auth.passwordManager,
+    );
+    addNotification({
+      type: "success",
+      message: "User successfully added",
+    });
+    editedVault.users.push([Principal.fromText(newSharing), accessRights]);
+    newSharing = "";
+    newSharingInput.focus();
+  } catch (e) {
+    showError(e, "Could not add user.");
+  } finally {
+    adding = false;
+  }
+  await refreshVaults(
+    $auth.client.getIdentity().getPrincipal(),
+    $auth.passwordManager,
+  ).catch((e) => showError(e, "Could not refresh vaults."));
 }
 
 async function remove(sharing: Principal) {
-	if ($auth.state !== "initialized") {
-		throw new Error("not logged in");
-	}
-	removing = true;
-	try {
-		await removeUser(
-			editedVault.owner,
-			editedVault.name,
-			sharing,
-			$auth.passwordManager,
-		);
-		editedVault.users = editedVault.users.filter((user) =>
-			user[0].compareTo(sharing),
-		);
-		addNotification({
-			type: "success",
-			message: "User successfully removed",
-		});
-	} catch (e) {
-		showError(e, "Could not remove user.");
-	} finally {
-		removing = false;
-	}
-	await refreshVaults(
-		$auth.client.getIdentity().getPrincipal(),
-		$auth.passwordManager,
-	).catch((e) => showError(e, "Could not refresh vaults."));
+  if ($auth.state !== "initialized") {
+    throw new Error("not logged in");
+  }
+  removing = true;
+  try {
+    await removeUser(
+      editedVault.owner,
+      editedVault.name,
+      sharing,
+      $auth.passwordManager,
+    );
+    editedVault.users = editedVault.users.filter((user) =>
+      user[0].compareTo(sharing),
+    );
+    addNotification({
+      type: "success",
+      message: "User successfully removed",
+    });
+  } catch (e) {
+    showError(e, "Could not remove user.");
+  } finally {
+    removing = false;
+  }
+  await refreshVaults(
+    $auth.client.getIdentity().getPrincipal(),
+    $auth.passwordManager,
+  ).catch((e) => showError(e, "Could not refresh vaults."));
 }
 
 function onKeyPress(e) {
-	if (
-		e.key === "Enter" &&
-		!editedVault.users.find(
-			(user) => user[0].compareTo(Principal.fromText(newSharing)) === "eq",
-		)
-	) {
-		add();
-	}
+  if (
+    e.key === "Enter" &&
+    !editedVault.users.find(
+      (user) => user[0].compareTo(Principal.fromText(newSharing)) === "eq",
+    )
+  ) {
+    add();
+  }
 }
 
 export function accessRightsToString(ar: AccessRights) {
-	if ("ReadWriteManage" in ar) {
-		return "read, write, manage";
-	}
-	if ("ReadWrite" in ar) {
-		return "read, write";
-	}
-	if ("Read" in ar) {
-		return "read";
-	}
-	throw new Error("unknown access rights");
+  if ("ReadWriteManage" in ar) {
+    return "read, write, manage";
+  }
+  if ("ReadWrite" in ar) {
+    return "read, write";
+  }
+  if ("Read" in ar) {
+    return "read";
+  }
+  throw new Error("unknown access rights");
 }
 
 $: {
-	if ($vaultsStore.state === "loaded" && !editedVault) {
-		const split = currentRoute.split("/");
-		const vaultOwnewr = Principal.fromText(split[split.length - 2]);
-		const vaultName = split[split.length - 1];
-		const vault = $vaultsStore.list.find(
-			(vault) => vault.owner === vaultOwnewr && vault.name === vaultName,
-		);
-		editedVault = vault;
-	}
+  if ($vaultsStore.state === "loaded" && !editedVault) {
+    const split = currentRoute.split("/");
+    const vaultOwnewr = Principal.fromText(split[split.length - 2]);
+    const vaultName = split[split.length - 1];
+    const vault = $vaultsStore.list.find(
+      (vault) => vault.owner === vaultOwnewr && vault.name === vaultName,
+    );
+    editedVault = vault;
+  }
 }
 </script>
 

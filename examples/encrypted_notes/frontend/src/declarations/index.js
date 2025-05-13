@@ -10,35 +10,35 @@ export { idlFactory } from "./password_manager_with_metadata.did.js";
  * beginning in dfx 0.15.0
  */
 export const canisterId =
-	process.env.CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA;
+  process.env.CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA;
 
 export const createActor = (canisterId, options = {}) => {
-	const agent = options.agent || new HttpAgent({ ...options.agentOptions });
+  const agent = options.agent || new HttpAgent({ ...options.agentOptions });
 
-	if (options.agent && options.agentOptions) {
-		console.warn(
-			"Detected both agent and agentOptions passed to createActor. Ignoring agentOptions and proceeding with the provided agent.",
-		);
-	}
+  if (options.agent && options.agentOptions) {
+    console.warn(
+      "Detected both agent and agentOptions passed to createActor. Ignoring agentOptions and proceeding with the provided agent.",
+    );
+  }
 
-	// Fetch root key for certificate validation during development
-	if (process.env.DFX_NETWORK !== "ic") {
-		agent.fetchRootKey().catch((err) => {
-			console.warn(
-				"Unable to fetch root key. Check to ensure that your local replica is running",
-			);
-			console.error(err);
-		});
-	}
+  // Fetch root key for certificate validation during development
+  if (process.env.DFX_NETWORK !== "ic") {
+    agent.fetchRootKey().catch((err) => {
+      console.warn(
+        "Unable to fetch root key. Check to ensure that your local replica is running",
+      );
+      console.error(err);
+    });
+  }
 
-	// Creates an actor with using the candid interface and the HttpAgent
-	return Actor.createActor(idlFactory, {
-		agent,
-		canisterId,
-		...options.actorOptions,
-	});
+  // Creates an actor with using the candid interface and the HttpAgent
+  return Actor.createActor(idlFactory, {
+    agent,
+    canisterId,
+    ...options.actorOptions,
+  });
 };
 
 export const password_manager_with_metadata = canisterId
-	? createActor(canisterId)
-	: undefined;
+  ? createActor(canisterId)
+  : undefined;

@@ -4,8 +4,8 @@ import DisclaimerCopy from "./DisclaimerCopy.svelte";
 let isDismissed = !!window.localStorage.getItem("disclaimer-dismissed");
 
 function dismiss() {
-	window.localStorage.setItem("disclaimer-dismissed", "yes");
-	isDismissed = true;
+  window.localStorage.setItem("disclaimer-dismissed", "yes");
+  isDismissed = true;
 }
 </script>
 

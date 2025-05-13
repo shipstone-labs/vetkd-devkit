@@ -1,9 +1,7 @@
 {
   "name": "ic-vetkd-cdk-utils",
   "type": "module",
-  "collaborators": [
-    "The Internet Computer Project Developers"
-  ],
+  "collaborators": ["The Internet Computer Project Developers"],
   "description": "Utilities encrypting and decrypting verifiably-encrypted keys on the Internet Computer.",
   "version": "0.1.0",
   "files": [
@@ -14,8 +12,5 @@
   ],
   "main": "ic_vetkd_cdk_utils.js",
   "types": "ic_vetkd_cdk_utils.d.ts",
-  "sideEffects": [
-    "./ic_vetkd_cdk_utils.js",
-    "./snippets/*"
-  ]
+  "sideEffects": ["./ic_vetkd_cdk_utils.js", "./snippets/*"]
 }

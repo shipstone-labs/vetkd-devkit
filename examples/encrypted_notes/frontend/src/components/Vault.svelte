@@ -12,45 +12,45 @@ import SharingEditor from "./SharingEditor.svelte";
 import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 
 export let vault: VaultModel = {
-	name: "",
-	owner: Principal.managementCanister(),
-	passwords: [],
-	users: [],
+  name: "",
+  owner: Principal.managementCanister(),
+  passwords: [],
+  users: [],
 };
 export let vaultSummary = "";
 export let accessRights: AccessRights = { Read: null };
 
 export let currentRoute = "";
 const unsubscribeCurrentRoute = location.subscribe((value) => {
-	currentRoute = decodeURI(value);
+  currentRoute = decodeURI(value);
 });
 onDestroy(unsubscribeCurrentRoute);
 
 $: {
-	if (
-		$vaultsStore.state === "loaded" &&
-		$auth.state === "initialized" &&
-		vault.name.length === 0 &&
-		currentRoute.split("/").length > 2
-	) {
-		const split = currentRoute.split("/");
-		const vaultOwner = Principal.fromText(split[split.length - 2]);
-		const vaultName = split[split.length - 1];
-		const searchedForVault = $vaultsStore.list.find(
-			(v) => v.owner.compareTo(vaultOwner) === "eq" && v.name === vaultName,
-		);
-		if (searchedForVault) {
-			vault = searchedForVault;
-			vaultSummary += summarize(vault);
-			const me = $auth.client.getIdentity().getPrincipal();
-			accessRights =
-				vault.owner.compareTo(me) === "eq"
-					? { ReadWriteManage: null }
-					: vault.users.find((user) => user[0].compareTo(me) === "eq")[1];
-		} else {
-			vaultSummary = `could not find vault ${vaultName} owned by ${vaultOwner.toText()}`;
-		}
-	}
+  if (
+    $vaultsStore.state === "loaded" &&
+    $auth.state === "initialized" &&
+    vault.name.length === 0 &&
+    currentRoute.split("/").length > 2
+  ) {
+    const split = currentRoute.split("/");
+    const vaultOwner = Principal.fromText(split[split.length - 2]);
+    const vaultName = split[split.length - 1];
+    const searchedForVault = $vaultsStore.list.find(
+      (v) => v.owner.compareTo(vaultOwner) === "eq" && v.name === vaultName,
+    );
+    if (searchedForVault) {
+      vault = searchedForVault;
+      vaultSummary += summarize(vault);
+      const me = $auth.client.getIdentity().getPrincipal();
+      accessRights =
+        vault.owner.compareTo(me) === "eq"
+          ? { ReadWriteManage: null }
+          : vault.users.find((user) => user[0].compareTo(me) === "eq")[1];
+    } else {
+      vaultSummary = `could not find vault ${vaultName} owned by ${vaultOwner.toText()}`;
+    }
+  }
 }
 </script>
 

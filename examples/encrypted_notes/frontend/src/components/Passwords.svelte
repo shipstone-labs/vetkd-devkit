@@ -11,27 +11,27 @@ let filter = "";
 let filteredVaults: VaultModel[];
 
 $: searchIndex =
-	$vaultsStore.state === "loaded"
-		? $vaultsStore.list.map((vault) => {
-				const div = document.createElement("div");
-				div.innerHTML = Array.from(vault.passwords.values())
-					.map((password) => password[0])
-					.join(" xx ");
-				const content = div.innerText;
-				return [content].join("/#delimiter#/").toLowerCase();
-			})
-		: [];
+  $vaultsStore.state === "loaded"
+    ? $vaultsStore.list.map((vault) => {
+        const div = document.createElement("div");
+        div.innerHTML = Array.from(vault.passwords.values())
+          .map((password) => password[0])
+          .join(" xx ");
+        const content = div.innerText;
+        return [content].join("/#delimiter#/").toLowerCase();
+      })
+    : [];
 
 $: {
-	if ($vaultsStore.state === "loaded") {
-		if (filter.length > 0) {
-			filteredVaults = $vaultsStore.list.filter((_, i) => {
-				return searchIndex[i].includes(filter.toLowerCase());
-			});
-		} else {
-			filteredVaults = $vaultsStore.list;
-		}
-	}
+  if ($vaultsStore.state === "loaded") {
+    if (filter.length > 0) {
+      filteredVaults = $vaultsStore.list.filter((_, i) => {
+        return searchIndex[i].includes(filter.toLowerCase());
+      });
+    } else {
+      filteredVaults = $vaultsStore.list;
+    }
+  }
 }
 </script>
 

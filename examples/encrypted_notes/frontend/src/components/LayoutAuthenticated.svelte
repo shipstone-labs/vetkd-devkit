@@ -11,16 +11,16 @@ import { wrap } from "svelte-spa-router/wrap";
 import SidebarLayout from "./SidebarLayout.svelte";
 
 const routes = {
-	"/": wrap({ component: NewPassword }),
-	"/vaults": wrap({ component: Vaults }),
-	"/vaults/:vaultOwner/:VaultName": wrap({ component: Vault }),
-	"/edit/vaults/:vaultOwner/:VaultName": wrap({ component: EditVault }),
-	"/vaults/:vaultOwner/:VaultName/:passwordName": wrap({
-		component: Password,
-	}),
-	"/edit/vaults/:vaultOwner/:VaultName/:passwordName": wrap({
-		component: EditPassword,
-	}),
+  "/": wrap({ component: NewPassword }),
+  "/vaults": wrap({ component: Vaults }),
+  "/vaults/:vaultOwner/:VaultName": wrap({ component: Vault }),
+  "/edit/vaults/:vaultOwner/:VaultName": wrap({ component: EditVault }),
+  "/vaults/:vaultOwner/:VaultName/:passwordName": wrap({
+    component: Password,
+  }),
+  "/edit/vaults/:vaultOwner/:VaultName/:passwordName": wrap({
+    component: EditPassword,
+  }),
 };
 </script>
 

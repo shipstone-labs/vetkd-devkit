@@ -16,7 +16,7 @@ let classNames = "";
 export { classNames as class };
 
 function focus(el: HTMLElement) {
-	el.focus();
+  el.focus();
 }
 
 $: editor.enabled = !disabled;

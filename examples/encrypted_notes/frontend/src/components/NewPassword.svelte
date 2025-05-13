@@ -13,9 +13,9 @@ import { Principal } from "@dfinity/principal";
 let creating = false;
 // biome-ignore lint/style/useConst: Svelte mods are not seen by biome
 let vaultOwner =
-	$auth.state === "initialized"
-		? $auth.client.getIdentity().getPrincipal().toText()
-		: Principal.anonymous().toText();
+  $auth.state === "initialized"
+    ? $auth.client.getIdentity().getPrincipal().toText()
+    : Principal.anonymous().toText();
 // biome-ignore lint/style/useConst: Svelte mods are not seen by biome
 let vaultName = "";
 // biome-ignore lint/style/useConst: Svelte mods are not seen by biome
@@ -28,66 +28,66 @@ let tagsInput = "";
 let tags: string[] = [];
 // Convert between string and array when the input changes
 export function handleTagsInput() {
-	// Split the input string by commas, trim whitespace, and filter empty strings
-	tags = [
-		...new Set(
-			tagsInput
-				.split(",")
-				.map((tag) => tag.trim())
-				.filter((tag) => tag !== ""),
-		),
-	];
+  // Split the input string by commas, trim whitespace, and filter empty strings
+  tags = [
+    ...new Set(
+      tagsInput
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag !== ""),
+    ),
+  ];
 }
 
 const editor = new Editor({
-	modules: {
-		placeholder: placeholder("Enter password..."),
-	},
-	html: $draft.content,
+  modules: {
+    placeholder: placeholder("Enter password..."),
+  },
+  html: $draft.content,
 });
 
 async function add() {
-	if ($auth.state !== "initialized") {
-		return;
-	}
+  if ($auth.state !== "initialized") {
+    return;
+  }
 
-	creating = true;
+  creating = true;
 
-	await setPassword(
-		Principal.fromText(vaultOwner),
-		vaultName,
-		passwordName,
-		editor.getText(),
-		url,
-		tags,
-		$auth.passwordManager,
-	)
-		.catch((e) => {
-			showError(e, "Could not add password.");
-		})
-		.finally(() => {
-			creating = false;
-		});
+  await setPassword(
+    Principal.fromText(vaultOwner),
+    vaultName,
+    passwordName,
+    editor.getText(),
+    url,
+    tags,
+    $auth.passwordManager,
+  )
+    .catch((e) => {
+      showError(e, "Could not add password.");
+    })
+    .finally(() => {
+      creating = false;
+    });
 
-	// if creation was successful, reset the editor
-	editor.setHTML("");
+  // if creation was successful, reset the editor
+  editor.setHTML("");
 
-	addNotification({
-		type: "success",
-		message: "Password added successfully",
-	});
+  addNotification({
+    type: "success",
+    message: "Password added successfully",
+  });
 
-	// refresh passwords in the background
-	refreshVaults(
-		$auth.client.getIdentity().getPrincipal(),
-		$auth.passwordManager,
-	).catch((e) => showError(e, "Could not refresh passwords."));
+  // refresh passwords in the background
+  refreshVaults(
+    $auth.client.getIdentity().getPrincipal(),
+    $auth.passwordManager,
+  ).catch((e) => showError(e, "Could not refresh passwords."));
 }
 
 function saveDraft() {
-	draft.set({
-		content: editor.getText(),
-	});
+  draft.set({
+    content: editor.getText(),
+  });
 }
 
 onDestroy(saveDraft);

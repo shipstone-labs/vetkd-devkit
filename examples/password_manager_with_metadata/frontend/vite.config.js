@@ -1,14 +1,14 @@
-import { defineConfig } from 'vite'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import eslint from 'vite-plugin-eslint'
+import { defineConfig } from "vite";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import eslint from "vite-plugin-eslint";
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
-import tailwindcss from 'tailwindcss'
+import tailwindcss from "tailwindcss";
 import autoprefixer from "autoprefixer";
-import css from 'rollup-plugin-css-only';
-import typescript from '@rollup/plugin-typescript';
-import viteCompression from 'vite-plugin-compression';
-import environment from 'vite-plugin-environment';
+import css from "rollup-plugin-css-only";
+import typescript from "@rollup/plugin-typescript";
+import viteCompression from "vite-plugin-compression";
+import environment from "vite-plugin-environment";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -27,13 +27,13 @@ export default defineConfig({
   ],
   esbuild: {
     supported: {
-      'top-level-await': true //browsers can handle top-level-await features
+      "top-level-await": true, //browsers can handle top-level-await features
     },
   },
   css: {
     postcss: {
       plugins: [autoprefixer(), tailwindcss()],
-    }
+    },
   },
   build: {
     rollupOptions: {
@@ -45,6 +45,6 @@ export default defineConfig({
   },
   root: "./",
   server: {
-    hmr: false
-  }
-})
+    hmr: false,
+  },
+});

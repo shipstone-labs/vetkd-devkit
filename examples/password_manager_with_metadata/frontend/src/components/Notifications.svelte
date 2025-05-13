@@ -1,12 +1,12 @@
 <script lang="ts">
-    import { type Notification, notifications } from "../store/notifications";
-    import { fly, fade } from "svelte/transition";
+import { type Notification, notifications } from "../store/notifications";
+import { fly, fade } from "svelte/transition";
 
-    const classMap: Record<Notification["type"], string> = {
-        info: "alert-info",
-        error: "alert-error",
-        success: "alert-success",
-    };
+const classMap: Record<Notification["type"], string> = {
+  info: "alert-info",
+  error: "alert-error",
+  success: "alert-success",
+};
 </script>
 
 <div class="absolute right-4 bottom-4 flex flex-col max-w-xs space-y-4">

@@ -1,12 +1,12 @@
 {
-	"private": true,
-	"dependencies": {
-		"turbo": "^2.5.3"
-	},
-	"packageManager": "pnpm@10.11.0",
-	"scripts": {
-		"build": "turbo run build",
-		"build:sdk": "pnpm -r --filter=\"./sdk/*\" build",
-		"build:dfx": "turbo run build:dfx"
-	}
+  "private": true,
+  "dependencies": {
+    "turbo": "^2.5.3"
+  },
+  "packageManager": "pnpm@10.11.0",
+  "scripts": {
+    "build": "turbo run build",
+    "build:sdk": "pnpm -r --filter=\"./sdk/*\" build",
+    "build:dfx": "turbo run build:dfx"
+  }
 }
