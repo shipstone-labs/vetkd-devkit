@@ -439,7 +439,7 @@ fn bls12_381_test_key_1() -> VetKDKeyId {
 fn vetkd_system_api_canister_id() -> CanisterId {
     #[cfg(feature = "expose-testing-api")]
     {
-        if let Some(canister_id) = VETKD_TESTING_CANISTER_ID.with(|cell| cell.borrow().clone()) {
+        if let Some(canister_id) = VETKD_TESTING_CANISTER_ID.with(|cell| *cell.borrow()) {
             return canister_id;
         }
     }
