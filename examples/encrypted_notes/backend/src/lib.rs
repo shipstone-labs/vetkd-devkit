@@ -75,9 +75,11 @@ thread_local! {
         MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1))),
         MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2))),
         MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(3))),
+        MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4))),
+        Some(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4)))),
     ));
     static METADATA: RefCell<StableMetadataMap> = RefCell::new(StableBTreeMap::new(
-        MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4))),
+        MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(5))),
     ));
 }
 
@@ -189,7 +191,7 @@ fn remove_encrypted_value_with_metadata(
     let map_key = bytebuf_to_blob(map_key)?;
     ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
         encrypted_maps
-            .remove_encrypted_value(ic_cdk::caller(), map_id, map_key)
+            .remove_encrypted_value(ic_cdk::caller(), map_id, map_key, false)
             .map(|opt_prev_value| {
                 METADATA.with_borrow_mut(|metadata| {
                     let metadata_key = (map_owner, map_name, map_key);
@@ -215,7 +217,7 @@ async fn get_encrypted_vetkey(
     let map_name = bytebuf_to_blob(map_name)?;
     let map_id = (map_owner, map_name);
     Ok(ENCRYPTED_MAPS
-        .with_borrow(|encrypted_maps| {
+        .with_borrow_mut(|encrypted_maps| {
             encrypted_maps.get_encrypted_vetkey(ic_cdk::caller(), map_id, transport_key)
         })?
         .await)

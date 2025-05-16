@@ -7,7 +7,7 @@ import type {
 import type { Principal } from "@dfinity/principal";
 import type { IDL } from "@dfinity/candid";
 
-import type { _SERVICE } from "./password_manager_with_metadata.did";
+import { _SERVICE } from './encrypted_notes_canister.did';
 
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const canisterId: string;
@@ -40,11 +40,11 @@ export declare interface CreateActorOptions {
  */
 export declare const createActor: (
   canisterId: string | Principal,
-  options?: CreateActorOptions,
+  options?: CreateActorOptions
 ) => ActorSubclass<_SERVICE>;
 
 /**
  * Intialized Actor using default settings, ready to talk to a canister using its candid interface
  * @constructs {@link ActorSubClass}
  */
-export declare const password_manager_with_metadata: ActorSubclass<_SERVICE>;
+export declare const encrypted_notes_canister: ActorSubclass<_SERVICE>;

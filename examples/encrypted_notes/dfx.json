@@ -1,6 +1,6 @@
 {
   "canisters": {
-    "encrypted_notes": {
+    "encrypted_notes_canister": {
       "candid": "backend/backend.did",
       "package": "ic-vetkd-example-encrypted-notes-backend",
       "type": "rust",

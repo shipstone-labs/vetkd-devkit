@@ -23,13 +23,13 @@ dfx deps pull && dfx deps init && dfx deps deploy &&
 
 # Build frontend.
 pushd frontend
-    npm i
-    npm run build
+    pnpm i
+    pnpm run build
 popd
 
 # Store environment variables for the frontend.
 echo "DFX_NETWORK=$DFX_NETWORK" > frontend/.env
-echo "CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA=$CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA" >> frontend/.env
+echo "CANISTER_ID_ENCRYPTED_NOTES=$CANISTER_ID_ENCRYPTED_NOTES" >> frontend/.env
 echo "CANISTER_ID_INTERNET_IDENTITY=$CANISTER_ID_INTERNET_IDENTITY" >> frontend/.env
 
 # Deploy the frontend canister.

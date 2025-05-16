@@ -1,14 +1,14 @@
 {
-  "name": "password_manager_with_metadata_frontend",
+  "name": "encrypted_notes_frontend",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "npm run build:deps && vite build",
-    "build:deps": "cd ../../../sdk/ic_vetkd_sdk_encrypted_maps_example && npm i && npm run build",
+    "build:deps": "cd ../../../sdk/ic_vetkd_sdk_encrypted_maps_example && pnpm i && pnpm run build",
     "lint": "eslint",
     "preview": "vite preview",
-    "gen-bindings": "cd ../backend && make extract-candid && cd .. && dfx generate password_manager_with_metadata && mv src/declarations/password_manager_with_metadata/* frontend/src/declarations/ && rmdir -p src/declarations/password_manager_with_metadata"
+    "gen-bindings": "cd ../backend && make extract-candid && cd .. && dfx generate encrypted_notes_canister && mv src/declarations/encrypted_notes_canister/* frontend/src/declarations/ && rmdir -p src/declarations/encrypted_notes_canister"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",

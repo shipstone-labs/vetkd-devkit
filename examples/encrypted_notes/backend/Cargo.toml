@@ -1,5 +1,5 @@
 [package]
-name = "ic-vetkd-example-password-manager-with-metadata-backend"
+name = "ic-vetkd-example-encrypted-notes-backend"
 authors.workspace = true
 description.workspace = true
 documentation.workspace = true

@@ -24,7 +24,8 @@ This version of the application extends the basic password manager by supporting
 ### Install Dependencies
 
 ```bash
-npm install
+corepack enabled pnpm
+pnpm install
 ```
 
 ### Deploy the Canisters

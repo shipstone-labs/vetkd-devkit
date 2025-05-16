@@ -18,14 +18,15 @@ jobs:
       - name: Setup
         run: |
           sudo apt-get install nodejs
+          corepack enabled pnpm
       - name: SDK Tests and Lint
         run: |
           set -eExuo pipefail
           cd sdk/ic_vetkd_sdk_utils
-          npm install
-          npm run build
-          npm run test
-          npm run lint
+          pnpm install
+          pnpm run build
+          pnpm run test
+          pnpm run lint
 
   sdk_utils_tests_mac:
     runs-on: macos-15
@@ -34,11 +35,12 @@ jobs:
       - name: Setup
         run: |
           brew install nodejs
+          corepack enabled pnpm
       - name: SDK Tests and Lint
         run: |
           set -eExuo pipefail
           cd sdk/ic_vetkd_sdk_utils
-          npm install
-          npm run build
-          npm run test
-          npm run lint
+          pnpm install
+          pnpm run build
+          pnpm run test
+          pnpm run lint
