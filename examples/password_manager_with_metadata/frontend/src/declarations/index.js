@@ -17,7 +17,7 @@ export const createActor = (canisterId, options = {}) => {
 
   if (options.agent && options.agentOptions) {
     console.warn(
-      "Detected both agent and agentOptions passed to createActor. Ignoring agentOptions and proceeding with the provided agent."
+      "Detected both agent and agentOptions passed to createActor. Ignoring agentOptions and proceeding with the provided agent.",
     );
   }
 
@@ -25,7 +25,7 @@ export const createActor = (canisterId, options = {}) => {
   if (process.env.DFX_NETWORK !== "ic") {
     agent.fetchRootKey().catch((err) => {
       console.warn(
-        "Unable to fetch root key. Check to ensure that your local replica is running"
+        "Unable to fetch root key. Check to ensure that your local replica is running",
       );
       console.error(err);
     });
@@ -39,4 +39,6 @@ export const createActor = (canisterId, options = {}) => {
   });
 };
 
-export const password_manager_with_metadata = canisterId ? createActor(canisterId) : undefined;
+export const password_manager_with_metadata = canisterId
+  ? createActor(canisterId)
+  : undefined;

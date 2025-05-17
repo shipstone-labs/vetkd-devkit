@@ -23,8 +23,8 @@ dfx deps pull && dfx deps init && dfx deps deploy &&
 
 # Build frontend.
 pushd frontend
-    npm i
-    npm run build
+    pnpm i
+    pnpm run build
 popd
 
 # Store environment variables for the frontend.

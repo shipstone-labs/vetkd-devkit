@@ -1,0 +1,70 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "env": ["NODE_ENV", "DFX_NETWORK"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**", "pgk/**", "target/debug/**", "target/**/debug/**"]
+    },
+    "build:release": {
+      "env": ["NODE_ENV", "DFX_NETWORK"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [
+        "dist/**",
+        "pgk/**",
+        "target/release/**",
+        "target/**/release/**"
+      ]
+    },
+    "build:dfx": {
+      "env": ["NODE_ENV", "DFX_NETWORK"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "dfx.json"],
+      "outputs": [".dfx/**"]
+    },
+    "ic_vetkd_sdk_utils:build": {
+      "outputs": ["dist/**"]
+    },
+    "ic_vetkd_sdk_key_manager:build": {
+      "dependsOn": ["ic_vetkd_sdk_utils:build"],
+      "outputs": ["dist/**"]
+    },
+    "ic_vetkd_sdk_encrypted_maps:build": {
+      "dependsOn": ["ic_vetkd_sdk_utils:build"],
+      "outputs": ["dist/**"]
+    },
+    "ic_vetkd_sdk_key_manager_example:build": {
+      "dependsOn": ["ic_vetkd_sdk_key_manager:build"],
+      "outputs": ["dist/**"]
+    },
+    "ic_vetkd_sdk_encrypted_maps_example:build": {
+      "dependsOn": ["ic_vetkd_sdk_encrypted_maps:build"],
+      "outputs": ["dist/**"]
+    },
+    "@shipstone-labs/ic-vetkd-notes-client:build": {
+      "dependsOn": ["^vetkd-notes-canister:build"]
+    },
+    "@shipstone-labs/ic-vetkd-notes-client:build:release": {
+      "dependsOn": ["^vetkd-notes-canister:build:release"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "doc": {
+      "cache": false
+    },
+    "deploy": {
+      "dependsOn": ["^build:release", "^deploy"]
+    },
+    "shipstone-labs-ic-vetkd-notes:doc": {
+      "dependsOn": ["^doc"]
+    }
+  }
+}

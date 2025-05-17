@@ -2,9 +2,7 @@
   "name": "ic_vetkd_sdk_encrypted_maps",
   "version": "0.1.0",
   "license": "Apache-2.0",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "main": "dist/index.umd.js",
   "module": "dist/index.es5.js",
   "typings": "dist/types/index.d.ts",

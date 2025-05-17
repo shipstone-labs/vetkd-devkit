@@ -3,29 +3,25 @@ import type { PasswordModel } from "./password";
 import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 
 export interface VaultModel {
-    owner: Principal;
-    name: string;
-    passwords: Array<[string, PasswordModel]>;
-    users: Array<[Principal, AccessRights]>;
+  owner: Principal;
+  name: string;
+  passwords: Array<[string, PasswordModel]>;
+  users: Array<[Principal, AccessRights]>;
 }
 
 export function vaultFromContent(
-    owner: Principal,
-    name: string,
-    passwords: Array<[string, PasswordModel]>,
-    users: Array<[Principal, AccessRights]>,
+  owner: Principal,
+  name: string,
+  passwords: Array<[string, PasswordModel]>,
+  users: Array<[Principal, AccessRights]>,
 ): VaultModel {
-    return { owner, name, passwords, users };
+  return { owner, name, passwords, users };
 }
 
 export function summarize(vault: VaultModel, maxLength = 1500) {
-    let text =
-        "Owner: " +
-        vault.owner.toString() +
-        ", " +
-        vault.users.length +
-        " users";
-    text += ", " + vault.passwords.length + " passwords.\n";
+  let text =
+    "Owner: " + vault.owner.toString() + ", " + vault.users.length + " users";
+  text += ", " + vault.passwords.length + " passwords.\n";
 
-    return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
+  return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
 }

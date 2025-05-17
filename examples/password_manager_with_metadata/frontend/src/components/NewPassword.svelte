@@ -1,91 +1,91 @@
 <script lang="ts">
-    import { onDestroy } from "svelte";
-    import { Editor, placeholder } from "typewriter-editor";
-    import { passwordFromContent } from "../lib/password";
-    import { auth } from "../store/auth";
-    import { draft } from "../store/draft";
-    import { setPassword, refreshVaults } from "../store/vaults";
-    import { addNotification, showError } from "../store/notifications";
-    import Header from "./Header.svelte";
-    import PasswordEditor from "./PasswordEditor.svelte";
-    import { Principal } from "@dfinity/principal";
+import { onDestroy } from "svelte";
+import { Editor, placeholder } from "typewriter-editor";
+import { passwordFromContent } from "../lib/password";
+import { auth } from "../store/auth";
+import { draft } from "../store/draft";
+import { setPassword, refreshVaults } from "../store/vaults";
+import { addNotification, showError } from "../store/notifications";
+import Header from "./Header.svelte";
+import PasswordEditor from "./PasswordEditor.svelte";
+import { Principal } from "@dfinity/principal";
 
-    let creating = false;
-    let vaultOwner =
-        $auth.state === "initialized"
-            ? $auth.client.getIdentity().getPrincipal().toText()
-            : Principal.anonymous().toText();
-    let vaultName = "";
-    let passwordName = "";
-    let url: string = "";
+let creating = false;
+let vaultOwner =
+  $auth.state === "initialized"
+    ? $auth.client.getIdentity().getPrincipal().toText()
+    : Principal.anonymous().toText();
+let vaultName = "";
+let passwordName = "";
+let url: string = "";
 
-    let tagsInput: string = "";
-    let tags: string[] = [];
-    // Convert between string and array when the input changes
-    export function handleTagsInput() {
-        // Split the input string by commas, trim whitespace, and filter empty strings
-        tags = [
-            ...new Set(
-                tagsInput
-                    .split(",")
-                    .map((tag) => tag.trim())
-                    .filter((tag) => tag !== ""),
-            ),
-        ];
-    }
+let tagsInput: string = "";
+let tags: string[] = [];
+// Convert between string and array when the input changes
+export function handleTagsInput() {
+  // Split the input string by commas, trim whitespace, and filter empty strings
+  tags = [
+    ...new Set(
+      tagsInput
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag !== ""),
+    ),
+  ];
+}
 
-    const editor = new Editor({
-        modules: {
-            placeholder: placeholder("Enter password..."),
-        },
-        html: $draft.content,
+const editor = new Editor({
+  modules: {
+    placeholder: placeholder("Enter password..."),
+  },
+  html: $draft.content,
+});
+
+async function add() {
+  if ($auth.state !== "initialized") {
+    return;
+  }
+
+  creating = true;
+
+  await setPassword(
+    Principal.fromText(vaultOwner),
+    vaultName,
+    passwordName,
+    editor.getText(),
+    url,
+    tags,
+    $auth.passwordManager,
+  )
+    .catch((e) => {
+      showError(e, "Could not add password.");
+    })
+    .finally(() => {
+      creating = false;
     });
 
-    async function add() {
-        if ($auth.state !== "initialized") {
-            return;
-        }
+  // if creation was successful, reset the editor
+  editor.setHTML("");
 
-        creating = true;
+  addNotification({
+    type: "success",
+    message: "Password added successfully",
+  });
 
-        await setPassword(
-            Principal.fromText(vaultOwner),
-            vaultName,
-            passwordName,
-            editor.getText(),
-            url,
-            tags,
-            $auth.passwordManager,
-        )
-            .catch((e) => {
-                showError(e, "Could not add password.");
-            })
-            .finally(() => {
-                creating = false;
-            });
+  // refresh passwords in the background
+  refreshVaults(
+    $auth.client.getIdentity().getPrincipal(),
+    $auth.passwordManager,
+  ).catch((e) => showError(e, "Could not refresh passwords."));
+}
 
-        // if creation was successful, reset the editor
-        editor.setHTML("");
+function saveDraft() {
+  draft.set({
+    content: editor.getText(),
+  });
+}
 
-        addNotification({
-            type: "success",
-            message: "Password added successfully",
-        });
-
-        // refresh passwords in the background
-        refreshVaults(
-            $auth.client.getIdentity().getPrincipal(),
-            $auth.passwordManager,
-        ).catch((e) => showError(e, "Could not refresh passwords."));
-    }
-
-    function saveDraft() {
-        draft.set({
-            content: editor.getText(),
-        });
-    }
-
-    onDestroy(saveDraft);
+onDestroy(saveDraft);
 </script>
 
 <svelte:window on:beforeunload={saveDraft} />

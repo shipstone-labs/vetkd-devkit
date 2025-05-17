@@ -24,9 +24,7 @@
       "frontend": {
         "entrypoint": "frontend/dist/index.html"
       },
-      "source": [
-        "frontend/dist/"
-      ],
+      "source": ["frontend/dist/"],
       "type": "assets"
     }
   },
