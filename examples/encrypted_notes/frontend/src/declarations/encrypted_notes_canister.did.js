@@ -1,18 +1,24 @@
 export const idlFactory = ({ IDL }) => {
   const ByteBuf = IDL.Record({ 'inner' : IDL.Vec(IDL.Nat8) });
-  const PasswordMetadata = IDL.Record({
-    'url' : IDL.Text,
+  const MetadataWrapper = IDL.Record({
     'number_of_modifications' : IDL.Nat64,
+    'metadata' : IDL.Vec(IDL.Nat8),
     'tags' : IDL.Vec(IDL.Text),
     'last_modification_date' : IDL.Nat64,
     'last_modified_principal' : IDL.Principal,
     'creation_date' : IDL.Nat64,
   });
-  const Result = IDL.Variant({
-    'Ok' : IDL.Vec(IDL.Tuple(ByteBuf, ByteBuf, PasswordMetadata)),
-    'Err' : IDL.Text,
+  const AuditEntryType = IDL.Variant({
+    'AccessSharedVetKey' : IDL.Null,
+    'Share' : IDL.Null,
+    'Unshare' : IDL.Null,
+    'AccessVetKey' : IDL.Null,
+    'Updated' : IDL.Null,
+    'Restored' : IDL.Null,
+    'Created' : IDL.Null,
+    'Deleted' : IDL.Null,
+    'SoftDeleted' : IDL.Null,
   });
-  const Result_1 = IDL.Variant({ 'Ok' : ByteBuf, 'Err' : IDL.Text });
   const Rights = IDL.Variant({
     'Read' : IDL.Null,
     'ReadWrite' : IDL.Null,
@@ -23,6 +29,20 @@ export const idlFactory = ({ IDL }) => {
     'rights' : Rights,
     'start' : IDL.Opt(IDL.Nat64),
   });
+  const AuditEntry = IDL.Record({
+    'audit_type' : AuditEntryType,
+    'user' : IDL.Opt(IDL.Principal),
+    'timestamp' : IDL.Nat64,
+    'caller' : IDL.Principal,
+    'access_rights' : IDL.Opt(AccessRights),
+  });
+  const Result = IDL.Variant({
+    'Ok' : IDL.Vec(
+      IDL.Tuple(ByteBuf, ByteBuf, MetadataWrapper, IDL.Opt(IDL.Vec(AuditEntry)))
+    ),
+    'Err' : IDL.Text,
+  });
+  const Result_1 = IDL.Variant({ 'Ok' : ByteBuf, 'Err' : IDL.Text });
   const Result_2 = IDL.Variant({
     'Ok' : IDL.Vec(IDL.Tuple(IDL.Principal, AccessRights)),
     'Err' : IDL.Text,
@@ -32,7 +52,7 @@ export const idlFactory = ({ IDL }) => {
     'Err' : IDL.Text,
   });
   const Result_4 = IDL.Variant({
-    'Ok' : IDL.Opt(IDL.Tuple(ByteBuf, PasswordMetadata)),
+    'Ok' : IDL.Opt(IDL.Tuple(ByteBuf, MetadataWrapper)),
     'Err' : IDL.Text,
   });
   return IDL.Service({
@@ -68,7 +88,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_vetkey_verification_key' : IDL.Func([], [ByteBuf], []),
     'insert_encrypted_value_with_metadata' : IDL.Func(
-        [IDL.Principal, ByteBuf, ByteBuf, ByteBuf, IDL.Vec(IDL.Text), IDL.Text],
+        [IDL.Principal, ByteBuf, ByteBuf, ByteBuf, IDL.Vec(IDL.Text), ByteBuf],
         [Result_4],
         [],
       ),

@@ -3,17 +3,35 @@ type AccessRights = record {
   rights : Rights;
   start : opt nat64;
 };
+type AuditEntry = record {
+  audit_type : AuditEntryType;
+  user : opt principal;
+  timestamp : nat64;
+  caller : principal;
+  access_rights : opt AccessRights;
+};
+type AuditEntryType = variant {
+  AccessSharedVetKey;
+  Share;
+  Unshare;
+  AccessVetKey;
+  Updated;
+  Restored;
+  Created;
+  Deleted;
+  SoftDeleted;
+};
 type ByteBuf = record { inner : blob };
-type PasswordMetadata = record {
-  url : text;
+type MetadataWrapper = record {
   number_of_modifications : nat64;
+  metadata : blob;
   tags : vec text;
   last_modification_date : nat64;
   last_modified_principal : principal;
   creation_date : nat64;
 };
 type Result = variant {
-  Ok : vec record { ByteBuf; ByteBuf; PasswordMetadata };
+  Ok : vec record { ByteBuf; ByteBuf; MetadataWrapper; opt vec AuditEntry };
   Err : text;
 };
 type Result_1 = variant { Ok : ByteBuf; Err : text };
@@ -23,7 +41,7 @@ type Result_2 = variant {
 };
 type Result_3 = variant { Ok : opt AccessRights; Err : text };
 type Result_4 = variant {
-  Ok : opt record { ByteBuf; PasswordMetadata };
+  Ok : opt record { ByteBuf; MetadataWrapper };
   Err : text;
 };
 type Rights = variant { Read; ReadWrite; ReadWriteManage };
@@ -45,7 +63,7 @@ service : {
       ByteBuf,
       ByteBuf,
       vec text,
-      text,
+      ByteBuf,
     ) -> (Result_4);
   remove_encrypted_value_with_metadata : (principal, ByteBuf, ByteBuf) -> (
       Result_4,

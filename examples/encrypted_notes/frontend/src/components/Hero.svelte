@@ -17,10 +17,10 @@ export let auth: Extract<
             <h1
                 class="mb-5 text-4xl sm:text-5xl font-bold text-primary dark:text-white"
             >
-                Password Manager
+                Encrypted Notes
             </h1>
             <p class="mb-5 text-xl font-semibold">
-                Your private passwords on the Internet Computer.
+                Your private notes on the Internet Computer.
             </p>
             <p class="mb-5">
                 A safe place to store your personal lists, thoughts, ideas or
@@ -34,7 +34,7 @@ export let auth: Extract<
                 </div>
             {:else if auth.state === "anonymous"}
                 <button class="btn btn-primary" on:click={() => login()}
-                    >Please login to start storing passwords</button
+                    >Please login to start storing notes</button
                 >
             {:else if auth.state === "error"}
                 <div class="text-lg font-semibold mt-8">An error occurred.</div>

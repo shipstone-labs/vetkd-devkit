@@ -48,7 +48,7 @@ async function add() {
       editedVault.name,
       Principal.fromText(newSharing),
       accessRights,
-      $auth.passwordManager,
+      $auth.noteManager,
     );
     addNotification({
       type: "success",
@@ -64,7 +64,7 @@ async function add() {
   }
   await refreshVaults(
     $auth.client.getIdentity().getPrincipal(),
-    $auth.passwordManager,
+    $auth.noteManager,
   ).catch((e) => showError(e, "Could not refresh vaults."));
 }
 
@@ -78,7 +78,7 @@ async function remove(sharing: Principal) {
       editedVault.owner,
       editedVault.name,
       sharing,
-      $auth.passwordManager,
+      $auth.noteManager,
     );
     editedVault.users = editedVault.users.filter((user) =>
       user[0].compareTo(sharing),
@@ -94,7 +94,7 @@ async function remove(sharing: Principal) {
   }
   await refreshVaults(
     $auth.client.getIdentity().getPrincipal(),
-    $auth.passwordManager,
+    $auth.noteManager,
   ).catch((e) => showError(e, "Could not refresh vaults."));
 }
 

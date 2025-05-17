@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PasswordModel, summarize } from "../lib/password";
+import { type NoteModel, summarize } from "../lib/note";
 import { link, location } from "svelte-spa-router";
 import { vaultsStore } from "../store/vaults";
 import { Principal } from "@dfinity/principal";
@@ -13,38 +13,38 @@ const unsubscribe = location.subscribe((value) => {
 });
 onDestroy(unsubscribe);
 
-export let password: PasswordModel = {
+export let note: NoteModel = {
   parentVaultName: "",
   owner: Principal.anonymous(),
-  passwordName: "",
+  noteName: "",
   content: "",
   metadata: undefined,
 };
 
-export let passwordSummary = "";
+export let noteSummary = "";
 
 $: {
   if (
     $vaultsStore.state === "loaded" &&
-    password.passwordName.length === 0 &&
+    note.noteName.length === 0 &&
     currentRoute.split("/").length > 2
   ) {
     const split = currentRoute.split("/");
     const vaultOwner = Principal.fromText(split[split.length - 3]);
     const parentVaultName = split[split.length - 2];
-    const passwordName = split[split.length - 1];
+    const noteName = split[split.length - 1];
     const searchedForPassword = $vaultsStore.list
       .find(
         (v) =>
           v.owner.compareTo(vaultOwner) === "eq" && v.name === parentVaultName,
       )
-      .passwords.find((p) => p[0] === passwordName);
+      .notes.find((p) => p[0] === noteName);
 
     if (searchedForPassword) {
-      password = searchedForPassword[1];
-      passwordSummary += summarize(password);
+      note = searchedForPassword[1];
+      noteSummary += summarize(note);
     } else {
-      passwordSummary = `could not find password ${passwordName} in vault ${parentVaultName} owned by ${vaultOwner.toText()}`;
+      noteSummary = `could not find note ${noteName} in vault ${parentVaultName} owned by ${vaultOwner.toText()}`;
     }
   }
 }
@@ -52,11 +52,11 @@ $: {
 
 <Header>
     <span slot="title" class="flex items-center gap-2 h-full">
-        Password: {password.passwordName}
+        Password: {note.noteName}
     </span>
     <svelte:fragment slot="actions">
         {#if $vaultsStore.state === "loaded" && $vaultsStore.list.length > 0}
-            <a class="btn btn-primary" href="/" use:link>New password</a>
+            <a class="btn btn-primary" href="/" use:link>New note</a>
         {/if}
     </svelte:fragment>
 </Header>
@@ -64,15 +64,15 @@ $: {
 <main class="p-4 pb-24 relative min-h-screen flex flex-col">
     {#if $vaultsStore.state === "loading"}
         <Spinner />
-        Loading password...
+        Loading note...
     {:else if $vaultsStore.state === "loaded"}
-        {#if password.parentVaultName === ""}
+        {#if note.parentVaultName === ""}
             <div class="text-center pt-8 italic">
-                There is no such password in this vault.
+                There is no such note in this vault.
             </div>
             <div class="text-center pt-8">
                 <a href="/" use:link class="btn btn-primary"
-                    >Add a new password</a
+                    >Add a new note</a
                 >
             </div>
         {:else}
@@ -81,7 +81,7 @@ $: {
             >
                 <div class="pointer-events-none">
                     <h2 class="text-lg font-bold mb-2 line-clamp-3">
-                        {password.passwordName}: "{password.content}"
+                        {note.noteName}: "{note.content}"
                     </h2>
                 </div>
             </div>
@@ -89,7 +89,7 @@ $: {
         <div class="flex-grow"></div>
         <div class="text-center">
             <a
-                href={`/vaults/${password.owner.toText()}/${password.parentVaultName}`}
+                href={`/vaults/${note.owner.toText()}/${note.parentVaultName}`}
                 use:link
                 class="btn btn-primary"
             >

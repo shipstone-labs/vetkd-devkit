@@ -1,13 +1,13 @@
 <script lang="ts">
 import { onDestroy } from "svelte";
 import { Editor, placeholder } from "typewriter-editor";
-import { passwordFromContent } from "../lib/password";
+import { noteFromContent } from "../lib/note";
 import { auth } from "../store/auth";
 import { draft } from "../store/draft";
-import { setPassword, refreshVaults } from "../store/vaults";
+import { setNote, refreshVaults } from "../store/vaults";
 import { addNotification, showError } from "../store/notifications";
 import Header from "./Header.svelte";
-import PasswordEditor from "./PasswordEditor.svelte";
+import NoteEditor from "./NoteEditor.svelte";
 import { Principal } from "@dfinity/principal";
 
 let creating = false;
@@ -19,9 +19,9 @@ let vaultOwner =
 // biome-ignore lint/style/useConst: Svelte mods are not seen by biome
 let vaultName = "";
 // biome-ignore lint/style/useConst: Svelte mods are not seen by biome
-let passwordName = "";
+let noteName = "";
 // biome-ignore lint/style/useConst: Svelte mods are not seen by biome
-let url = "";
+let metadata = {};
 
 // biome-ignore lint/style/useConst: Svelte mods are not seen by biome
 let tagsInput = "";
@@ -41,7 +41,7 @@ export function handleTagsInput() {
 
 const editor = new Editor({
   modules: {
-    placeholder: placeholder("Enter password..."),
+    placeholder: placeholder("Enter note..."),
   },
   html: $draft.content,
 });
@@ -53,17 +53,17 @@ async function add() {
 
   creating = true;
 
-  await setPassword(
+  await setNote(
     Principal.fromText(vaultOwner),
     vaultName,
-    passwordName,
+    noteName,
     editor.getText(),
-    url,
+    new TextEncoder().encode(JSON.stringify(metadata)),
     tags,
-    $auth.passwordManager,
+    $auth.noteManager,
   )
     .catch((e) => {
-      showError(e, "Could not add password.");
+      showError(e, "Could not add note.");
     })
     .finally(() => {
       creating = false;
@@ -77,11 +77,11 @@ async function add() {
     message: "Password added successfully",
   });
 
-  // refresh passwords in the background
+  // refresh notes in the background
   refreshVaults(
     $auth.client.getIdentity().getPrincipal(),
-    $auth.passwordManager,
-  ).catch((e) => showError(e, "Could not refresh passwords."));
+    $auth.noteManager,
+  ).catch((e) => showError(e, "Could not refresh notes."));
 }
 
 function saveDraft() {
@@ -96,7 +96,7 @@ onDestroy(saveDraft);
 <svelte:window on:beforeunload={saveDraft} />
 
 <Header>
-    <span slot="title"> New password </span>
+    <span slot="title"> New note </span>
 </Header>
 
 <main class="p-4">
@@ -116,16 +116,16 @@ onDestroy(saveDraft);
         />
         <input
             type="text"
-            bind:value={passwordName}
-            placeholder="Enter password name"
+            bind:value={noteName}
+            placeholder="Enter note name"
             class="input input-bordered w-full"
         />
-        <input
+        <!-- <input
             type="text"
             bind:value={url}
             placeholder="Enter optional URL"
             class="input input-bordered w-full"
-        />
+        /> -->
         <input
             type="text"
             bind:value={tagsInput}
@@ -134,10 +134,10 @@ onDestroy(saveDraft);
             class="input input-bordered w-full"
         />
     </div>
-    <PasswordEditor {editor} class="mb-3" disabled={creating} />
+    <NoteEditor {editor} class="mb-3" disabled={creating} />
     <button
         class="btn mt-6 btn-primary {creating ? 'loading' : ''}"
         disabled={creating}
-        on:click={add}>{creating ? "Adding..." : "Add password"}</button
+        on:click={add}>{creating ? "Adding..." : "Add note"}</button
     >
 </main>

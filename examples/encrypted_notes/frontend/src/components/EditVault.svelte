@@ -33,7 +33,7 @@ async function save() {
 
   await refreshVaults(
     $auth.client.getIdentity().getPrincipal(),
-    $auth.passwordManager,
+    $auth.noteManager,
   ).catch((e) => showError(e, "Could not refresh notes."));
 }
 

@@ -14,7 +14,7 @@ import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 export let vault: VaultModel = {
   name: "",
   owner: Principal.managementCanister(),
-  passwords: [],
+  notes: [],
   users: [],
 };
 export let vaultSummary = "";
@@ -63,7 +63,7 @@ $: {
     </span>
     <svelte:fragment slot="actions">
         {#if $vaultsStore.state === "loaded" && $vaultsStore.list.length > 0}
-            <a class="btn btn-primary" href="/" use:link>New password</a>
+            <a class="btn btn-primary" href="/" use:link>New note</a>
         {/if}
     </svelte:fragment>
 </Header>
@@ -89,13 +89,13 @@ $: {
         <div class="pointer-events-none">
             <h2 class="text-lg font-bold mb-2 line-clamp-3">Passwords</h2>
         </div>
-        {#if vault.passwords.length === 0}
+        {#if vault.notes.length === 0}
             <div class="text-center pt-8 italic">
-                You don't have any passwords in this vault.
+                You don't have any notes in this vault.
             </div>
             <div class="text-center pt-8">
                 <a href="/" use:link class="btn btn-primary"
-                    >Add a new password</a
+                    >Add a new note</a
                 >
             </div>
         {:else}
@@ -103,16 +103,16 @@ $: {
                 class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3
             max-w-7xl"
             >
-                {#each vault.passwords as password ((password[1].owner, password[1].parentVaultName, password[1].passwordName))}
+                {#each vault.notes as note ((note[1].owner, note[1].parentVaultName, note[1].noteName))}
                     <a
                         class="p-4 rounded-md border border-base-300 dark:border-base-300 bg-base
 dark:bg-base-100 hover:-translate-y-2 transition-transform"
                         use:link
-                        href={`/edit/vaults/${vault.owner}/${vault.name}/${password[1].passwordName}`}
+                        href={`/edit/vaults/${vault.owner}/${vault.name}/${note[1].noteName}`}
                     >
                         <div class="pointer-events-none">
                             <h2 class="text-lg font-bold mb-2 line-clamp-3" style="word-break: break-all;">
-                                {password[1].passwordName}: "{password[1]
+                                {note[1].noteName}: "{note[1]
                                     .content}"
                             </h2>
                         </div>

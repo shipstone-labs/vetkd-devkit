@@ -1,10 +1,10 @@
 <script lang="ts">
 import { replace, location, link } from "svelte-spa-router";
 import { Editor, placeholder } from "typewriter-editor";
-import type { PasswordModel } from "../lib/password";
-import { vaultsStore, refreshVaults, setPassword } from "../store/vaults";
+import type { NoteModel } from "../lib/note";
+import { vaultsStore, refreshVaults, setNote } from "../store/vaults";
 import Header from "./Header.svelte";
-import PasswordEditor from "./PasswordEditor.svelte";
+import PasswordEditor from "./NoteEditor.svelte";
 import Trash from "svelte-icons/fa/FaTrash.svelte";
 import { addNotification, showError } from "../store/notifications";
 import { auth } from "../store/auth";
@@ -22,12 +22,12 @@ onDestroy(unsubscribe);
 export let parentVaultOwner = "";
 let parentVaultOwnerPrincipal = Principal.managementCanister();
 export let parentVaultName = "";
-export let passwordName = "";
-export let url = "";
+export let noteName = "";
+export let metadata = {};
 let tagsInput = "";
 export let tags: string[] = [];
 
-let originalPassword: PasswordModel;
+let originalNote: NoteModel;
 
 let editor: Editor;
 let updating = false;
@@ -52,7 +52,7 @@ async function save() {
     $auth.state !== "initialized" ||
     $vaultsStore.state !== "loaded" ||
     parentVaultOwner.length === 0 ||
-    !originalPassword
+    !originalNote
   ) {
     return;
   }
@@ -60,8 +60,8 @@ async function save() {
   let move = false;
 
   if (
-    parentVaultName !== originalPassword.parentVaultName ||
-    parentVaultOwnerPrincipal.compareTo(originalPassword.owner) !== "eq"
+    parentVaultName !== originalNote.parentVaultName ||
+    parentVaultOwnerPrincipal.compareTo(originalNote.owner) !== "eq"
   ) {
     move = true;
     // user should have access in the new vault
@@ -83,7 +83,7 @@ async function save() {
       });
       return;
     }
-  } else if (passwordName !== originalPassword.passwordName) {
+  } else if (noteName !== originalNote.noteName) {
     move = true;
   } else {
     move = false;
@@ -92,45 +92,45 @@ async function save() {
   updating = true;
 
   if (move) {
-    await $auth.passwordManager
-      .removePassword(
-        originalPassword.owner,
-        originalPassword.parentVaultName,
-        originalPassword.passwordName,
+    await $auth.noteManager
+      .removeNote(
+        originalNote.owner,
+        originalNote.parentVaultName,
+        originalNote.noteName,
       )
       .catch((e) => {
         deleting = false;
-        showError(e, "Could not delete password for moving it.");
+        showError(e, "Could not delete note for moving it.");
         return;
       });
 
-    await setPassword(
+    await setNote(
       parentVaultOwnerPrincipal,
       parentVaultName,
-      passwordName,
+      noteName,
       html,
-      url,
+      new TextEncoder().encode(JSON.stringify(metadata)),
       tags,
-      $auth.passwordManager,
+      $auth.noteManager,
     )
       .catch((e) => {
-        showError(e, "Could not update password.");
+        showError(e, "Could not update note.");
       })
       .finally(() => {
         updating = false;
       });
   } else {
-    await setPassword(
+    await setNote(
       parentVaultOwnerPrincipal,
       parentVaultName,
-      passwordName,
+      noteName,
       html,
-      url,
+      new TextEncoder().encode(JSON.stringify(metadata)),
       tags,
-      $auth.passwordManager,
+      $auth.noteManager,
     )
       .catch((e) => {
-        showError(e, "Could not update password.");
+        showError(e, "Could not update note.");
       })
       .finally(() => {
         updating = false;
@@ -144,37 +144,35 @@ async function save() {
 
   await refreshVaults(
     $auth.client.getIdentity().getPrincipal(),
-    $auth.passwordManager,
-  ).catch((e) => showError(e, "Could not refresh passwords."));
+    $auth.noteManager,
+  ).catch((e) => showError(e, "Could not refresh notes."));
 
   if (move) {
-    replace(
-      `/edit/vaults/${parentVaultOwner}/${parentVaultName}/${passwordName}`,
-    );
+    replace(`/edit/vaults/${parentVaultOwner}/${parentVaultName}/${noteName}`);
   }
 }
 
-async function deletePassword() {
+async function deleteNote() {
   if ($auth.state !== "initialized") {
     return;
   }
   deleting = true;
-  await $auth.passwordManager
-    .removePassword(parentVaultOwnerPrincipal, parentVaultName, passwordName)
+  await $auth.noteManager
+    .removeNote(parentVaultOwnerPrincipal, parentVaultName, noteName)
     .catch((e) => {
       deleting = false;
-      showError(e, "Could not delete password.");
+      showError(e, "Could not delete note.");
     });
 
   await refreshVaults(
     $auth.client.getIdentity().getPrincipal(),
-    $auth.passwordManager,
+    $auth.noteManager,
   )
-    .catch((e) => showError(e, "Could not refresh passwords."))
+    .catch((e) => showError(e, "Could not refresh notes."))
     .finally(() => {
       addNotification({
         type: "success",
-        message: "Password deleted successfully",
+        message: "Note deleted successfully",
       });
       replace("/vaults");
     });
@@ -183,7 +181,7 @@ async function deletePassword() {
 $: {
   if (
     $vaultsStore.state === "loaded" &&
-    passwordName.length === 0 &&
+    noteName.length === 0 &&
     currentRoute.split("/").length > 2 &&
     $auth.state === "initialized"
   ) {
@@ -191,19 +189,27 @@ $: {
     parentVaultOwner = split[split.length - 3];
     parentVaultOwnerPrincipal = Principal.fromText(parentVaultOwner);
     parentVaultName = split[split.length - 2];
-    passwordName = split[split.length - 1];
+    noteName = split[split.length - 1];
     const searchedForPassword = $vaultsStore.list
       .find(
         (v) =>
           v.owner.compareTo(Principal.fromText(parentVaultOwner)) === "eq" &&
           v.name === parentVaultName,
       )
-      .passwords.find((p) => p[0] === passwordName);
+      .notes.find((p) => p[0] === noteName);
 
     if (searchedForPassword) {
-      originalPassword = { ...searchedForPassword[1] };
-      url = originalPassword.metadata.url;
-      tags = originalPassword.metadata.tags;
+      originalNote = { ...searchedForPassword[1] };
+      try {
+        metadata = JSON.parse(
+          new TextDecoder().decode(
+            new Uint8Array([...originalNote.metadata.metadata]),
+          ),
+        );
+      } catch {
+        metadata = {};
+      }
+      tags = originalNote.metadata.tags;
       tagsInput = tags.join(", ");
     }
 
@@ -222,7 +228,7 @@ $: {
       modules: {
         placeholder: placeholder("Start typing..."),
       },
-      html: originalPassword.content,
+      html: originalNote.content,
     });
   }
 }
@@ -230,7 +236,7 @@ $: {
 
 {#if parentVaultName.length > 0}
     <Header>
-        <span slot="title"> Edit password </span>
+        <span slot="title"> Edit note </span>
         <button
             slot="actions"
             class="btn btn-ghost {deleting ? 'loading' : ''} {!!accessRights[
@@ -238,7 +244,7 @@ $: {
             ]}
                 ? 'hidden'
                 : ''}"
-            on:click={deletePassword}
+            on:click={deleteNote}
             disabled={updating || deleting}
         >
             {#if !deleting}
@@ -265,16 +271,16 @@ $: {
                 />
                 <input
                     type="text"
-                    bind:value={passwordName}
-                    placeholder="Enter password name"
+                    bind:value={noteName}
+                    placeholder="Enter note name"
                     class="input input-bordered w-full"
                 />
-                <input
+                <!-- <input
                     type="text"
-                    bind:value={url}
+                    bind:value={metadata}
                     placeholder="Enter optional URL"
                     class="input input-bordered w-full"
-                />
+                /> -->
                 <input
                     type="text"
                     bind:value={tagsInput}
@@ -290,21 +296,21 @@ $: {
             />
             <div class="mb-1 text-sm text-gray-500">
                 Created: {new Date(
-                    Number(originalPassword.metadata.creation_date) / 1000000,
+                    Number(originalNote.metadata.creation_date) / 1000000,
                 )}
             </div>
             <div class="mb-1 text-sm text-gray-500">
                 Last modified: {new Date(
-                    Number(originalPassword.metadata.last_modification_date) /
+                    Number(originalNote.metadata.last_modification_date) /
                         1000000,
                 )}
             </div>
             <div class="mb-1 text-sm text-gray-500">
-                Number of modifications: {originalPassword.metadata
+                Number of modifications: {originalNote.metadata
                     .number_of_modifications}
             </div>
             <div class="mb-1 text-sm text-gray-500">
-                Last modification by: {originalPassword.metadata.last_modified_principal.toText()}
+                Last modification by: {originalNote.metadata.last_modified_principal.toText()}
             </div>
             <a
                 href={`/vaults/${parentVaultOwner}/${parentVaultName}`}
@@ -321,19 +327,19 @@ $: {
             >
             <hr class="mt-10" />
         {:else if $vaultsStore.state === "loading"}
-            Loading password...
+            Loading note...
         {/if}
     </main>
 {:else}
     <Header>
-        <span slot="title"> Edit password </span>
+        <span slot="title"> Edit note </span>
     </Header>
     <main class="p-4">
         {#if $vaultsStore.state === "loading"}
             <Spinner />
-            Loading password...
+            Loading note...
         {:else if $vaultsStore.state === "loaded"}
-            <div class="alert alert-error">Could not find password.</div>
+            <div class="alert alert-error">Could not find note.</div>
         {/if}
     </main>
 {/if}

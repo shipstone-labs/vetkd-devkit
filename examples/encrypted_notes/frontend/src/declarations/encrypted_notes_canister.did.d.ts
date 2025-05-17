@@ -7,16 +7,34 @@ export interface AccessRights {
   'rights' : Rights,
   'start' : [] | [bigint],
 }
+export interface AuditEntry {
+  'audit_type' : AuditEntryType,
+  'user' : [] | [Principal],
+  'timestamp' : bigint,
+  'caller' : Principal,
+  'access_rights' : [] | [AccessRights],
+}
+export type AuditEntryType = { 'AccessSharedVetKey' : null } |
+  { 'Share' : null } |
+  { 'Unshare' : null } |
+  { 'AccessVetKey' : null } |
+  { 'Updated' : null } |
+  { 'Restored' : null } |
+  { 'Created' : null } |
+  { 'Deleted' : null } |
+  { 'SoftDeleted' : null };
 export interface ByteBuf { 'inner' : Uint8Array | number[] }
-export interface PasswordMetadata {
-  'url' : string,
+export interface MetadataWrapper {
   'number_of_modifications' : bigint,
+  'metadata' : Uint8Array | number[],
   'tags' : Array<string>,
   'last_modification_date' : bigint,
   'last_modified_principal' : Principal,
   'creation_date' : bigint,
 }
-export type Result = { 'Ok' : Array<[ByteBuf, ByteBuf, PasswordMetadata]> } |
+export type Result = {
+    'Ok' : Array<[ByteBuf, ByteBuf, MetadataWrapper, [] | [Array<AuditEntry>]]>
+  } |
   { 'Err' : string };
 export type Result_1 = { 'Ok' : ByteBuf } |
   { 'Err' : string };
@@ -24,7 +42,7 @@ export type Result_2 = { 'Ok' : Array<[Principal, AccessRights]> } |
   { 'Err' : string };
 export type Result_3 = { 'Ok' : [] | [AccessRights] } |
   { 'Err' : string };
-export type Result_4 = { 'Ok' : [] | [[ByteBuf, PasswordMetadata]] } |
+export type Result_4 = { 'Ok' : [] | [[ByteBuf, MetadataWrapper]] } |
   { 'Err' : string };
 export type Rights = { 'Read' : null } |
   { 'ReadWrite' : null } |
@@ -47,7 +65,7 @@ export interface _SERVICE {
   'get_user_rights' : ActorMethod<[Principal, ByteBuf, Principal], Result_3>,
   'get_vetkey_verification_key' : ActorMethod<[], ByteBuf>,
   'insert_encrypted_value_with_metadata' : ActorMethod<
-    [Principal, ByteBuf, ByteBuf, ByteBuf, Array<string>, string],
+    [Principal, ByteBuf, ByteBuf, ByteBuf, Array<string>, ByteBuf],
     Result_4
   >,
   'remove_encrypted_value_with_metadata' : ActorMethod<

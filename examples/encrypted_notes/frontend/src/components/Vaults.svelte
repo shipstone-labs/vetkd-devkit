@@ -37,7 +37,7 @@ $: {
     <span slot="title"> Your vaults </span>
     <svelte:fragment slot="actions">
         {#if $vaultsStore.state === "loaded" && $vaultsStore.list.length > 0}
-            <a class="btn btn-primary" href="/" use:link>New password</a>
+            <a class="btn btn-primary" href="/" use:link>New note</a>
         {/if}
     </svelte:fragment>
 </Header>
@@ -81,7 +81,7 @@ dark:bg-base-100 hover:-translate-y-2 transition-transform"
             </div>
             <div class="text-center pt-8">
                 <a href="/" use:link class="btn btn-primary"
-                    >Add a new password</a
+                    >Add a new note</a
                 >
             </div>
         {/if}

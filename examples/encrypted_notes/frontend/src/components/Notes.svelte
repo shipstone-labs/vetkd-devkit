@@ -2,7 +2,7 @@
 import type { VaultModel } from "../lib/vault";
 import { vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
-import Password from "./Password.svelte";
+import Password from "./Note.svelte";
 import Spinner from "./Spinner.svelte";
 import { link } from "svelte-spa-router";
 
@@ -14,8 +14,8 @@ $: searchIndex =
   $vaultsStore.state === "loaded"
     ? $vaultsStore.list.map((vault) => {
         const div = document.createElement("div");
-        div.innerHTML = Array.from(vault.passwords.values())
-          .map((password) => password[0])
+        div.innerHTML = Array.from(vault.notes.values())
+          .map((note) => note[0])
           .join(" xx ");
         const content = div.innerText;
         return [content].join("/#delimiter#/").toLowerCase();
@@ -36,7 +36,7 @@ $: {
 </script>
 
 <Header>
-    <span slot="title"> Your passwords </span>
+    <span slot="title"> Your notes </span>
     <svelte:fragment slot="actions">
         {#if $vaultsStore.state === "loaded" && $vaultsStore.list.length > 0}
             <a class="btn btn-primary" use:link href="/">New Password</a>
@@ -46,7 +46,7 @@ $: {
 <main class="p-4">
     {#if $vaultsStore.state === "loading"}
         <Spinner />
-        Loading passwords...
+        Loading notes...
     {:else if $vaultsStore.state === "loaded"}
         {#if $vaultsStore.list.length > 0}
             <div class="mb-6">
@@ -63,10 +63,10 @@ $: {
                 class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-w-7xl"
             >
                 {#each filteredVaults as vault (vault.name)}
-                    {#each Array.from(vault.passwords
+                    {#each Array.from(vault.notes
                             .values()
-                            .map(([name, password]) => password)) as password}
-                        <Password {password} />
+                            .map(([name, note]) => note)) as note}
+                        <Password note={note} />
                     {/each}
                 {/each}
             </div>
@@ -77,6 +77,6 @@ $: {
             </div>
         {/if}
     {:else if $vaultsStore.state === "error"}
-        <div class="alert alert-error">Could not load passwords.</div>
+        <div class="alert alert-error">Could not load notes.</div>
     {/if}
 </main>

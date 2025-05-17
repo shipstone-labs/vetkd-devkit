@@ -4,11 +4,11 @@ import type { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
 import { createEncryptedMaps } from "./encrypted_maps";
 import type { Principal } from "@dfinity/principal";
 import { createActor } from "../declarations/index";
-import type { _SERVICE } from "../declarations/encrypted_notes.did";
-import { passwordFromContent, type PasswordModel } from "../lib/password";
-import { vaultFromContent, type VaultModel } from "../lib/vault";
+import type { _SERVICE } from "../declarations/encrypted_notes_canister.did";
+import { noteFromContent, type NoteModel } from "./note.js";
+import { vaultFromContent, type VaultModel } from "./vault";
 
-export class PasswordManager {
+export class NoteManager {
     /// The actor class representing the full interface of the canister.
     private readonly canisterClient: ActorSubclass<_SERVICE>;
     // TODO: inaccessible API are get, instert and remove
@@ -22,19 +22,19 @@ export class PasswordManager {
         this.encryptedMaps = encryptedMaps;
     }
 
-    async setPassword(
+    async setNote(
         owner: Principal,
         vault: string,
-        passwordName: string,
-        password: Uint8Array,
+        noteName: string,
+        cleartext: Uint8Array,
         tags: string[],
-        url: string,
+        metadata: Uint8Array,
     ): Promise<{ Ok: null } | { Err: string }> {
         const encryptedPassword = await this.encryptedMaps.encrypt_for(
             owner,
             vault,
-            passwordName,
-            password,
+            noteName,
+            cleartext,
         );
         if ("Err" in encryptedPassword) {
             return encryptedPassword;
@@ -43,10 +43,10 @@ export class PasswordManager {
             await this.canisterClient.insert_encrypted_value_with_metadata(
                 owner,
                 stringToBytebuf(vault),
-                stringToBytebuf(passwordName),
+                stringToBytebuf(noteName),
                 { inner: encryptedPassword.Ok },
                 tags,
-                url,
+                uint8ArrayToBytebuf(metadata),
             );
         if ("Err" in maybeError) {
             return maybeError;
@@ -89,35 +89,35 @@ export class PasswordManager {
                 throw new Error(result.Err);
             }
 
-            const passwords = new Array<[string, PasswordModel]>();
+            const notes = new Array<[string, NoteModel]>();
             for (const [
-                passwordNameBytebuf,
+                noteNameBytebuf,
                 encryptedData,
-                passwordMetadata,
+                noteMetadata,
             ] of result.Ok) {
-                const passwordNameString = new TextDecoder().decode(
-                    Uint8Array.from(passwordNameBytebuf.inner),
+                const noteNameString = new TextDecoder().decode(
+                    Uint8Array.from(noteNameBytebuf.inner),
                 );
                 const data = await this.encryptedMaps.decrypt_for(
                     otherOwner,
                     vaultName,
-                    passwordNameString,
+                    noteNameString,
                     Uint8Array.from(encryptedData.inner),
                 );
                 if ("Err" in data) {
                     throw new Error(data.Err);
                 }
-                const passwordContent = new TextDecoder().decode(
+                const noteContent = new TextDecoder().decode(
                     Uint8Array.from(data.Ok),
                 );
-                const password = passwordFromContent(
+                const note = noteFromContent(
                     otherOwner,
                     vaultName,
-                    passwordNameString,
-                    passwordContent,
-                    passwordMetadata,
+                    noteNameString,
+                    noteContent,
+                    noteMetadata,
                 );
-                passwords.push([passwordNameString, password]);
+                notes.push([noteNameString, note]);
             }
 
             const usersResult =
@@ -130,28 +130,23 @@ export class PasswordManager {
             }
 
             vaults.push(
-                vaultFromContent(
-                    otherOwner,
-                    vaultName,
-                    passwords,
-                    usersResult.Ok,
-                ),
+                vaultFromContent(otherOwner, vaultName, notes, usersResult.Ok),
             );
         }
 
         return { Ok: vaults };
     }
 
-    async removePassword(
+    async removeNote(
         owner: Principal,
         vault: string,
-        passwordName: string,
+        noteName: string,
     ): Promise<{ Ok: null } | { Err: string }> {
         const maybeError =
             await this.canisterClient.remove_encrypted_value_with_metadata(
                 owner,
                 stringToBytebuf(vault),
-                stringToBytebuf(passwordName),
+                stringToBytebuf(noteName),
             );
         if ("Err" in maybeError) {
             return maybeError;
@@ -162,7 +157,7 @@ export class PasswordManager {
 
 export async function createPasswordManager(
     _agentOptions?: HttpAgentOptions,
-): Promise<PasswordManager> {
+): Promise<NoteManager> {
     let agentOptions = _agentOptions;
     const { CANISTER_ID_ENCRYPTED_NOTES } = process.env;
     if (!CANISTER_ID_ENCRYPTED_NOTES) {
@@ -187,9 +182,13 @@ export async function createPasswordManager(
         agentOptions,
     });
 
-    return new PasswordManager(canisterClient, encryptedMaps);
+    return new NoteManager(canisterClient, encryptedMaps);
 }
 
 function stringToBytebuf(str: string): { inner: Uint8Array } {
     return { inner: new TextEncoder().encode(str) };
+}
+
+function uint8ArrayToBytebuf(buf: Uint8Array): { inner: Uint8Array } {
+    return { inner: buf };
 }

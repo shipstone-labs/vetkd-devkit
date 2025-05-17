@@ -43,7 +43,7 @@ import { link } from "svelte-spa-router";
                         <span class="w-6 h-6 p-1 mr-2">
                             <FaPlusSquare />
                         </span>
-                        New password
+                        New note
                     </a>
                 </li>
                 <li>

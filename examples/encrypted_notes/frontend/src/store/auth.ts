@@ -4,9 +4,9 @@ import { AuthClient } from "@dfinity/auth-client";
 import type { JsonnableDelegationChain } from "@dfinity/identity/lib/cjs/identity/delegation";
 import { replace } from "svelte-spa-router";
 import {
-    type PasswordManager,
+    type NoteManager,
     createPasswordManager,
-} from "../lib/password_manager.js";
+} from "../lib/note_manager.js";
 
 export type AuthState =
     | {
@@ -18,7 +18,7 @@ export type AuthState =
       }
     | {
           state: "initialized";
-          passwordManager: PasswordManager;
+          noteManager: NoteManager;
           client: AuthClient;
       }
     | {
@@ -83,13 +83,13 @@ export async function authenticate(client: AuthClient) {
     handleSessionTimeout();
 
     try {
-        const passwordManager = await createPasswordManager({
+        const noteManager = await createPasswordManager({
             identity: client.getIdentity(),
         });
 
         auth.update(() => ({
             state: "initialized",
-            passwordManager,
+            noteManager,
             client,
         }));
     } catch (e) {

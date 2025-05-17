@@ -5,7 +5,7 @@ use ic_stable_structures::storable::Blob;
 use ic_stable_structures::{storable::Bound, Storable};
 use ic_stable_structures::{BTreeMap as StableBTreeMap, DefaultMemoryImpl};
 use ic_vetkd_cdk_encrypted_maps::{EncryptedMaps, VetKey, VetKeyVerificationKey};
-use ic_vetkd_cdk_types::{AccessRights, ByteBuf, EncryptedMapValue, TransportKey};
+use ic_vetkd_cdk_types::{AccessRights, AuditLog, ByteBuf, EncryptedMapValue, TransportKey};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -65,12 +65,18 @@ type MapKey = Blob<32>;
 // To understand the intuition how a stable map over a tuple type works, see
 // https://mmapped.blog/posts/14-stable-structures#stable-btree.
 type StableMetadataMap = StableBTreeMap<(MapOwner, MapName, MapKey), MetadataWrapper, Memory>;
+type MapValueWithMetadata = (
+    ByteBuf,
+    EncryptedMapValue,
+    MetadataWrapper,
+    Option<AuditLog>,
+);
 
 thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
     static ENCRYPTED_MAPS: RefCell<EncryptedMaps> = RefCell::new(EncryptedMaps::init(
-        "password_manager",
+        "note_manager",
         MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0))),
         MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1))),
         MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2))),
@@ -112,13 +118,16 @@ fn get_shared_user_access_for_map(
 fn get_encrypted_values_for_map_with_metadata(
     map_owner: Principal,
     map_name: ByteBuf,
-) -> Result<Vec<(ByteBuf, EncryptedMapValue, MetadataWrapper)>, String> {
+) -> Result<Vec<MapValueWithMetadata>, String> {
     let map_name = bytebuf_to_blob(map_name)?;
     let map_id = (map_owner, map_name);
     let encrypted_values_result = ENCRYPTED_MAPS.with_borrow(|encrypted_maps| {
-        encrypted_maps.get_encrypted_values_for_map(ic_cdk::caller(), map_id)
+        let log = encrypted_maps.key_manager.get_audit_log(map_id);
+        encrypted_maps
+            .get_encrypted_values_for_map(ic_cdk::caller(), map_id)
+            .map(|f| (f, log.clone()))
     });
-    encrypted_values_result.map(|map_values| {
+    encrypted_values_result.map(|(map_values, audit_log)| {
         METADATA.with_borrow(|metadata| {
             let iter_metadata = metadata
                 .range((map_owner, map_name, Blob::default())..)
@@ -133,6 +142,7 @@ fn get_encrypted_values_for_map_with_metadata(
                         EncryptedMapValue::from(key_left.as_slice().to_vec()),
                         encrypted_value,
                         metadata,
+                        audit_log.clone(),
                     )
                 })
                 .collect()

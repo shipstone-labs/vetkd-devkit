@@ -423,6 +423,13 @@ impl KeyManager {
             }
         }
     }
+
+    pub fn get_audit_log(&self, key_id: KeyId) -> Option<AuditLog> {
+        if let Some(audit_logs) = &self.audit_logs {
+            return audit_logs.get(&key_id).clone();
+        }
+        None
+    }
 }
 
 fn bls12_381_test_key_1() -> VetKDKeyId {
