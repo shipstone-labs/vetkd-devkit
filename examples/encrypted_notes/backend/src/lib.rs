@@ -11,17 +11,17 @@ use std::borrow::Cow;
 use std::cell::RefCell;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct PasswordMetadata {
+pub struct MetadataWrapper {
     creation_date: u64,
     last_modification_date: u64,
     number_of_modifications: u64,
     last_modified_principal: Principal,
     tags: Vec<String>,
-    url: String,
+    metadata: Vec<u8>,
 }
 
-impl PasswordMetadata {
-    pub fn new(caller: Principal, tags: Vec<String>, url: String) -> Self {
+impl MetadataWrapper {
+    pub fn new(caller: Principal, tags: Vec<String>, metadata: ByteBuf) -> Self {
         let time_now = ic_cdk::api::time();
         Self {
             creation_date: time_now,
@@ -29,11 +29,11 @@ impl PasswordMetadata {
             number_of_modifications: 0,
             last_modified_principal: caller,
             tags,
-            url,
+            metadata: metadata.into(),
         }
     }
 
-    pub fn update(self, caller: Principal, tags: Vec<String>, url: String) -> Self {
+    pub fn update(self, caller: Principal, tags: Vec<String>, metadata: ByteBuf) -> Self {
         let time_now = ic_cdk::api::time();
         Self {
             creation_date: self.creation_date,
@@ -41,12 +41,12 @@ impl PasswordMetadata {
             number_of_modifications: self.number_of_modifications + 1,
             last_modified_principal: caller,
             tags,
-            url,
+            metadata: metadata.into(),
         }
     }
 }
 
-impl Storable for PasswordMetadata {
+impl Storable for MetadataWrapper {
     fn to_bytes(&self) -> Cow<[u8]> {
         Cow::Owned(serde_cbor::to_vec(self).expect("failed to serialize"))
     }
@@ -64,7 +64,7 @@ type MapName = Blob<32>;
 type MapKey = Blob<32>;
 // To understand the intuition how a stable map over a tuple type works, see
 // https://mmapped.blog/posts/14-stable-structures#stable-btree.
-type StableMetadataMap = StableBTreeMap<(MapOwner, MapName, MapKey), PasswordMetadata, Memory>;
+type StableMetadataMap = StableBTreeMap<(MapOwner, MapName, MapKey), MetadataWrapper, Memory>;
 
 thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
@@ -112,7 +112,7 @@ fn get_shared_user_access_for_map(
 fn get_encrypted_values_for_map_with_metadata(
     map_owner: Principal,
     map_name: ByteBuf,
-) -> Result<Vec<(ByteBuf, EncryptedMapValue, PasswordMetadata)>, String> {
+) -> Result<Vec<(ByteBuf, EncryptedMapValue, MetadataWrapper)>, String> {
     let map_name = bytebuf_to_blob(map_name)?;
     let map_id = (map_owner, map_name);
     let encrypted_values_result = ENCRYPTED_MAPS.with_borrow(|encrypted_maps| {
@@ -158,8 +158,8 @@ fn insert_encrypted_value_with_metadata(
     map_key: ByteBuf,
     value: EncryptedMapValue,
     tags: Vec<String>,
-    url: String,
-) -> Result<Option<(EncryptedMapValue, PasswordMetadata)>, String> {
+    new_metadata: ByteBuf,
+) -> Result<Option<(EncryptedMapValue, MetadataWrapper)>, String> {
     let caller = ic_cdk::caller();
     let map_name = bytebuf_to_blob(map_name)?;
     let map_id = (map_owner, map_name);
@@ -172,8 +172,8 @@ fn insert_encrypted_value_with_metadata(
                     let metadata_key = (map_owner, map_name, map_key);
                     let metadata_value = metadata
                         .get(&metadata_key)
-                        .map(|m| m.update(caller, tags.clone(), url.clone()))
-                        .unwrap_or(PasswordMetadata::new(caller, tags, url));
+                        .map(|m| m.update(caller, tags.clone(), new_metadata.clone()))
+                        .unwrap_or(MetadataWrapper::new(caller, tags, new_metadata));
                     opt_prev_value.zip(metadata.insert(metadata_key, metadata_value))
                 })
             })
@@ -185,7 +185,7 @@ fn remove_encrypted_value_with_metadata(
     map_owner: Principal,
     map_name: ByteBuf,
     map_key: ByteBuf,
-) -> Result<Option<(EncryptedMapValue, PasswordMetadata)>, String> {
+) -> Result<Option<(EncryptedMapValue, MetadataWrapper)>, String> {
     let map_name = bytebuf_to_blob(map_name)?;
     let map_id = (map_owner, map_name);
     let map_key = bytebuf_to_blob(map_key)?;

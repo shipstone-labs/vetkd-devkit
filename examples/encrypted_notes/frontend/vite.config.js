@@ -12,6 +12,10 @@ import environment from "vite-plugin-environment";
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    'process.env.CANISTER_ID_ENCRYPTED_NOTES_CANISTER': JSON.stringify(process.env.CANISTER_ID_ENCRYPTED_NOTES_CANISTER || ''),
+    'process.env.DFX_NETWORK': JSON.stringify(process.env.DFX_NETWORK || 'local'),
+  },
   plugins: [
     svelte(),
     wasm(),

@@ -19,6 +19,7 @@ ic-vetkd-cdk-encrypted-maps = { path = "../../../cdk/encrypted_maps" }
 ic-vetkd-cdk-types = { path = "../../../cdk/types" }
 ic-vetkd-utils = { workspace = true }
 serde = { workspace = true }
+serde_bytes = "0.11.17"
 serde_cbor = { workspace = true }
 
 [features]
