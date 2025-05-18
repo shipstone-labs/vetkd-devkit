@@ -1,10 +1,10 @@
 import "./init.ts";
 import { HttpAgent, type HttpAgentOptions } from "@dfinity/agent";
-import { DefaultEncryptedMapsClient } from "../../../../../sdk/ic_vetkd_sdk_encrypted_maps_example/src/index";
 import { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
+import { DefaultEncryptedMapsClient } from "../../../../../sdk/ic_vetkd_sdk_encrypted_maps_example/src/index";
 
 export async function createEncryptedMaps(
-  agentOptions?: HttpAgentOptions,
+  _agentOptions?: HttpAgentOptions,
 ): Promise<EncryptedMaps> {
   const CANISTER_ID_ENCRYPTED_MAPS_EXAMPLE =
     process.env.CANISTER_ID_ENCRYPTED_MAPS_EXAMPLE;
@@ -14,6 +14,7 @@ export async function createEncryptedMaps(
       : "http://localhost:8000";
   const hostOptions = { host };
 
+  let agentOptions = _agentOptions;
   if (!agentOptions) {
     agentOptions = hostOptions;
   } else {
@@ -23,7 +24,7 @@ export async function createEncryptedMaps(
   const agent = await HttpAgent.create({ ...agentOptions });
   // Fetch root key for certificate validation during development
   if (process.env.NODE_ENV !== "production") {
-    console.log(`Dev environment - fetching root key...`);
+    console.log("Dev environment - fetching root key...");
 
     agent.fetchRootKey().catch((err) => {
       console.warn(

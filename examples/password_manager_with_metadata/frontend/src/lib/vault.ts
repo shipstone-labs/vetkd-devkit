@@ -1,6 +1,6 @@
 import type { Principal } from "@dfinity/principal";
-import type { PasswordModel } from "./password";
 import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
+import type { PasswordModel } from "./password";
 
 export interface VaultModel {
   owner: Principal;
@@ -19,9 +19,7 @@ export function vaultFromContent(
 }
 
 export function summarize(vault: VaultModel, maxLength = 1500) {
-  let text =
-    "Owner: " + vault.owner.toString() + ", " + vault.users.length + " users";
-  text += ", " + vault.passwords.length + " passwords.\n";
+  const text = `Owner: ${vault.owner.toString()}, ${vault.users.length} users, ${vault.passwords.length} passwords.\n`;
 
   return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
 }

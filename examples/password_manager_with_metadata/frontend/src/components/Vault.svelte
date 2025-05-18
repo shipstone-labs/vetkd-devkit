@@ -1,15 +1,15 @@
 <script lang="ts">
-import { type VaultModel, summarize } from "../lib/vault";
-import { link, location } from "svelte-spa-router";
-import { onDestroy } from "svelte";
-import { vaultsStore } from "../store/vaults";
 import { Principal } from "@dfinity/principal";
-import Header from "./Header.svelte";
-import Spinner from "./Spinner.svelte";
-import GiOpenTreasureChest from "svelte-icons/gi/GiOpenTreasureChest.svelte";
-import { auth } from "../store/auth";
-import SharingEditor from "./SharingEditor.svelte";
 import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
+import { onDestroy } from "svelte";
+import GiOpenTreasureChest from "svelte-icons/gi/GiOpenTreasureChest.svelte";
+import { link, location } from "svelte-spa-router";
+import { type VaultModel, summarize } from "../lib/vault";
+import { auth } from "../store/auth";
+import { vaultsStore } from "../store/vaults";
+import Header from "./Header.svelte";
+import SharingEditor from "./SharingEditor.svelte";
+import Spinner from "./Spinner.svelte";
 
 export let vault: VaultModel = {
   name: "",
@@ -17,7 +17,7 @@ export let vault: VaultModel = {
   passwords: [],
   users: [],
 };
-export let vaultSummary: string = "";
+export let vaultSummary = "";
 export let accessRights: AccessRights = { Read: null };
 
 export let currentRoute = "";
@@ -39,7 +39,7 @@ $: {
     const searchedForVault = $vaultsStore.list.find(
       (v) => v.owner.compareTo(vaultOwner) === "eq" && v.name === vaultName,
     );
-    if (!!searchedForVault) {
+    if (searchedForVault) {
       vault = searchedForVault;
       vaultSummary += summarize(vault);
       const me = $auth.client.getIdentity().getPrincipal();
@@ -48,11 +48,7 @@ $: {
           ? { ReadWriteManage: null }
           : vault.users.find((user) => user[0].compareTo(me) === "eq")[1];
     } else {
-      vaultSummary =
-        "could not find vault " +
-        vaultName +
-        " owned by " +
-        vaultOwner.toText();
+      vaultSummary = `could not find vault ${vaultName} owned by ${vaultOwner.toText()}`;
     }
   }
 }

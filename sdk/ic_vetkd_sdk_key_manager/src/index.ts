@@ -1,4 +1,4 @@
-import { Principal } from "@dfinity/principal";
+import type { Principal } from "@dfinity/principal";
 import { TransportSecretKey } from "ic-vetkd-cdk-utils";
 
 export class KeyManager {
@@ -25,25 +25,24 @@ export class KeyManager {
     );
     if ("Err" in encrypted_vetkey) {
       return encrypted_vetkey;
-    } else {
-      const encrypted_key_bytes = Uint8Array.from(encrypted_vetkey.Ok.inner);
-      const verification_key = await this.get_vetkey_verification_key();
-      const vetkey_name_bytes = new TextEncoder().encode(vetkey_name);
-      const derivaition_id = new Uint8Array([
-        ...key_owner.toUint8Array(),
-        ...vetkey_name_bytes,
-      ]);
-      const symmetric_key_bytes = 16;
-      const symmetric_key_associated_data = new Uint8Array(0);
-      const vetkey = tsk.decrypt_and_hash(
-        encrypted_key_bytes,
-        Uint8Array.from(verification_key.inner),
-        derivaition_id,
-        symmetric_key_bytes,
-        symmetric_key_associated_data,
-      );
-      return { Ok: { inner: vetkey } };
     }
+    const encrypted_key_bytes = Uint8Array.from(encrypted_vetkey.Ok.inner);
+    const verification_key = await this.get_vetkey_verification_key();
+    const vetkey_name_bytes = new TextEncoder().encode(vetkey_name);
+    const derivaition_id = new Uint8Array([
+      ...key_owner.toUint8Array(),
+      ...vetkey_name_bytes,
+    ]);
+    const symmetric_key_bytes = 16;
+    const symmetric_key_associated_data = new Uint8Array(0);
+    const vetkey = tsk.decrypt_and_hash(
+      encrypted_key_bytes,
+      Uint8Array.from(verification_key.inner),
+      derivaition_id,
+      symmetric_key_bytes,
+      symmetric_key_associated_data,
+    );
+    return { Ok: { inner: vetkey } };
   }
 
   async get_vetkey_verification_key(): Promise<ByteBuf> {

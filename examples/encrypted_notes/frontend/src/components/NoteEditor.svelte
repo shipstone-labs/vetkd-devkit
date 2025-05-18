@@ -1,11 +1,11 @@
 <script lang="ts">
-import type { Editor } from "typewriter-editor";
-import asRoot from "typewriter-editor/lib/asRoot.js";
-import BubbleMenu from "typewriter-editor/lib/BubbleMenu.svelte";
-import Heading from "svelte-icons/fa/FaHeading.svelte";
 import Bold from "svelte-icons/fa/FaBold.svelte";
+import Heading from "svelte-icons/fa/FaHeading.svelte";
 import Italic from "svelte-icons/fa/FaItalic.svelte";
 import FaListUl from "svelte-icons/fa/FaListUl.svelte";
+import type { Editor } from "typewriter-editor";
+import BubbleMenu from "typewriter-editor/lib/BubbleMenu.svelte";
+import asRoot from "typewriter-editor/lib/asRoot.js";
 
 export let editor: Editor;
 // biome-ignore lint/style/useConst: Svelte mods don't show through

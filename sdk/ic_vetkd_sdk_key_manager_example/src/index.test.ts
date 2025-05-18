@@ -1,10 +1,10 @@
+import { randomBytes } from "node:crypto";
 import { HttpAgent } from "@dfinity/agent";
 import { Ed25519KeyIdentity } from "@dfinity/identity";
+import { KeyManager } from "ic_vetkd_sdk_key_manager/src";
 import fetch from "isomorphic-fetch";
 import { expect, test } from "vitest";
-import { KeyManager } from "ic_vetkd_sdk_key_manager/src";
 import { DefaultKeyManagerClient } from "./index";
-import { randomBytes } from "node:crypto";
 
 function randomId(): Ed25519KeyIdentity {
   return Ed25519KeyIdentity.generate(randomBytes(32));
@@ -52,6 +52,7 @@ test("can get vetkey", async () => {
     });
   expect("Ok" in vetkey).to.equal(true);
   // no trivial key output
+  // biome-ignore lint/complexity/useLiteralKeys: <explanation>
   expect(isEqualArray(vetkey["Ok"].inner, new Uint8Array(16))).to.equal(false);
 
   const second_vetkey = await key_manager
@@ -59,6 +60,7 @@ test("can get vetkey", async () => {
     .catch((err) => {
       throw err;
     });
+  // biome-ignore lint/complexity/useLiteralKeys: <explanation>
   expect(isEqualArray(vetkey["Ok"].inner, second_vetkey["Ok"].inner)).to.equal(
     true,
   );
@@ -71,6 +73,7 @@ test("cannot get unauthorized vetkey", async () => {
   });
   expect(
     (await key_manager.get_encrypted_vetkey(id1.getPrincipal(), "some key"))[
+      // biome-ignore lint/complexity/useLiteralKeys: <explanation>
       "Err"
     ],
   ).to.equal("unauthorized");
@@ -100,6 +103,7 @@ test("can share a key", async () => {
 
   expect(
     (await key_manager_owner.set_user_rights(owner, "some key", user, rights))[
+      // biome-ignore lint/complexity/useLiteralKeys: <explanation>
       "Ok"
     ],
   ).to.deep.equal([]);
@@ -110,6 +114,7 @@ test("can share a key", async () => {
   );
 
   expect(
+    // biome-ignore lint/complexity/useLiteralKeys: <explanation>
     isEqualArray(vetkey_owner["Ok"].inner, vetkey_user["Ok"].inner),
   ).to.equal(true);
 });
@@ -128,16 +133,18 @@ test("sharing rights are consistent", async () => {
 
   expect(
     (await key_manager_owner.set_user_rights(owner, "some key", user, rights))[
+      // biome-ignore lint/complexity/useLiteralKeys: <explanation>
       "Ok"
     ],
   ).to.deep.equal([]);
   expect(
+    // biome-ignore lint/complexity/useLiteralKeys: <explanation>
     (await key_manager_user.get_user_rights(owner, "some key", user))["Ok"],
   ).to.deep.equal([rights]);
 });
 
 function isEqualArray(a, b) {
-  if (a.length != b.length) return false;
-  for (let i = 0; i < a.length; i++) if (a[i] != b[i]) return false;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
   return true;
 }

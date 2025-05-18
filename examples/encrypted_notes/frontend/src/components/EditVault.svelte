@@ -1,12 +1,12 @@
 <script lang="ts">
+import Trash from "svelte-icons/fa/FaTrash.svelte";
 import { Editor, placeholder } from "typewriter-editor";
 import type { VaultModel } from "../lib/vault";
-import { vaultsStore, refreshVaults } from "../store/vaults";
+import { auth } from "../store/auth";
+import { addNotification, showError } from "../store/notifications";
+import { refreshVaults, vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
 import SharingEditor from "./SharingEditor.svelte";
-import Trash from "svelte-icons/fa/FaTrash.svelte";
-import { addNotification, showError } from "../store/notifications";
-import { auth } from "../store/auth";
 import Spinner from "./Spinner.svelte";
 
 // biome-ignore lint/style/useConst: Svelte mods are not seen by biome

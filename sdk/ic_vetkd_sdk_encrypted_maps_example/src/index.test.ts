@@ -1,10 +1,10 @@
+import { randomBytes } from "node:crypto";
 import { HttpAgent } from "@dfinity/agent";
-import { DefaultEncryptedMapsClient } from "./index";
-import { expect, test } from "vitest";
-import fetch from "isomorphic-fetch";
 import { Ed25519KeyIdentity } from "@dfinity/identity";
 import { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
-import { randomBytes } from "node:crypto";
+import fetch from "isomorphic-fetch";
+import { expect, test } from "vitest";
+import { DefaultEncryptedMapsClient } from "./index";
 
 function randomId(): Ed25519KeyIdentity {
   return Ed25519KeyIdentity.generate(randomBytes(32));
@@ -42,12 +42,14 @@ test("can get vetkey", async () => {
   const vetkey = await encrypted_maps.get_symmetric_vetkey(owner, "some key");
   expect("Ok" in vetkey).to.equal(true);
   // no trivial key output
+  // biome-ignore lint/complexity/useLiteralKeys: <explanation>
   expect(isEqualArray(vetkey["Ok"].inner, new Uint8Array(16))).to.equal(false);
 
   const second_vetkey = await encrypted_maps.get_symmetric_vetkey(
     owner,
     "some key",
   );
+  // biome-ignore lint/complexity/useLiteralKeys: <explanation>
   expect(isEqualArray(vetkey["Ok"].inner, second_vetkey["Ok"].inner)).to.equal(
     true,
   );
@@ -88,6 +90,7 @@ test("cannot get unauthorized vetkey", async () => {
   const encrypted_maps = await new_encrypted_maps(id0);
   expect(
     (await encrypted_maps.get_symmetric_vetkey(id1.getPrincipal(), "some key"))[
+      // biome-ignore lint/complexity/useLiteralKeys: <explanation>
       "Err"
     ],
   ).to.equal("unauthorized");
@@ -117,7 +120,10 @@ test("can share a key", async () => {
         user,
         rights,
       )
-    )["Ok"],
+    )[
+      // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+      "Ok"
+    ],
   ).to.deep.equal([]);
 
   const vetkey_user = await encrypted_maps_user.get_symmetric_vetkey(
@@ -126,6 +132,7 @@ test("can share a key", async () => {
   );
 
   expect(
+    // biome-ignore lint/complexity/useLiteralKeys: <explanation>
     isEqualArray(vetkey_owner["Ok"].inner, vetkey_user["Ok"].inner),
   ).to.equal(true);
 });
@@ -144,7 +151,7 @@ test("set value should work", async () => {
     map_key,
   );
   if ("Err" in remove_result) {
-    throw new Error("Failed to remove map key: " + remove_result.Err);
+    throw new Error(`Failed to remove map key: ${remove_result.Err}`);
   }
 
   const set_value_result = await encrypted_maps.set_value(
@@ -201,7 +208,7 @@ test("set value should work", async () => {
   );
   if ("Err" in try_decrypt_from_check) {
     throw new Error(
-      "Failed to decrypt from check: " + try_decrypt_from_check.Err,
+      `Failed to decrypt from check: ${try_decrypt_from_check.Err}`,
     );
   }
   if (try_decrypt_from_check.Ok.length === 0) {
@@ -217,7 +224,7 @@ test("set value should work", async () => {
   );
   if ("Err" in try_decrypt_from_canister) {
     throw new Error(
-      "Failed to decrypt from check: " + try_decrypt_from_canister.Err,
+      `Failed to decrypt from check: ${try_decrypt_from_canister.Err}`,
     );
   }
   if (try_decrypt_from_canister.Ok.length === 0) {
@@ -237,7 +244,7 @@ test("get value should work", async () => {
     "some key",
   );
   if ("Err" in remove_result) {
-    throw new Error("Failed to remove map key: " + remove_result.Err);
+    throw new Error(`Failed to remove map key: ${remove_result.Err}`);
   }
 
   const value = new TextEncoder().encode("Hello, world!");
@@ -299,7 +306,7 @@ test("get-set roundtrip should be consistent", async () => {
 // });
 
 function isEqualArray(a, b) {
-  if (a.length != b.length) return false;
-  for (let i = 0; i < a.length; i++) if (a[i] != b[i]) return false;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
   return true;
 }

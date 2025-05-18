@@ -18,13 +18,13 @@ export function addNotification(notification: NewNotification, timeout = 2000) {
   notifications.update(($n) => [...$n, { ...notification, id }]);
 
   setTimeout(() => {
-    notifications.update(($n) => $n.filter((n) => n.id != id));
+    notifications.update(($n) => $n.filter((n) => n.id !== id));
   }, timeout);
 }
 
-export function showError(e: any, message: string): never {
+export function showError(e: unknown, message: string): never {
   addNotification({ type: "error", message });
   console.error(e);
-  console.error(e.stack);
+  console.error((e as { stack: unknown }).stack);
   throw e;
 }

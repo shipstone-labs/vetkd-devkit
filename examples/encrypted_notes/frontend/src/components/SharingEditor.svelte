@@ -1,15 +1,15 @@
 <script lang="ts">
+import { Principal } from "@dfinity/principal";
+import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 import type { VaultModel } from "../lib/vault";
 import { auth } from "../store/auth";
+import { addNotification, showError } from "../store/notifications";
 import {
   addUser,
   refreshVaults,
   removeUser,
   vaultsStore,
 } from "../store/vaults";
-import { addNotification, showError } from "../store/notifications";
-import { Principal } from "@dfinity/principal";
-import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 
 export let editedVault: VaultModel;
 // biome-ignore lint/style/useConst: Svelte mods don't show through

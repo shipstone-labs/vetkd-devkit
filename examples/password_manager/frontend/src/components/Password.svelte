@@ -1,11 +1,11 @@
 <script lang="ts">
-import { type PasswordModel, summarize } from "../lib/password";
-import { link, location } from "svelte-spa-router";
-import { vaultsStore } from "../store/vaults";
 import { Principal } from "@dfinity/principal";
 import { onDestroy } from "svelte";
-import Spinner from "./Spinner.svelte";
+import { link, location } from "svelte-spa-router";
+import { type PasswordModel, summarize } from "../lib/password";
+import { vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
+import Spinner from "./Spinner.svelte";
 
 export let currentRoute = "";
 const unsubscribe = location.subscribe((value) => {
@@ -39,17 +39,11 @@ $: {
       )
       .passwords.find((p) => p[0] === passwordName);
 
-    if (!!searchedForPassword) {
+    if (searchedForPassword) {
       password = searchedForPassword[1];
       passwordSummary += summarize(password);
     } else {
-      passwordSummary =
-        "could not find password " +
-        passwordName +
-        " in vault " +
-        parentVaultName +
-        " owned by " +
-        vaultOwner.toText();
+      passwordSummary = `could not find password ${passwordName} in vault ${parentVaultName} owned by ${vaultOwner.toText()}`;
     }
   }
 }

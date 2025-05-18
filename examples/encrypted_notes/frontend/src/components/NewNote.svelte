@@ -1,14 +1,14 @@
 <script lang="ts">
+import { Principal } from "@dfinity/principal";
 import { onDestroy } from "svelte";
 import { Editor, placeholder } from "typewriter-editor";
 import { noteFromContent } from "../lib/note";
 import { auth } from "../store/auth";
 import { draft } from "../store/draft";
-import { setNote, refreshVaults } from "../store/vaults";
 import { addNotification, showError } from "../store/notifications";
+import { refreshVaults, setNote } from "../store/vaults";
 import Header from "./Header.svelte";
 import NoteEditor from "./NoteEditor.svelte";
-import { Principal } from "@dfinity/principal";
 
 let creating = false;
 // biome-ignore lint/style/useConst: Svelte mods are not seen by biome

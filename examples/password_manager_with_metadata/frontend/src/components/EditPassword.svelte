@@ -1,17 +1,17 @@
 <script lang="ts">
-import { replace, location, link } from "svelte-spa-router";
-import { Editor, placeholder } from "typewriter-editor";
-import { type PasswordModel } from "../lib/password";
-import { vaultsStore, refreshVaults, setPassword } from "../store/vaults";
-import Header from "./Header.svelte";
-import PasswordEditor from "./PasswordEditor.svelte";
-import Trash from "svelte-icons/fa/FaTrash.svelte";
-import { addNotification, showError } from "../store/notifications";
-import { auth } from "../store/auth";
-import Spinner from "./Spinner.svelte";
-import { onDestroy } from "svelte";
 import { Principal } from "@dfinity/principal";
 import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
+import { onDestroy } from "svelte";
+import Trash from "svelte-icons/fa/FaTrash.svelte";
+import { link, location, replace } from "svelte-spa-router";
+import { Editor, placeholder } from "typewriter-editor";
+import type { PasswordModel } from "../lib/password";
+import { auth } from "../store/auth";
+import { addNotification, showError } from "../store/notifications";
+import { refreshVaults, setPassword, vaultsStore } from "../store/vaults";
+import Header from "./Header.svelte";
+import PasswordEditor from "./PasswordEditor.svelte";
+import Spinner from "./Spinner.svelte";
 
 export let currentRoute = "";
 const unsubscribe = location.subscribe((value) => {
@@ -83,7 +83,7 @@ async function save() {
       });
       return;
     }
-  } else if (passwordName != originalPassword.passwordName) {
+  } else if (passwordName !== originalPassword.passwordName) {
     move = true;
   } else {
     move = false;
@@ -149,12 +149,7 @@ async function save() {
 
   if (move) {
     replace(
-      "/edit/vaults/" +
-        parentVaultOwner +
-        "/" +
-        parentVaultName +
-        "/" +
-        passwordName,
+      `/edit/vaults/${parentVaultOwner}/${parentVaultName}/${passwordName}`,
     );
   }
 }
@@ -205,7 +200,7 @@ $: {
       )
       .passwords.find((p) => p[0] === passwordName);
 
-    if (!!searchedForPassword) {
+    if (searchedForPassword) {
       originalPassword = { ...searchedForPassword[1] };
       url = originalPassword.metadata.url;
       tags = originalPassword.metadata.tags;

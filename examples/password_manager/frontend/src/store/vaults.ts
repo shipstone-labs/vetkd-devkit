@@ -1,13 +1,13 @@
-import { writable } from "svelte/store";
-import { passwordFromContent, type PasswordModel } from "../lib/password";
-import { vaultFromContent, type VaultModel } from "../lib/vault";
-import { auth } from "./auth";
-import { showError } from "./notifications";
-import {
-  type AccessRights,
+import type { Principal } from "@dfinity/principal";
+import type {
+  AccessRights,
   EncryptedMaps,
 } from "ic_vetkd_sdk_encrypted_maps/src";
-import type { Principal } from "@dfinity/principal";
+import { writable } from "svelte/store";
+import { type PasswordModel, passwordFromContent } from "../lib/password";
+import { type VaultModel, vaultFromContent } from "../lib/vault";
+import { auth } from "./auth";
+import { showError } from "./notifications";
 
 export const vaultsStore = writable<
   | {
@@ -38,7 +38,7 @@ export async function refreshVaults(encryptedMaps: EncryptedMaps) {
   const allMaps = await encryptedMaps.get_all_accessible_maps();
   const vaults = allMaps.map((mapData) => {
     const mapName = new TextDecoder().decode(Uint8Array.from(mapData.map_name));
-    let passwords = new Array<[string, PasswordModel]>();
+    const passwords = new Array<[string, PasswordModel]>();
     for (const [passwordNameBytebuf, data] of mapData.keyvals) {
       const passwordNameString = new TextDecoder().decode(
         Uint8Array.from(passwordNameBytebuf),
@@ -67,7 +67,7 @@ export async function addPassword(
   password: PasswordModel,
   encryptedMaps: EncryptedMaps,
 ) {
-  let result = await encryptedMaps.set_value(
+  const result = await encryptedMaps.set_value(
     password.owner,
     password.parentVaultName,
     password.passwordName,
@@ -82,7 +82,7 @@ export async function removePassword(
   password: PasswordModel,
   encryptedMaps: EncryptedMaps,
 ) {
-  let result = await encryptedMaps.remove_encrypted_value(
+  const result = await encryptedMaps.remove_encrypted_value(
     password.owner,
     password.parentVaultName,
     password.passwordName,
@@ -96,7 +96,7 @@ export async function updatePassword(
   password: PasswordModel,
   encryptedMaps: EncryptedMaps,
 ) {
-  let result = await encryptedMaps.set_value(
+  const result = await encryptedMaps.set_value(
     password.owner,
     password.parentVaultName,
     password.passwordName,

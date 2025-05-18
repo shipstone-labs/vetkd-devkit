@@ -18,7 +18,7 @@ export function addNotification(notification: NewNotification, timeout = 2000) {
   notifications.update(($n) => [...$n, { ...notification, id }]);
 
   setTimeout(() => {
-    notifications.update(($n) => $n.filter((n) => n.id != id));
+    notifications.update(($n) => $n.filter((n) => n.id !== id));
   }, timeout);
 }
 

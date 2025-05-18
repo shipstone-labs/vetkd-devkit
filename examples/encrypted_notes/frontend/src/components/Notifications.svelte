@@ -1,6 +1,6 @@
 <script lang="ts">
+import { fade, fly } from "svelte/transition";
 import { type Notification, notifications } from "../store/notifications";
-import { fly, fade } from "svelte/transition";
 
 const classMap: Record<Notification["type"], string> = {
   info: "alert-info",

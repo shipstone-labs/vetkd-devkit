@@ -1,9 +1,9 @@
-import { bls12_381 } from "@noble/curves/bls12-381";
-import { ProjPointType } from "@noble/curves/abstract/weierstrass";
-import { Fp, Fp2, Fp12 } from "@noble/curves/abstract/tower";
 import { hash_to_field } from "@noble/curves/abstract/hash-to-curve";
-import { shake256 } from "@noble/hashes/sha3";
+import type { Fp, Fp2, Fp12 } from "@noble/curves/abstract/tower";
+import type { ProjPointType } from "@noble/curves/abstract/weierstrass";
+import { bls12_381 } from "@noble/curves/bls12-381";
 import { hkdf } from "@noble/hashes/hkdf";
+import { shake256 } from "@noble/hashes/sha3";
 import { sha256 } from "@noble/hashes/sha256";
 
 export type G1Point = ProjPointType<Fp>;
@@ -123,12 +123,11 @@ export class DerivedPublicKey {
   deriveKey(context: Uint8Array): DerivedPublicKey {
     if (context.length === 0) {
       return this;
-    } else {
-      const dst = "ic-vetkd-bls12-381-g2-context";
-      const offset = hashToScalar(prefixWithLen(context), dst);
-      const g2_offset = bls12_381.G2.ProjectivePoint.BASE.multiply(offset);
-      return new DerivedPublicKey(this.getPoint().add(g2_offset));
     }
+    const dst = "ic-vetkd-bls12-381-g2-context";
+    const offset = hashToScalar(prefixWithLen(context), dst);
+    const g2_offset = bls12_381.G2.ProjectivePoint.BASE.multiply(offset);
+    return new DerivedPublicKey(this.getPoint().add(g2_offset));
   }
 
   /**
@@ -186,9 +185,8 @@ export function hashToScalar(input: Uint8Array, domainSep: string): bigint {
 function asBytes(input: Uint8Array | string): Uint8Array {
   if (typeof input === "string") {
     return new TextEncoder().encode(input as string);
-  } else {
-    return input as Uint8Array;
   }
+  return input as Uint8Array;
 }
 
 /**
@@ -482,9 +480,8 @@ export class EncryptedVetKey {
 
     if (valid) {
       return new VetKey(k);
-    } else {
-      throw new Error("Invalid VetKey");
     }
+    throw new Error("Invalid VetKey");
   }
 }
 
@@ -567,7 +564,7 @@ function isEqual(x: Uint8Array, y: Uint8Array): boolean {
   for (let i = 0; i < x.length; ++i) {
     diff |= x[i] ^ y[i];
   }
-  return diff == 0;
+  return diff === 0;
 }
 
 const SEED_BYTES = 32;
@@ -668,9 +665,8 @@ export class IdentityBasedEncryptionCiphertext {
 
     if (valid) {
       return msg;
-    } else {
-      throw new Error("Decryption failed");
     }
+    throw new Error("Decryption failed");
   }
 
   /**

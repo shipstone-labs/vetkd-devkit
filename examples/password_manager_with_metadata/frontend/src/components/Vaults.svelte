@@ -1,11 +1,11 @@
 <script lang="ts">
-import { type VaultModel } from "../lib/vault";
+import { link } from "svelte-spa-router";
+import type { VaultModel } from "../lib/vault";
 import { vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
 import Spinner from "./Spinner.svelte";
-import { link } from "svelte-spa-router";
 
-let filter = "";
+const filter = "";
 let filteredVaults: VaultModel[];
 
 $: searchIndex =

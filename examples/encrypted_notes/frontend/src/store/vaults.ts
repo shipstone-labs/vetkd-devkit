@@ -1,11 +1,11 @@
+import type { Principal } from "@dfinity/principal";
+import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 import { writable } from "svelte/store";
 import type { NoteModel } from "../lib/note";
+import type { NoteManager } from "../lib/note_manager";
 import type { VaultModel } from "../lib/vault";
 import { auth } from "./auth";
 import { showError } from "./notifications";
-import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
-import type { Principal } from "@dfinity/principal";
-import type { NoteManager } from "../lib/note_manager";
 
 export const vaultsStore = writable<
   | {

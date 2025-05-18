@@ -1,12 +1,12 @@
-import { defineConfig } from "vite";
+import typescript from "@rollup/plugin-typescript";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
-import wasm from "vite-plugin-wasm";
-import topLevelAwait from "vite-plugin-top-level-await";
-import tailwindcss from "tailwindcss";
 import autoprefixer from "autoprefixer";
 import css from "rollup-plugin-css-only";
-import typescript from "@rollup/plugin-typescript";
+import tailwindcss from "tailwindcss";
+import { defineConfig } from "vite";
 import environment from "vite-plugin-environment";
+import topLevelAwait from "vite-plugin-top-level-await";
+import wasm from "vite-plugin-wasm";
 
 const production = false; // !process.env.VITE_WATCH_MODE;
 

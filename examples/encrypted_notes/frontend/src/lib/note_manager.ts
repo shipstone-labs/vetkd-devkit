@@ -1,12 +1,12 @@
 import "./init.ts";
 import type { ActorSubclass, HttpAgentOptions } from "@dfinity/agent";
-import type { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
-import { createEncryptedMaps } from "./encrypted_maps";
 import type { Principal } from "@dfinity/principal";
-import { createActor } from "../declarations/index";
+import type { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
 import type { _SERVICE } from "../declarations/encrypted_notes_canister.did";
-import { noteFromContent, type NoteModel } from "./note.js";
-import { vaultFromContent, type VaultModel } from "./vault";
+import { createActor } from "../declarations/index";
+import { createEncryptedMaps } from "./encrypted_maps";
+import { type NoteModel, noteFromContent } from "./note.js";
+import { type VaultModel, vaultFromContent } from "./vault";
 
 export class NoteManager {
   /// The actor class representing the full interface of the canister.

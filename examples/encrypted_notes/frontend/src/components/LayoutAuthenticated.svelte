@@ -1,14 +1,14 @@
 <script lang="ts">
 import Router from "svelte-spa-router";
 import "../store/vaults";
-import Note from "./Note.svelte";
-import NewNote from "./NewNote.svelte";
-import Vaults from "./Vaults.svelte";
-import Vault from "./Vault.svelte";
-import EditVault from "./EditVault.svelte";
-import EditNote from "./EditNote.svelte";
 import { wrap } from "svelte-spa-router/wrap";
+import EditNote from "./EditNote.svelte";
+import EditVault from "./EditVault.svelte";
+import NewNote from "./NewNote.svelte";
+import Note from "./Note.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
+import Vault from "./Vault.svelte";
+import Vaults from "./Vaults.svelte";
 
 const routes = {
   "/": wrap({ component: NewNote }),

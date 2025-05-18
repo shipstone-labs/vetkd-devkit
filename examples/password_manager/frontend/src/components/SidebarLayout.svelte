@@ -1,11 +1,11 @@
 <script lang="ts">
-import { auth, logout } from "../store/auth";
+import { Principal } from "@dfinity/principal";
+import FaDoorOpen from "svelte-icons/fa/FaDoorOpen.svelte";
 import FaPlusSquare from "svelte-icons/fa/FaPlusSquare.svelte";
 import GoDatabase from "svelte-icons/go/GoDatabase.svelte";
-import FaDoorOpen from "svelte-icons/fa/FaDoorOpen.svelte";
-import Disclaimer from "./Disclaimer.svelte";
-import { Principal } from "@dfinity/principal";
 import { link } from "svelte-spa-router";
+import { auth, logout } from "../store/auth";
+import Disclaimer from "./Disclaimer.svelte";
 </script>
 
 <div class="bg-base-200 drawer drawer-mobile lg:drawer-open">

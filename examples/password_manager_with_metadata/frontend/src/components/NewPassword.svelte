@@ -1,25 +1,25 @@
 <script lang="ts">
+import { Principal } from "@dfinity/principal";
 import { onDestroy } from "svelte";
 import { Editor, placeholder } from "typewriter-editor";
 import { passwordFromContent } from "../lib/password";
 import { auth } from "../store/auth";
 import { draft } from "../store/draft";
-import { setPassword, refreshVaults } from "../store/vaults";
 import { addNotification, showError } from "../store/notifications";
+import { refreshVaults, setPassword } from "../store/vaults";
 import Header from "./Header.svelte";
 import PasswordEditor from "./PasswordEditor.svelte";
-import { Principal } from "@dfinity/principal";
 
 let creating = false;
-let vaultOwner =
+const vaultOwner =
   $auth.state === "initialized"
     ? $auth.client.getIdentity().getPrincipal().toText()
     : Principal.anonymous().toText();
-let vaultName = "";
-let passwordName = "";
-let url: string = "";
+const vaultName = "";
+const passwordName = "";
+const url = "";
 
-let tagsInput: string = "";
+const tagsInput = "";
 let tags: string[] = [];
 // Convert between string and array when the input changes
 export function handleTagsInput() {

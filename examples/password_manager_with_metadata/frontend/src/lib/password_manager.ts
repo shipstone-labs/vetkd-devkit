@@ -1,12 +1,12 @@
 import "./init.ts";
-import { type ActorSubclass, type HttpAgentOptions } from "@dfinity/agent";
-import { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
-import { createEncryptedMaps } from "./encrypted_maps";
+import type { ActorSubclass, HttpAgentOptions } from "@dfinity/agent";
 import type { Principal } from "@dfinity/principal";
+import type { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
 import { createActor } from "../declarations/index";
 import type { _SERVICE } from "../declarations/password_manager_with_metadata.did";
-import { passwordFromContent, type PasswordModel } from "../lib/password";
-import { vaultFromContent, type VaultModel } from "../lib/vault";
+import { type PasswordModel, passwordFromContent } from "../lib/password";
+import { type VaultModel, vaultFromContent } from "../lib/vault";
+import { createEncryptedMaps } from "./encrypted_maps";
 
 export class PasswordManager {
   /// The actor class representing the full interface of the canister.
@@ -50,9 +50,8 @@ export class PasswordManager {
       );
     if ("Err" in maybeError) {
       return maybeError;
-    } else {
-      return { Ok: null };
     }
+    return { Ok: null };
   }
 
   async getDecryptedVaults(
@@ -150,14 +149,13 @@ export class PasswordManager {
       );
     if ("Err" in maybeError) {
       return maybeError;
-    } else {
-      return { Ok: null };
     }
+    return { Ok: null };
   }
 }
 
 export async function createPasswordManager(
-  agentOptions?: HttpAgentOptions,
+  _agentOptions?: HttpAgentOptions,
 ): Promise<PasswordManager> {
   const { CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA } = process.env;
   if (!CANISTER_ID_PASSWORD_MANAGER_WITH_METADATA) {
@@ -173,6 +171,7 @@ export async function createPasswordManager(
       : "http://localhost:8000";
   const hostOptions = { host };
 
+  let agentOptions = _agentOptions;
   if (!agentOptions) {
     agentOptions = hostOptions;
   } else {

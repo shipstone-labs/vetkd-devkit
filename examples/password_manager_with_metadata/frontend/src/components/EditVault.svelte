@@ -1,20 +1,21 @@
 <script lang="ts">
+import Trash from "svelte-icons/fa/FaTrash.svelte";
 import { Editor, placeholder } from "typewriter-editor";
-import { type VaultModel } from "../lib/vault";
-import { vaultsStore, refreshVaults } from "../store/vaults";
+import type { VaultModel } from "../lib/vault";
+import { auth } from "../store/auth";
+import { addNotification, showError } from "../store/notifications";
+import { refreshVaults, vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
 import SharingEditor from "./SharingEditor.svelte";
-import Trash from "svelte-icons/fa/FaTrash.svelte";
-import { addNotification, showError } from "../store/notifications";
-import { auth } from "../store/auth";
 import Spinner from "./Spinner.svelte";
 
-export let currentRoute = "";
+export const currentRoute = "";
 
 let editedVault: VaultModel;
 let editor: Editor;
 let updating = false;
-let deleting = false;
+const deleting = false;
+// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
 let canManage;
 
 async function save() {

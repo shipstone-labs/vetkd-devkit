@@ -1,23 +1,23 @@
 <script lang="ts">
-import { replace, location, link } from "svelte-spa-router";
+import { Principal } from "@dfinity/principal";
+import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
+import { onDestroy } from "svelte";
+import Trash from "svelte-icons/fa/FaTrash.svelte";
+import { link, location, replace } from "svelte-spa-router";
 import { Editor, placeholder } from "typewriter-editor";
-import { extractTitle, type PasswordModel } from "../lib/password";
+import { type PasswordModel, extractTitle } from "../lib/password";
+import { auth } from "../store/auth";
+import { addNotification, showError } from "../store/notifications";
 import {
-  vaultsStore,
-  refreshVaults,
-  updatePassword,
   addUser,
+  refreshVaults,
   removeUser,
+  updatePassword,
+  vaultsStore,
 } from "../store/vaults";
 import Header from "./Header.svelte";
 import PasswordEditor from "./PasswordEditor.svelte";
-import Trash from "svelte-icons/fa/FaTrash.svelte";
-import { addNotification, showError } from "../store/notifications";
-import { auth } from "../store/auth";
 import Spinner from "./Spinner.svelte";
-import { onDestroy } from "svelte";
-import { Principal } from "@dfinity/principal";
-import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 
 export let currentRoute = "";
 const unsubscribe = location.subscribe((value) => {
@@ -77,7 +77,7 @@ async function save() {
       });
       return;
     }
-  } else if (editedPassword.passwordName != originalPassword.passwordName) {
+  } else if (editedPassword.passwordName !== originalPassword.passwordName) {
     move = true;
   } else {
     move = false;
@@ -138,12 +138,7 @@ async function save() {
 
   if (move) {
     replace(
-      "/edit/vaults/" +
-        editedPassword.owner.toText() +
-        "/" +
-        editedPassword.parentVaultName +
-        "/" +
-        editedPassword.passwordName,
+      `/edit/vaults/${editedPassword.owner.toText()}/${editedPassword.parentVaultName}/${editedPassword.passwordName}`,
     );
   }
 }
@@ -194,7 +189,7 @@ $: {
       )
       .passwords.find((p) => p[0] === passwordName);
 
-    if (!!searchedForPassword) {
+    if (searchedForPassword) {
       editedPassword = { ...searchedForPassword[1] };
     }
 

@@ -1,10 +1,10 @@
 import "../lib/init.ts";
-import { get, writable } from "svelte/store";
 import { AuthClient } from "@dfinity/auth-client";
 import type { JsonnableDelegationChain } from "@dfinity/identity/lib/cjs/identity/delegation";
 import { replace } from "svelte-spa-router";
+import { get, writable } from "svelte/store";
 import {
-  PasswordManager,
+  type PasswordManager,
   createPasswordManager,
 } from "../lib/password_manager.js";
 
@@ -58,7 +58,7 @@ export function login() {
         authenticate(currentAuth.client);
       },
       onError: (e) =>
-        console.error("Failed to authenticate with internet identity: " + e),
+        console.error(`Failed to authenticate with internet identity: ${e}`),
     });
   }
 }
@@ -114,7 +114,7 @@ function handleSessionTimeout() {
         logout();
       }, expirationTimeMs - Date.now());
     } catch (e) {
-      console.error("Could not handle delegation expiry: " + e);
+      console.error(`Could not handle delegation expiry: ${e}`);
     }
   });
 }

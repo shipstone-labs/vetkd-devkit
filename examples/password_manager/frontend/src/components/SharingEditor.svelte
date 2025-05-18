@@ -1,21 +1,21 @@
 <script lang="ts">
+import { Principal } from "@dfinity/principal";
+import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 import type { VaultModel } from "../lib/vault";
 import { auth } from "../store/auth";
+import { addNotification, showError } from "../store/notifications";
 import {
   addUser,
   refreshVaults,
   removeUser,
   vaultsStore,
 } from "../store/vaults";
-import { addNotification, showError } from "../store/notifications";
-import { Principal } from "@dfinity/principal";
-import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 
 export let editedVault: VaultModel;
-export let canManage = false;
-export let currentRoute = "";
+export const canManage = false;
+export const currentRoute = "";
 
-let newSharing: string = "";
+let newSharing = "";
 let newSharingInput: HTMLInputElement;
 let adding = false;
 let removing = false;
@@ -108,13 +108,14 @@ function onKeyPress(e) {
 export function accessRightsToString(ar: AccessRights) {
   if ("ReadWriteManage" in ar) {
     return "read, write, manage";
-  } else if ("ReadWrite" in ar) {
-    return "read, write";
-  } else if ("Read" in ar) {
-    return "read";
-  } else {
-    throw new Error("unknown access rights");
   }
+  if ("ReadWrite" in ar) {
+    return "read, write";
+  }
+  if ("Read" in ar) {
+    return "read";
+  }
+  throw new Error("unknown access rights");
 }
 
 $: {

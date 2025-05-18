@@ -1,11 +1,11 @@
 <script lang="ts">
-import { type NoteModel, summarize } from "../lib/note";
-import { link, location } from "svelte-spa-router";
-import { vaultsStore } from "../store/vaults";
 import { Principal } from "@dfinity/principal";
 import { onDestroy } from "svelte";
-import Spinner from "./Spinner.svelte";
+import { link, location } from "svelte-spa-router";
+import { type NoteModel, summarize } from "../lib/note";
+import { vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
+import Spinner from "./Spinner.svelte";
 
 export let currentRoute = "";
 const unsubscribe = location.subscribe((value) => {

@@ -1,17 +1,17 @@
 <script lang="ts">
-import { replace, location, link } from "svelte-spa-router";
-import { Editor, placeholder } from "typewriter-editor";
-import type { NoteModel } from "../lib/note";
-import { vaultsStore, refreshVaults, setNote } from "../store/vaults";
-import Header from "./Header.svelte";
-import PasswordEditor from "./NoteEditor.svelte";
-import Trash from "svelte-icons/fa/FaTrash.svelte";
-import { addNotification, showError } from "../store/notifications";
-import { auth } from "../store/auth";
-import Spinner from "./Spinner.svelte";
-import { onDestroy } from "svelte";
 import { Principal } from "@dfinity/principal";
 import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps";
+import { onDestroy } from "svelte";
+import Trash from "svelte-icons/fa/FaTrash.svelte";
+import { link, location, replace } from "svelte-spa-router";
+import { Editor, placeholder } from "typewriter-editor";
+import type { NoteModel } from "../lib/note";
+import { auth } from "../store/auth";
+import { addNotification, showError } from "../store/notifications";
+import { refreshVaults, setNote, vaultsStore } from "../store/vaults";
+import Header from "./Header.svelte";
+import PasswordEditor from "./NoteEditor.svelte";
+import Spinner from "./Spinner.svelte";
 
 export let currentRoute = "";
 const unsubscribe = location.subscribe((value) => {

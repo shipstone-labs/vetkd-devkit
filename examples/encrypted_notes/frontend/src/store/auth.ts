@@ -1,8 +1,8 @@
 import "../lib/init.ts";
-import { get, writable } from "svelte/store";
 import { AuthClient } from "@dfinity/auth-client";
 import type { JsonnableDelegationChain } from "@dfinity/identity/lib/cjs/identity/delegation";
 import { replace } from "svelte-spa-router";
+import { get, writable } from "svelte/store";
 import {
   type NoteManager,
   createPasswordManager,

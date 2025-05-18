@@ -1,9 +1,9 @@
 <script lang="ts">
+import { link } from "svelte-spa-router";
 import type { VaultModel } from "../lib/vault";
 import { vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
 import Spinner from "./Spinner.svelte";
-import { link } from "svelte-spa-router";
 
 // biome-ignore lint/style/useConst: Svelte mods don't show through
 let filter = "";

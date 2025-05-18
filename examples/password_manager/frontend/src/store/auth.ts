@@ -1,10 +1,10 @@
 import "../lib/init.ts";
-import { get, writable } from "svelte/store";
 import { AuthClient } from "@dfinity/auth-client";
 import type { JsonnableDelegationChain } from "@dfinity/identity/lib/cjs/identity/delegation";
+import type { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
 import { replace } from "svelte-spa-router";
+import { get, writable } from "svelte/store";
 import { createEncryptedMaps } from "../lib/encrypted_maps.js";
-import { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
 
 export type AuthState =
   | {
