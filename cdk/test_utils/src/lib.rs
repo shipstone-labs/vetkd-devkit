@@ -19,10 +19,10 @@ pub fn reproducible_rng() -> ChaCha20Rng {
 /// # Panics
 ///
 /// Panics if the collection of unique memory IDs cannot be converted to a fixed-size array.
-pub fn random_unique_memory_ids<R: Rng + CryptoRng>(rng: &mut R) -> (u8, [u8; 4]) {
+pub fn random_unique_memory_ids<R: Rng + CryptoRng>(rng: &mut R) -> (u8, [u8; 5]) {
     const MAX_MEMORY_ID: u8 = 254;
     let mut set = std::collections::HashSet::<u8>::new();
-    let mut unique_memory_ids = [0; 5];
+    let mut unique_memory_ids = [0; 6];
     while set.len() != unique_memory_ids.len() {
         set.insert(rng.gen_range(0..=MAX_MEMORY_ID));
     }
@@ -34,6 +34,7 @@ pub fn random_unique_memory_ids<R: Rng + CryptoRng>(rng: &mut R) -> (u8, [u8; 4]
         unique_memory_ids[2],
         unique_memory_ids[3],
         unique_memory_ids[4],
+        unique_memory_ids[5],
     ];
     (memory_id_encrypted_maps, memory_ids_key_manager)
 }

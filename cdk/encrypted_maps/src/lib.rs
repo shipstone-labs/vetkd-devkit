@@ -22,14 +22,16 @@
 
 use candid::Principal;
 use ic_stable_structures::memory_manager::VirtualMemory;
-use ic_stable_structures::storable::Blob;
-use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap};
+use ic_stable_structures::storable::{Blob, Bound};
+use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap, Storable};
+use std::borrow::Cow;
 use std::cell::RefCell;
 use std::future::Future;
 
 use ic_vetkd_cdk_key_manager::KeyId;
 use ic_vetkd_cdk_types::{
-    now, AccessRights, ByteBuf, EncryptedMapValue, MapId, MapKey, MapName, Rights, TransportKey,
+    now, AccessRights, AuditEntry, ByteBuf, EncryptedMapValue, MapId, MapKey, MapName, Rights,
+    TransportKey,
 };
 
 // On a high level,
@@ -176,10 +178,9 @@ impl EncryptedMaps {
         if !key_values.is_empty() {
             // Add a single audit log for the entire map
             if soft_delete {
-                self.key_manager.add_audit_log(key_id, move || {
-                    AuditEntry::soft_deleted(now(), caller)
-                });
-                
+                self.key_manager
+                    .add_audit_log(key_id, move || AuditEntry::soft_deleted(now(), caller));
+
                 // Create tombstones for each entry
                 for (key, value) in &key_values {
                     let tombstone = TombstoneEntry {
@@ -191,11 +192,10 @@ impl EncryptedMaps {
                     self.tombstones.insert((key_id, *key), tombstone);
                 }
             } else {
-                self.key_manager.add_audit_log(key_id, move || {
-                    AuditEntry::deleted(now(), caller)
-                });
+                self.key_manager
+                    .add_audit_log(key_id, move || AuditEntry::deleted(now(), caller));
             }
-            
+
             // Now remove all the values
             for (key, _) in &key_values {
                 self.mapkey_vals.remove(&(key_id, *key));
@@ -204,7 +204,7 @@ impl EncryptedMaps {
 
         Ok(key_values.into_iter().map(|(key, _)| key).collect())
     }
-    
+
     /// Backward compatibility version of remove_map_values
     /// that does a hard delete by default
     pub fn remove_map_values_legacy(
@@ -214,7 +214,7 @@ impl EncryptedMaps {
     ) -> Result<Vec<MapKey>, String> {
         self.remove_map_values(caller, key_id, false)
     }
-    
+
     /// Retrieves all tombstones (soft-deleted entries) for a specific map.
     ///
     /// # Errors
@@ -234,7 +234,7 @@ impl EncryptedMaps {
             .map(|((_, k), v)| (k, v))
             .collect())
     }
-    
+
     /// Restore a soft-deleted value from the tombstones.
     ///
     /// # Errors
@@ -248,7 +248,7 @@ impl EncryptedMaps {
         key_id: KeyId,
         key: MapKey,
     ) -> Result<Option<EncryptedMapValue>, String> {
-        let access_rights = match self.key_manager.get_user_rights(caller, key_id, caller)? {
+        match self.key_manager.get_user_rights(caller, key_id, caller)? {
             Some(rights) => match rights.rights() {
                 Rights::ReadWrite | Rights::ReadWriteManage => {
                     if let Some(start) = rights.start() {
@@ -267,29 +267,28 @@ impl EncryptedMaps {
             },
             None => return Err("unauthorized".to_string()),
         };
-        
+
         // Check if the tombstone exists
         if let Some(tombstone) = self.tombstones.get(&(key_id, key)) {
             // Get the value from the tombstone
             let value = tombstone.value.clone();
-            
+
             // Remove from tombstones
             self.tombstones.remove(&(key_id, key));
-            
+
             // Add back to active map
             self.mapkey_vals.insert((key_id, key), value.clone());
-            
+
             // Log the restoration
-            self.key_manager.add_audit_log(key_id, move || {
-                AuditEntry::restored(now(), caller)
-            });
-            
+            self.key_manager
+                .add_audit_log(key_id, move || AuditEntry::restored(now(), caller));
+
             Ok(Some(value))
         } else {
             Ok(None)
         }
     }
-    
+
     /// Permanently purge a soft-deleted entry from tombstones.
     ///
     /// # Errors
@@ -308,14 +307,13 @@ impl EncryptedMaps {
             Ok(_) => {
                 // Log the permanent deletion
                 if self.tombstones.contains_key(&(key_id, key)) {
-                    self.key_manager.add_audit_log(key_id, move || {
-                        AuditEntry::deleted(now(), caller)
-                    });
+                    self.key_manager
+                        .add_audit_log(key_id, move || AuditEntry::deleted(now(), caller));
                 }
-                
+
                 // Remove from tombstones
                 Ok(self.tombstones.remove(&(key_id, key)))
-            },
+            }
             Err(e) => Err(e),
         }
     }
@@ -466,21 +464,19 @@ impl EncryptedMaps {
         // Check if this is an update or a creation
         let previous_value = self.mapkey_vals.get(&(key_id, key));
         let result = self.mapkey_vals.insert((key_id, key), encrypted_value);
-        
+
         // Log an audit event - if it's a new value, we'll log a creation,
         // otherwise we'll log an update
         if previous_value.is_none() {
             // This is a new value being created
-            self.key_manager.add_audit_log(key_id, move || {
-                AuditEntry::created(now(), caller)
-            });
+            self.key_manager
+                .add_audit_log(key_id, move || AuditEntry::created(now(), caller));
         } else {
             // This is an update to an existing value
-            self.key_manager.add_audit_log(key_id, move || {
-                AuditEntry::updated(now(), caller)
-            });
+            self.key_manager
+                .add_audit_log(key_id, move || AuditEntry::updated(now(), caller));
         }
-        
+
         Ok(result)
     }
 
@@ -500,7 +496,7 @@ impl EncryptedMaps {
         key: MapKey,
         hard_delete: bool,
     ) -> Result<Option<EncryptedMapValue>, String> {
-        let access_rights = match self.key_manager.get_user_rights(caller, key_id, caller)? {
+        match self.key_manager.get_user_rights(caller, key_id, caller)? {
             Some(rights) => match rights.rights() {
                 Rights::ReadWrite | Rights::ReadWriteManage => {
                     if let Some(start) = rights.start() {
@@ -522,7 +518,7 @@ impl EncryptedMaps {
 
         // Get the value to be removed
         let value = self.mapkey_vals.get(&(key_id, key));
-        
+
         if let Some(value) = value {
             // Check if we want to preserve the data (soft delete)
             if !hard_delete {
@@ -533,21 +529,19 @@ impl EncryptedMaps {
                     deleted_by: caller,
                     marked_for_purge: false,
                 };
-                
+
                 // Add the tombstone
                 self.tombstones.insert((key_id, key), tombstone);
-                
+
                 // Log a soft delete in the audit log
-                self.key_manager.add_audit_log(key_id, move || {
-                    AuditEntry::soft_deleted(now(), caller)
-                });
+                self.key_manager
+                    .add_audit_log(key_id, move || AuditEntry::soft_deleted(now(), caller));
             } else {
                 // Log a hard delete in the audit log
-                self.key_manager.add_audit_log(key_id, move || {
-                    AuditEntry::deleted(now(), caller)
-                });
+                self.key_manager
+                    .add_audit_log(key_id, move || AuditEntry::deleted(now(), caller));
             }
-            
+
             // Now remove the actual entry
             let result = self.mapkey_vals.remove(&(key_id, key));
             Ok(result)
@@ -555,7 +549,7 @@ impl EncryptedMaps {
             Ok(None)
         }
     }
-    
+
     /// Backward compatibility version of remove_encrypted_value
     /// that does a hard delete by default
     pub fn remove_encrypted_value_legacy(
