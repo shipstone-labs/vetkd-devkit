@@ -1,0 +1,49 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "globalDependencies": [".env*", "turbo.json"],
+  "tasks": {
+    "build": {
+      "env": ["NODE_ENV", "DFX_NETWORK"],
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**", "pgk/**", "target/debug/**", "target/**/debug/**"]
+    },
+    "build:release": {
+      "env": ["NODE_ENV", "DFX_NETWORK"],
+      "dependsOn": ["^build:release"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [
+        "dist/**",
+        "pgk/**",
+        "target/release/**",
+        "target/**/release/**"
+      ]
+    },
+    "@shipstone-labs/ic-vetkd-notes-client:build": {
+      "dependsOn": ["^vetkd-notes-canister:build"]
+    },
+    "@shipstone-labs/ic-vetkd-notes-client:build:release": {
+      "dependsOn": ["^vetkd-notes-canister:build:release"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "doc": {
+      "cache": false
+    },
+    "deploy": {
+      "dependsOn": ["^build:release", "^deploy"]
+    },
+    "shipstone-labs-ic-vetkd-notes:doc": {
+      "dependsOn": ["^doc"]
+    }
+  }
+}

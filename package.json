@@ -1,8 +1,7 @@
 {
-    "private": true,
-    "workspaces": [
-        "cdk/utils/pkg",
-        "sdk/*",
-        "examples/password_manager/frontend"
-    ]
+	"private": true,
+	"packageManager": "pnpm@10.11.0",
+	"scripts": {
+		"build:sdk": "pnpm -r --filter=\"./sdk/*\" build"
+	}
 }

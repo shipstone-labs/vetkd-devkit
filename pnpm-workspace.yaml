@@ -1,0 +1,9 @@
+packages:
+  - sdk/*
+  - cdk/utils/pkg
+  - packages/*
+linkWorkspacePackages: deep
+onlyBuiltDependencies:
+  - '@swc/core'
+  - esbuild
+preferWorkspacePackages: true
