@@ -57,7 +57,7 @@ test("parsing DerivedPublicKey", () => {
   }).toThrow();
 
   const valid = hexToBytes(
-    "972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f",
+    "972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f"
   );
   const key = DerivedPublicKey.deserialize(valid);
   assertEqual(valid, key.publicKeyBytes());
@@ -66,8 +66,8 @@ test("parsing DerivedPublicKey", () => {
 test("DerivedPublicKey subderivation", () => {
   const canisterKey = DerivedPublicKey.deserialize(
     hexToBytes(
-      "972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f",
-    ),
+      "972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f"
+    )
   );
 
   const context = hexToBytes("f00fee");
@@ -76,15 +76,15 @@ test("DerivedPublicKey subderivation", () => {
 
   assertEqual(
     bytesToHex(derivedKey.publicKeyBytes()),
-    "8bf4d77b519852e5bd4bf9b7dd236737112e9da12f982b61f7d474a99642f2da2b76d2910efd24e3cd1a12e6fa9b45890dd3f8a2a600d80cb8d13ea7057e29ba675924377f4cc6083b141bcf396d9c6e29efee56638a9c7bc1bc3832c07853c8",
+    "8bf4d77b519852e5bd4bf9b7dd236737112e9da12f982b61f7d474a99642f2da2b76d2910efd24e3cd1a12e6fa9b45890dd3f8a2a600d80cb8d13ea7057e29ba675924377f4cc6083b141bcf396d9c6e29efee56638a9c7bc1bc3832c07853c8"
   );
 });
 
 test("augmented hash to G1", () => {
   const pk = DerivedPublicKey.deserialize(
     hexToBytes(
-      "80e38f040fae321c75cf8faf8c6e9500c92b7cac022ca3eb48fb01c8e91d8c2bc806c2665ed28a0a8c87a4bff717dd3c0c4eb57ad635bc582f89c171b8478f2fe1b806c3faeed7133b13141aaf4a65aa0c5d7902dc80102e91e6f73fe56fa34f",
-    ),
+      "80e38f040fae321c75cf8faf8c6e9500c92b7cac022ca3eb48fb01c8e91d8c2bc806c2665ed28a0a8c87a4bff717dd3c0c4eb57ad635bc582f89c171b8478f2fe1b806c3faeed7133b13141aaf4a65aa0c5d7902dc80102e91e6f73fe56fa34f"
+    )
   );
   const msg = hexToBytes("25138dfc69267bd861d8ad9f05b9");
 
@@ -99,45 +99,45 @@ test("augmented hash to G1", () => {
 test("protocol flow with precomputed data", () => {
   const tsk = new TransportSecretKey(
     hexToBytes(
-      "167b736e44a1c134bd46ca834220c75c186768612568ac264a01554c46633e76",
-    ),
+      "167b736e44a1c134bd46ca834220c75c186768612568ac264a01554c46633e76"
+    )
   );
 
   const tpk = tsk.publicKeyBytes();
 
   assertEqual(
     bytesToHex(tpk),
-    "911969d56f42875d37a92d7eaa5d43293eff9f9a20ba4c60523e70a695eaeadeb721659b52a49d74e67841ad19033a12",
+    "911969d56f42875d37a92d7eaa5d43293eff9f9a20ba4c60523e70a695eaeadeb721659b52a49d74e67841ad19033a12"
   );
 
   const did = hexToBytes("6d657373616765");
 
   const dpk = DerivedPublicKey.deserialize(
     hexToBytes(
-      "972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f",
-    ),
+      "972c4c6cc184b56121a1d27ef1ca3a2334d1a51be93573bd18e168f78f8fe15ce44fb029ffe8e9c3ee6bea2660f4f35e0774a35a80d6236c050fd8f831475b5e145116d3e83d26c533545f64b08464e4bcc755f990a381efa89804212d4eef5f"
+    )
   );
 
   const ek = new EncryptedVetKey(
     hexToBytes(
-      "b1a13757eaae15a3c8884fc1a3453f8a29b88984418e65f1bd21042ce1d6809b2f8a49f7326c1327f2a3921e8ff1d6c3adde2a801f1f88de98ccb40c62e366a279e7aec5875a0ce2f2a9f3e109d9cb193f0197eadb2c5f5568ee4d6a87e115910662e01e604087246be8b081fc6b8a06b4b0100ed1935d8c8d18d9f70d61718c5dba23a641487e72b3b25884eeede8feb3c71599bfbcebe60d29408795c85b4bdf19588c034d898e7fc513be8dbd04cac702a1672f5625f5833d063b05df7503",
-    ),
+      "b1a13757eaae15a3c8884fc1a3453f8a29b88984418e65f1bd21042ce1d6809b2f8a49f7326c1327f2a3921e8ff1d6c3adde2a801f1f88de98ccb40c62e366a279e7aec5875a0ce2f2a9f3e109d9cb193f0197eadb2c5f5568ee4d6a87e115910662e01e604087246be8b081fc6b8a06b4b0100ed1935d8c8d18d9f70d61718c5dba23a641487e72b3b25884eeede8feb3c71599bfbcebe60d29408795c85b4bdf19588c034d898e7fc513be8dbd04cac702a1672f5625f5833d063b05df7503"
+    )
   );
 
   const vetkd = ek.decryptAndVerify(tsk, dpk, did);
 
   assertEqual(
     bytesToHex(vetkd.signatureBytes()),
-    "987db5406ce297e729c8564a106dc896943b00216a095fe9c5d32a16a330c02eb80e6f468ede83cde5462b5145b58f65",
+    "987db5406ce297e729c8564a106dc896943b00216a095fe9c5d32a16a330c02eb80e6f468ede83cde5462b5145b58f65"
   );
 
   const symKey = vetkd.deriveSymmetricKey(
     "QUUX-V01-CS02-with-expander-SHA256-128",
-    32,
+    32
   );
   assertEqual(
     bytesToHex(symKey),
-    "ed2984e1a5eca6d49294e96db7f31b9f47fb3ae5f48383926f16811ffb9fd991",
+    "ed2984e1a5eca6d49294e96db7f31b9f47fb3ae5f48383926f16811ffb9fd991"
   );
 
   const message = hexToBytes("f00f11");
@@ -146,12 +146,12 @@ test("protocol flow with precomputed data", () => {
     dpk,
     did,
     message,
-    seed,
+    seed
   );
 
   assertEqual(
     bytesToHex(ibe.serialize()),
-    "4943204942450001a9937528bda5826cf5c7da77a5f5e46719a9748f4ea0aa491c8fba92081e5d55457ab36ec4f6335954c6d87987d0b28301bd8da166493bb537c842d20396da5a68cc9e9672fadedf1e311e0057fc906dfd37d1077ca027954c45336405e66e5e4b346b0f24bfd358a09de701654c1e0791741e4826396588440eee021df9b2398f143c",
+    "4943204942450001a9937528bda5826cf5c7da77a5f5e46719a9748f4ea0aa491c8fba92081e5d55457ab36ec4f6335954c6d87987d0b28301bd8da166493bb537c842d20396da5a68cc9e9672fadedf1e311e0057fc906dfd37d1077ca027954c45336405e66e5e4b346b0f24bfd358a09de701654c1e0791741e4826396588440eee021df9b2398f143c"
   );
 
   const ibeRec = IdentityBasedEncryptionCiphertext.deserialize(ibe.serialize());
@@ -165,19 +165,19 @@ test("hash to scalar", () => {
 
   assertEqual(
     hashToScalar(hexToBytes(""), dst).toString(16),
-    "3b3fdf74b194c0a0f683d67a312a4e72d663d74b8478dc7b56be41e0ce11caa1",
+    "3b3fdf74b194c0a0f683d67a312a4e72d663d74b8478dc7b56be41e0ce11caa1"
   );
   assertEqual(
     hashToScalar(hexToBytes("616263"), dst).toString(16),
-    "47e7a8839695a3df27f202cf71e295a8554b47cef75c1e316b1865317720e188",
+    "47e7a8839695a3df27f202cf71e295a8554b47cef75c1e316b1865317720e188"
   );
 });
 
 test("hkdf using webcrypto", async () => {
   const vetkey = VetKey.deserialize(
     hexToBytes(
-      "ad19676dd92f116db11f326ff0822f295d87cc00cf65d9f132b5a618bb7381e5b0c3cb814f15e4a0f015359dcfa8a1da",
-    ),
+      "ad19676dd92f116db11f326ff0822f295d87cc00cf65d9f132b5a618bb7381e5b0c3cb814f15e4a0f015359dcfa8a1da"
+    )
   );
 
   const domainSep = "ic-test-domain-sep";
@@ -185,7 +185,7 @@ test("hkdf using webcrypto", async () => {
   const key1 = vetkey.deriveSymmetricKey(domainSep, 32);
   assertEqual(
     bytesToHex(key1),
-    "3b7bd854033cdc119865ba3019dc1e35010fdaf90f8ff5c9cfe9d1d557dddb29",
+    "3b7bd854033cdc119865ba3019dc1e35010fdaf90f8ff5c9cfe9d1d557dddb29"
   );
 
   const wckey = await vetkey.asHkdfCryptoKey();
@@ -207,21 +207,21 @@ test("hkdf using webcrypto", async () => {
     wckey,
     derivedAlgo,
     true,
-    ["sign"],
+    ["sign"]
   );
 
   const derivedBytes = await window.crypto.subtle.exportKey("raw", derived);
   assertEqual(
-    bytesToHex(derivedBytes),
-    "3b7bd854033cdc119865ba3019dc1e35010fdaf90f8ff5c9cfe9d1d557dddb29",
+    bytesToHex(new Uint8Array(derivedBytes)),
+    "3b7bd854033cdc119865ba3019dc1e35010fdaf90f8ff5c9cfe9d1d557dddb29"
   );
 });
 
 test("AES-GCM encryption", async () => {
   const vetkey = VetKey.deserialize(
     hexToBytes(
-      "ad19676dd92f116db11f326ff0822f295d87cc00cf65d9f132b5a618bb7381e5b0c3cb814f15e4a0f015359dcfa8a1da",
-    ),
+      "ad19676dd92f116db11f326ff0822f295d87cc00cf65d9f132b5a618bb7381e5b0c3cb814f15e4a0f015359dcfa8a1da"
+    )
   );
 
   const testMessage = "stay calm, this is only a test";
@@ -238,7 +238,7 @@ test("AES-GCM encryption", async () => {
 
   // Test decryption of known ciphertext encrypted with the derived key
   const msg3 = hexToBytes(
-    "476f440e30bb95fff1420ce41ba6a07e03c3fcc0a751cfb23e64a8dcb0fc2b1eb74e2d4768f5c4dccbf2526609156664046ad27a6e78bd93bb8b",
+    "476f440e30bb95fff1420ce41ba6a07e03c3fcc0a751cfb23e64a8dcb0fc2b1eb74e2d4768f5c4dccbf2526609156664046ad27a6e78bd93bb8b"
   );
   assertEqual(await vetkey.decryptMessage(msg3, domainSep), testMessageBytes);
 
@@ -248,7 +248,7 @@ test("AES-GCM encryption", async () => {
   for (let trial = 0; trial < msg3.length * 8; trial++) {
     const modMsg = new Uint8Array(msg3);
 
-    const flip = 0x80 >> (trial % 8);
+    const flip = 0x80 >> trial % 8;
     const byteToFlip = Math.floor(trial / 8);
     modMsg[byteToFlip] ^= flip;
 

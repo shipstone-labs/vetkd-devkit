@@ -8,9 +8,11 @@ import BubbleMenu from "typewriter-editor/lib/BubbleMenu.svelte";
 import asRoot from "typewriter-editor/lib/asRoot.js";
 
 export let editor: Editor;
-export const disabled = false;
+// biome-ignore lint/style/useConst: <explanation>
+export let disabled = false;
 
-const classNames = "";
+// biome-ignore lint/style/useConst: <explanation>
+export let classNames = "";
 export { classNames as class };
 
 function focus(el: HTMLElement) {

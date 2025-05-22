@@ -202,7 +202,7 @@ function asBytes(input: Uint8Array | string): Uint8Array {
 export function deriveSymmetricKey(
   input: Uint8Array,
   domainSep: Uint8Array | string,
-  outputLength: number,
+  outputLength: number
 ): Uint8Array {
   const no_salt = new Uint8Array();
   return hkdf(sha256, input, no_salt, domainSep, outputLength);
@@ -215,7 +215,7 @@ export function deriveSymmetricKey(
  */
 export function augmentedHashToG1(
   pk: DerivedPublicKey,
-  message: Uint8Array,
+  message: Uint8Array
 ): G1Point {
   const domainSep = "BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_AUG_";
   const pkbytes = pk.publicKeyBytes();
@@ -223,7 +223,7 @@ export function augmentedHashToG1(
   const pt = bls12_381.G1.ProjectivePoint.fromAffine(
     bls12_381.G1.hashToCurve(input, {
       DST: domainSep,
-    }).toAffine(),
+    }).toAffine()
   );
 
   return pt;
@@ -268,7 +268,7 @@ export class VetKey {
    */
   deriveSymmetricKey(
     domainSep: Uint8Array | string,
-    outputLength: number,
+    outputLength: number
   ): Uint8Array {
     return deriveSymmetricKey(this.#bytes, domainSep, outputLength);
   }
@@ -285,7 +285,7 @@ export class VetKey {
       this.#bytes,
       "HKDF",
       exportable,
-      ["deriveKey"],
+      ["deriveKey"]
     );
   }
 
@@ -297,7 +297,7 @@ export class VetKey {
    * The CryptoKey is not exportable
    */
   async deriveAesGcmCryptoKey(
-    domainSep: Uint8Array | string,
+    domainSep: Uint8Array | string
   ): Promise<CryptoKey> {
     const exportable = false;
 
@@ -321,7 +321,7 @@ export class VetKey {
       hkdfKey,
       gcmParams,
       exportable,
-      ["encrypt", "decrypt"],
+      ["encrypt", "decrypt"]
     );
   }
 
@@ -332,7 +332,7 @@ export class VetKey {
    */
   async encryptMessage(
     message: Uint8Array | string,
-    domainSep: Uint8Array | string,
+    domainSep: Uint8Array | string
   ): Promise<Uint8Array> {
     const gcmKey = await this.deriveAesGcmCryptoKey(domainSep);
 
@@ -343,8 +343,8 @@ export class VetKey {
       await window.crypto.subtle.encrypt(
         { name: "AES-GCM", iv: nonce },
         gcmKey,
-        asBytes(message),
-      ),
+        asBytes(message)
+      )
     );
 
     // Concatenate the nonce to the beginning of the ciphertext
@@ -358,7 +358,7 @@ export class VetKey {
    */
   async decryptMessage(
     message: Uint8Array,
-    domainSep: Uint8Array | string,
+    domainSep: Uint8Array | string
   ): Promise<Uint8Array> {
     const NonceLength = 12;
     const TagLength = 16;
@@ -376,12 +376,14 @@ export class VetKey {
       const ptext = await window.crypto.subtle.decrypt(
         { name: "AES-GCM", iv: nonce },
         gcmKey,
-        ciphertext,
+        ciphertext
       );
       return new Uint8Array(ptext);
     } catch (e) {
       /* eslint-disable @typescript-eslint/no-unused-vars */
-      throw new Error("Decryption failed");
+      const error = new Error("Decryption failed");
+      (error as { cause?: Error }).cause = e as Error;
+      throw error;
     }
   }
 
@@ -430,13 +432,13 @@ export class EncryptedVetKey {
     }
 
     this.#c1 = bls12_381.G1.ProjectivePoint.fromHex(
-      bytes.subarray(0, G1_BYTES),
+      bytes.subarray(0, G1_BYTES)
     );
     this.#c2 = bls12_381.G2.ProjectivePoint.fromHex(
-      bytes.subarray(G1_BYTES, G1_BYTES + G2_BYTES),
+      bytes.subarray(G1_BYTES, G1_BYTES + G2_BYTES)
     );
     this.#c3 = bls12_381.G1.ProjectivePoint.fromHex(
-      bytes.subarray(G1_BYTES + G2_BYTES),
+      bytes.subarray(G1_BYTES + G2_BYTES)
     );
   }
 
@@ -446,7 +448,7 @@ export class EncryptedVetKey {
   decryptAndVerify(
     tsk: TransportSecretKey,
     dpk: DerivedPublicKey,
-    derivation_id: Uint8Array,
+    derivation_id: Uint8Array
   ): VetKey {
     // Check that c1 and c2 have the same discrete logarithm, ie that e(c1, g2) == e(g1, c2)
 
@@ -465,7 +467,7 @@ export class EncryptedVetKey {
 
     // Compute the purported vetkd k
     const c1_tsk = this.#c1.multiply(
-      bls12_381.G1.normPrivateKeyToScalar(tsk.getSecretKey()),
+      bls12_381.G1.normPrivateKeyToScalar(tsk.getSecretKey())
     );
     const k = this.#c3.subtract(c1_tsk);
 
@@ -503,7 +505,7 @@ const IBE_HEADER_BYTES = 8;
 function hashToMask(
   version: Uint8Array,
   seed: Uint8Array,
-  msg: Uint8Array,
+  msg: Uint8Array
 ): bigint {
   const ro_input = new Uint8Array([...version, ...seed, ...msg]);
   return hashToScalar(ro_input, IbeDomainSeparators.HashToMask);
@@ -596,11 +598,11 @@ export class IdentityBasedEncryptionCiphertext {
 
     const hdr = bytes.subarray(0, IBE_HEADER_BYTES);
     const c1 = bls12_381.G2.ProjectivePoint.fromHex(
-      bytes.subarray(IBE_HEADER_BYTES, IBE_HEADER_BYTES + G2_BYTES),
+      bytes.subarray(IBE_HEADER_BYTES, IBE_HEADER_BYTES + G2_BYTES)
     );
     const c2 = bytes.subarray(
       IBE_HEADER_BYTES + G2_BYTES,
-      IBE_HEADER_BYTES + G2_BYTES + SEED_BYTES,
+      IBE_HEADER_BYTES + G2_BYTES + SEED_BYTES
     );
     const c3 = bytes.subarray(IBE_HEADER_BYTES + G2_BYTES + SEED_BYTES);
 
@@ -626,7 +628,7 @@ export class IdentityBasedEncryptionCiphertext {
     dpk: DerivedPublicKey,
     derivation_id: Uint8Array,
     msg: Uint8Array,
-    seed: Uint8Array,
+    seed: Uint8Array
   ): IdentityBasedEncryptionCiphertext {
     if (seed.length !== SEED_BYTES) {
       throw new Error("IBE seed must be exactly SEED_BYTES long");
@@ -637,7 +639,7 @@ export class IdentityBasedEncryptionCiphertext {
     const pt = augmentedHashToG1(dpk, derivation_id);
     const tsig = bls12_381.fields.Fp12.pow(
       bls12_381.pairing(pt, dpk.getPoint()),
-      t,
+      t
     );
 
     const c1 = bls12_381.G2.ProjectivePoint.BASE.multiply(t);
@@ -676,7 +678,7 @@ export class IdentityBasedEncryptionCiphertext {
     hdr: Uint8Array,
     c1: G2Point,
     c2: Uint8Array,
-    c3: Uint8Array,
+    c3: Uint8Array
   ) {
     this.#hdr = hdr;
     this.#c1 = c1;

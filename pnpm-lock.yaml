@@ -180,6 +180,9 @@ importers:
       daisyui:
         specifier: ^4.12.23
         version: 4.12.24(postcss@8.5.3)
+      ic_vetkd_sdk_encrypted_maps:
+        specifier: workspace:*
+        version: link:../../../sdk/ic_vetkd_sdk_encrypted_maps
       svelte:
         specifier: ^4.2.19
         version: 4.2.19

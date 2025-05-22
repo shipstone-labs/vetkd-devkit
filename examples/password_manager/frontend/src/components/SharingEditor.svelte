@@ -12,8 +12,10 @@ import {
 } from "../store/vaults";
 
 export let editedVault: VaultModel;
-export const canManage = false;
-export const currentRoute = "";
+// biome-ignore lint/style/useConst: <explanation>
+export let canManage = false;
+// biome-ignore lint/style/useConst: <explanation>
+export let currentRoute = "";
 
 let newSharing = "";
 let newSharingInput: HTMLInputElement;
