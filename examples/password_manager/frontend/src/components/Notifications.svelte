@@ -1,13 +1,13 @@
 <script lang="ts">
-    import { type Notification, notifications } from '../store/notifications';
-    import { fly, fade } from 'svelte/transition';
-  
-    const classMap: Record<Notification['type'], string> = {
-      info: 'alert-info',
-      error: 'alert-error',
-      success: 'alert-success',
-    };
-  </script>
+import { fade, fly } from "svelte/transition";
+import { type Notification, notifications } from "../store/notifications";
+
+const classMap: Record<Notification["type"], string> = {
+  info: "alert-info",
+  error: "alert-error",
+  success: "alert-success",
+};
+</script>
   
   <div class="absolute right-4 bottom-4 flex flex-col max-w-xs space-y-4">
     {#each $notifications as n (n.id)}

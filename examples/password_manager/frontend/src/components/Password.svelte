@@ -1,59 +1,52 @@
 <script lang="ts">
-  import { type PasswordModel, summarize } from "../lib/password";
-  import { link, location } from "svelte-spa-router";
-  import { vaultsStore } from "../store/vaults";
-  import { Principal } from "@dfinity/principal";
-  import { onDestroy } from "svelte";
-  import Spinner from "./Spinner.svelte";
-  import Header from "./Header.svelte";
+import { Principal } from "@dfinity/principal";
+import { onDestroy } from "svelte";
+import { link, location } from "svelte-spa-router";
+import { type PasswordModel, summarize } from "../lib/password";
+import { vaultsStore } from "../store/vaults";
+import Header from "./Header.svelte";
+import Spinner from "./Spinner.svelte";
 
-  export let currentRoute = "";
-  const unsubscribe = location.subscribe((value) => {
-    currentRoute = value;
-  });
-  onDestroy(unsubscribe);
+export let currentRoute = "";
+const unsubscribe = location.subscribe((value) => {
+  currentRoute = value;
+});
+onDestroy(unsubscribe);
 
-  export let password: PasswordModel = {
-    parentVaultName: "",
-    owner: Principal.anonymous(),
-    passwordName: "",
-    content: "",
-  };
+export let password: PasswordModel = {
+  parentVaultName: "",
+  owner: Principal.anonymous(),
+  passwordName: "",
+  content: "",
+};
 
-  export let passwordSummary = "";
+export let passwordSummary = "";
 
-  $: {
-    if (
-      $vaultsStore.state === "loaded" &&
-      password.passwordName.length === 0 &&
-      currentRoute.split("/").length > 2
-    ) {
-      const split = currentRoute.split("/");
-      const vaultOwner = Principal.fromText(split[split.length - 3]);
-      const parentVaultName = split[split.length - 2];
-      const passwordName = split[split.length - 1];
-      const searchedForPassword = $vaultsStore.list
-        .find(
-          (v) =>
-            v.owner.compareTo(vaultOwner) === "eq" &&
-            v.name === parentVaultName,
-        )
-        .passwords.find((p) => p[0] === passwordName);
+$: {
+  if (
+    $vaultsStore.state === "loaded" &&
+    password.passwordName.length === 0 &&
+    currentRoute.split("/").length > 2
+  ) {
+    const split = currentRoute.split("/");
+    const vaultOwner = Principal.fromText(split[split.length - 3]);
+    const parentVaultName = split[split.length - 2];
+    const passwordName = split[split.length - 1];
+    const searchedForPassword = $vaultsStore.list
+      .find(
+        (v) =>
+          v.owner.compareTo(vaultOwner) === "eq" && v.name === parentVaultName,
+      )
+      .passwords.find((p) => p[0] === passwordName);
 
-      if (!!searchedForPassword) {
-        password = searchedForPassword[1];
-        passwordSummary += summarize(password);
-      } else {
-        passwordSummary =
-          "could not find password " +
-          passwordName +
-          " in vault " +
-          parentVaultName +
-          " owned by " +
-          vaultOwner.toText();
-      }
+    if (searchedForPassword) {
+      password = searchedForPassword[1];
+      passwordSummary += summarize(password);
+    } else {
+      passwordSummary = `could not find password ${passwordName} in vault ${parentVaultName} owned by ${vaultOwner.toText()}`;
     }
   }
+}
 </script>
 
 <Header>

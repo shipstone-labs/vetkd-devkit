@@ -1333,6 +1333,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "ic-vetkd-example-encrypted-notes-backend"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "ic-cdk",
+ "ic-cdk-macros",
+ "ic-stable-structures",
+ "ic-vetkd-cdk-encrypted-maps",
+ "ic-vetkd-cdk-types",
+ "ic-vetkd-utils",
+ "serde",
+ "serde_bytes",
+ "serde_cbor",
+]
+
+[[package]]
 name = "ic-vetkd-example-password-manager-with-metadata-backend"
 version = "0.1.0"
 dependencies = [
@@ -2487,9 +2503,9 @@ dependencies = [
 
 [[package]]
 name = "serde_bytes"
-version = "0.11.15"
+version = "0.11.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "387cc504cb06bb40a96c8e04e951fe01854cf6bc921053c954e4a606d9675c6a"
+checksum = "8437fd221bde2d4ca316d61b90e337e9e702b3820b87d63caa9ba6c02bd06d96"
 dependencies = [
  "serde",
 ]

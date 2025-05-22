@@ -1,14 +1,14 @@
 <script lang="ts">
-    import { type AuthState, login } from "../store/auth";
-    import DisclaimerCopy from "./DisclaimerCopy.svelte";
-    import Spinner from "./Spinner.svelte";
+import { type AuthState, login } from "../store/auth";
+import DisclaimerCopy from "./DisclaimerCopy.svelte";
+import Spinner from "./Spinner.svelte";
 
-    export let auth: Extract<
-        AuthState,
-        {
-            state: "initializing-auth" | "initialized" | "anonymous" | "error";
-        }
-    >;
+export let auth: Extract<
+  AuthState,
+  {
+    state: "initializing-auth" | "initialized" | "anonymous" | "error";
+  }
+>;
 </script>
 
 <div class="hero min-h-screen pt-8 sm:pt-0 content-start sm:content-center">

@@ -1,6 +1,7 @@
 use std::{
     collections::{BTreeMap, HashSet},
     iter::FromIterator,
+    mem::transmute_copy,
 };
 
 use assert_matches::assert_matches;
@@ -32,7 +33,7 @@ fn can_remove_map_values() {
     let caller = random_self_authenticating_principal(rng);
     let name = random_name(rng);
     let mut encrypted_maps = random_encrypted_maps(rng);
-    let result = encrypted_maps.remove_map_values(caller, (caller, name));
+    let result = encrypted_maps.remove_map_values(caller, (caller, name), false);
     assert_eq!(result, Ok(vec![]));
 }
 
@@ -49,7 +50,7 @@ fn unauthorized_delete_map_values_fails() {
     encrypted_maps
         .insert_encrypted_value(caller, (caller, name), key, encrypted_value)
         .unwrap();
-    let result = encrypted_maps.remove_map_values(unauthorized, (caller, name));
+    let result = encrypted_maps.remove_map_values(unauthorized, (caller, name), false);
     assert_eq!(result, Err("unauthorized".to_string()));
 }
 
@@ -177,7 +178,7 @@ fn unauthorized_cannot_invoke_operations() {
 
     for _ in 0..2 {
         assert_eq!(
-            encrypted_maps.remove_map_values(unauthorized, map_id),
+            encrypted_maps.remove_map_values(unauthorized, map_id, false),
             Err("unauthorized".to_string())
         );
 
@@ -341,7 +342,7 @@ fn can_remove_a_key_from_map() {
         .insert_encrypted_value(caller, (caller, name), key, value.clone())
         .unwrap();
     assert_eq!(
-        encrypted_maps.remove_encrypted_value(caller, (caller, name), key),
+        encrypted_maps.remove_encrypted_value(caller, (caller, name), key, false),
         Ok(Some(value))
     );
 }
@@ -361,7 +362,7 @@ fn remove_of_key_from_map_by_unauthorized_fails() {
 
     let unauthorized_caller = random_self_authenticating_principal(rng);
     assert_eq!(
-        encrypted_maps.remove_encrypted_value(unauthorized_caller, (caller, name), key),
+        encrypted_maps.remove_encrypted_value(unauthorized_caller, (caller, name), key, false),
         Err("unauthorized".to_string())
     );
 
@@ -378,7 +379,7 @@ fn remove_of_key_from_map_by_unauthorized_fails() {
     );
 
     assert_eq!(
-        encrypted_maps.remove_encrypted_value(readonly_caller, (caller, name), key),
+        encrypted_maps.remove_encrypted_value(readonly_caller, (caller, name), key, false),
         Err("unauthorized".to_string())
     );
 }
@@ -582,7 +583,7 @@ fn can_get_owned_map_names() {
 
         if should_remove_map {
             encrypted_maps
-                .remove_map_values(caller, (caller, name))
+                .remove_map_values(caller, (caller, name), false)
                 .unwrap();
             expected_map_names.pop();
         }
@@ -599,6 +600,7 @@ fn random_encrypted_maps<R: Rng + CryptoRng>(rng: &mut R) -> EncryptedMaps {
         memory_manager.get(MemoryId::new(memory_ids_key_manager[0])),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[1])),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[2])),
-        Some(memory_manager.get(MemoryId::new(memory_ids_key_manager[3]))),
+        memory_manager.get(MemoryId::new(memory_ids_key_manager[3])),
+        None,
     )
 }

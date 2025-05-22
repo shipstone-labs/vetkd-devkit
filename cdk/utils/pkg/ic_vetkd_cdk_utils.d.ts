@@ -25,7 +25,12 @@ export class IBECiphertext {
    * generated with a cryptographically secure random number generator. Do
    * not reuse the seed for encrypting another message or any other purpose.
    */
-  static encrypt(derived_public_key_bytes: Uint8Array, derivation_id: Uint8Array, msg: Uint8Array, seed: Uint8Array): IBECiphertext;
+  static encrypt(
+    derived_public_key_bytes: Uint8Array,
+    derivation_id: Uint8Array,
+    msg: Uint8Array,
+    seed: Uint8Array,
+  ): IBECiphertext;
   /**
    * Decrypt an IBE ciphertext
    *
@@ -59,7 +64,11 @@ export class TransportSecretKey {
    * This is primarily useful for IBE; for symmetric key encryption use
    * decrypt_and_hash
    */
-  decrypt(encrypted_key_bytes: Uint8Array, derived_public_key_bytes: Uint8Array, derivation_id: Uint8Array): Uint8Array;
+  decrypt(
+    encrypted_key_bytes: Uint8Array,
+    derived_public_key_bytes: Uint8Array,
+    derivation_id: Uint8Array,
+  ): Uint8Array;
   /**
    * Decrypts and verifies an encrypted key, and hashes it to a symmetric key
    *
@@ -68,5 +77,11 @@ export class TransportSecretKey {
    * The `symmetric_key_associated_data` field should include information about
    * the protocol and cipher that this key will be used for.
    */
-  decrypt_and_hash(encrypted_key_bytes: Uint8Array, derived_public_key_bytes: Uint8Array, derivation_id: Uint8Array, symmetric_key_bytes: number, symmetric_key_associated_data: Uint8Array): Uint8Array;
+  decrypt_and_hash(
+    encrypted_key_bytes: Uint8Array,
+    derived_public_key_bytes: Uint8Array,
+    derivation_id: Uint8Array,
+    symmetric_key_bytes: number,
+    symmetric_key_associated_data: Uint8Array,
+  ): Uint8Array;
 }

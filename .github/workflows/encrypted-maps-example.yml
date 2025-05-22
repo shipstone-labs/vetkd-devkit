@@ -27,14 +27,15 @@ jobs:
           brew install llvm
       - name: Encrypted Maps Example Darwin
         run: |
+          corepack enable pnpm
           pushd cdk/encrypted_maps_example
           dfx start --background
           make mock
           eval $(make export-cmd)
           popd
           pushd sdk/ic_vetkd_sdk_encrypted_maps_example
-          npm install
-          npm test
+          pnpm install
+          pnpm test
   encrypted-maps-example-linux:
     runs-on: ubuntu-24.04
     steps:
@@ -49,5 +50,5 @@ jobs:
           eval $(make export-cmd)
           popd
           pushd sdk/ic_vetkd_sdk_encrypted_maps_example
-          npm install
-          npm test
+          pnpm install
+          pnpm run test
