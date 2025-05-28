@@ -2,8 +2,12 @@ packages:
   - sdk/*
   - cdk/utils/pkg
   - packages/*
+  - examples/encrypted_notes/frontend
+  - examples/password_manager/frontend
+  - examples/password_manager_with_metadata/frontend
 linkWorkspacePackages: deep
 onlyBuiltDependencies:
   - '@swc/core'
+  - '@tailwindcss/oxide'
   - esbuild
 preferWorkspacePackages: true
