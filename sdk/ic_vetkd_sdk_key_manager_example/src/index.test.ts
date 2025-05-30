@@ -5,6 +5,7 @@ import { KeyManager } from "ic_vetkd_sdk_key_manager/src";
 import fetch from "isomorphic-fetch";
 import { expect, test } from "vitest";
 import { DefaultKeyManagerClient } from "./index";
+import type { AccessRights } from "ic_vetkd_sdk_key_manager";
 
 function randomId(): Ed25519KeyIdentity {
   return Ed25519KeyIdentity.generate(randomBytes(32));
@@ -62,7 +63,7 @@ test("can get vetkey", async () => {
     });
   // biome-ignore lint/complexity/useLiteralKeys: <explanation>
   expect(isEqualArray(vetkey["Ok"].inner, second_vetkey["Ok"].inner)).to.equal(
-    true,
+    true
   );
 });
 
@@ -75,7 +76,7 @@ test("cannot get unauthorized vetkey", async () => {
     (await key_manager.get_encrypted_vetkey(id1.getPrincipal(), "some key"))[
       // biome-ignore lint/complexity/useLiteralKeys: <explanation>
       "Err"
-    ],
+    ]
   ).to.equal("unauthorized");
 });
 
@@ -91,31 +92,35 @@ test("can share a key", async () => {
   });
   const vetkey_owner = await key_manager_owner.get_encrypted_vetkey(
     owner,
-    "some key",
+    "some key"
   );
   expect("Ok" in vetkey_owner).to.equal(true);
 
   expect(
-    "Ok" in (await key_manager_owner.remove_user(owner, "some_key", user)),
+    "Ok" in (await key_manager_owner.remove_user(owner, "some_key", user))
   );
 
-  const rights = { ReadWrite: null };
+  const rights: AccessRights = {
+    rights: { ReadWrite: null },
+    start: [],
+    end: [],
+  };
 
   expect(
     (await key_manager_owner.set_user_rights(owner, "some key", user, rights))[
       // biome-ignore lint/complexity/useLiteralKeys: <explanation>
       "Ok"
-    ],
+    ]
   ).to.deep.equal([]);
 
   const vetkey_user = await key_manager_user.get_encrypted_vetkey(
     owner,
-    "some key",
+    "some key"
   );
 
   expect(
     // biome-ignore lint/complexity/useLiteralKeys: <explanation>
-    isEqualArray(vetkey_owner["Ok"].inner, vetkey_user["Ok"].inner),
+    isEqualArray(vetkey_owner["Ok"].inner, vetkey_user["Ok"].inner)
   ).to.equal(true);
 });
 
@@ -129,17 +134,21 @@ test("sharing rights are consistent", async () => {
   const key_manager_user = await new_key_manager(id1).catch((err) => {
     throw err;
   });
-  const rights = { ReadWrite: null };
+  const rights: AccessRights = {
+    rights: { ReadWrite: null },
+    start: [],
+    end: [],
+  };
 
   expect(
     (await key_manager_owner.set_user_rights(owner, "some key", user, rights))[
       // biome-ignore lint/complexity/useLiteralKeys: <explanation>
       "Ok"
-    ],
+    ]
   ).to.deep.equal([]);
   expect(
     // biome-ignore lint/complexity/useLiteralKeys: <explanation>
-    (await key_manager_user.get_user_rights(owner, "some key", user))["Ok"],
+    (await key_manager_user.get_user_rights(owner, "some key", user))["Ok"]
   ).to.deep.equal([rights]);
 });
 

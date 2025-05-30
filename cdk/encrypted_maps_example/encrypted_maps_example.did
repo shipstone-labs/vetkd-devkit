@@ -1,4 +1,8 @@
-type AccessRights = variant { Read; ReadWrite; ReadWriteManage };
+type AccessRights = record {
+  end : opt nat64;
+  rights : Rights;
+  start : opt nat64;
+};
 type ByteBuf = record { inner : blob };
 type EncryptedMapData = record {
   access_control : vec record { principal; AccessRights };
@@ -13,8 +17,20 @@ type Result_3 = variant {
   Ok : vec record { principal; AccessRights };
   Err : text;
 };
-type Result_4 = variant { Ok : opt AccessRights; Err : text };
-type Result_5 = variant { Ok : vec ByteBuf; Err : text };
+type Result_4 = variant {
+  Ok : vec record { ByteBuf; TombstoneEntry };
+  Err : text;
+};
+type Result_5 = variant { Ok : opt AccessRights; Err : text };
+type Result_6 = variant { Ok : vec ByteBuf; Err : text };
+type Result_7 = variant { Ok : opt TombstoneEntry; Err : text };
+type Rights = variant { Read; ReadWrite; ReadWriteManage };
+type TombstoneEntry = record {
+  value : ByteBuf;
+  deletion_timestamp : nat64;
+  deleted_by : principal;
+  marked_for_purge : bool;
+};
 service : {
   get_accessible_shared_map_names : () -> (
       vec record { principal; ByteBuf },
@@ -31,11 +47,16 @@ service : {
   get_encrypted_vetkey : (principal, ByteBuf, ByteBuf) -> (Result_2);
   get_owned_non_empty_map_names : () -> (vec ByteBuf) query;
   get_shared_user_access_for_map : (principal, ByteBuf) -> (Result_3) query;
-  get_user_rights : (principal, ByteBuf, principal) -> (Result_4) query;
+  get_tombstones : (principal, ByteBuf) -> (Result_4) query;
+  get_user_rights : (principal, ByteBuf, principal) -> (Result_5) query;
   get_vetkey_verification_key : () -> (ByteBuf);
+  hard_delete_encrypted_value : (principal, ByteBuf, ByteBuf) -> (Result);
+  hard_delete_map_values : (principal, ByteBuf) -> (Result_6);
   insert_encrypted_value : (principal, ByteBuf, ByteBuf, ByteBuf) -> (Result);
+  purge_tombstone : (principal, ByteBuf, ByteBuf) -> (Result_7);
   remove_encrypted_value : (principal, ByteBuf, ByteBuf) -> (Result);
-  remove_map_values : (principal, ByteBuf) -> (Result_5);
-  remove_user : (principal, ByteBuf, principal) -> (Result_4);
-  set_user_rights : (principal, ByteBuf, principal, AccessRights) -> (Result_4);
+  remove_map_values : (principal, ByteBuf) -> (Result_6);
+  remove_user : (principal, ByteBuf, principal) -> (Result_5);
+  restore_value : (principal, ByteBuf, ByteBuf) -> (Result);
+  set_user_rights : (principal, ByteBuf, principal, AccessRights) -> (Result_5);
 }

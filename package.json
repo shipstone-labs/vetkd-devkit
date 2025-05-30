@@ -5,8 +5,6 @@
   },
   "packageManager": "pnpm@10.11.0",
   "scripts": {
-    "build": "turbo run build",
-    "build:sdk": "pnpm -r --filter=\"./sdk/*\" build",
-    "build:dfx": "turbo run build:dfx"
+    "build": "pnpm -r --filter=\"./sdk/*\" build"
   }
 }

@@ -13,7 +13,7 @@ export class KeyManager {
 
   async get_encrypted_vetkey(
     key_owner: Principal,
-    vetkey_name: string,
+    vetkey_name: string
   ): Promise<{ Ok: ByteBuf } | { Err: string }> {
     // create a random transport key
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
@@ -21,7 +21,7 @@ export class KeyManager {
     const encrypted_vetkey = await this.canister_client.get_encrypted_vetkey(
       key_owner,
       vetkey_name,
-      tsk.public_key(),
+      tsk.public_key()
     );
     if ("Err" in encrypted_vetkey) {
       return encrypted_vetkey;
@@ -40,7 +40,7 @@ export class KeyManager {
       Uint8Array.from(verification_key.inner),
       derivaition_id,
       symmetric_key_bytes,
-      symmetric_key_associated_data,
+      symmetric_key_associated_data
     );
     return { Ok: { inner: vetkey } };
   }
@@ -53,20 +53,20 @@ export class KeyManager {
     owner: Principal,
     vetkey_name: string,
     user: Principal,
-    user_rights: AccessRights,
+    user_rights: AccessRights
   ): Promise<{ Ok: [] | [AccessRights] } | { Err: string }> {
     return await this.canister_client.set_user_rights(
       owner,
       vetkey_name,
       user,
-      user_rights,
+      user_rights
     );
   }
 
   async get_user_rights(
     owner: Principal,
     vetkey_name: string,
-    user: Principal,
+    user: Principal
   ): Promise<{ Ok: [] | [AccessRights] } | { Err: string }> {
     return await this.canister_client.get_user_rights(owner, vetkey_name, user);
   }
@@ -74,7 +74,7 @@ export class KeyManager {
   async remove_user(
     owner: Principal,
     vetkey_name: string,
-    user: Principal,
+    user: Principal
   ): Promise<{ Ok: [] | [AccessRights] } | { Err: string }> {
     return await this.canister_client.remove_user(owner, vetkey_name, user);
   }
@@ -86,27 +86,33 @@ export interface KeyManagerClient {
     owner: Principal,
     vetkey_name: string,
     user: Principal,
-    user_rights: AccessRights,
+    user_rights: AccessRights
   ): Promise<{ Ok: [] | [AccessRights] } | { Err: string }>;
   get_user_rights(
     owner: Principal,
     vetkey_name: string,
-    user: Principal,
+    user: Principal
   ): Promise<{ Ok: [] | [AccessRights] } | { Err: string }>;
   remove_user(
     owner: Principal,
     vetkey_name: string,
-    user: Principal,
+    user: Principal
   ): Promise<{ Ok: [] | [AccessRights] } | { Err: string }>;
   get_encrypted_vetkey(
     key_owner: Principal,
     vetkey_name: string,
-    transport_key: Uint8Array,
+    transport_key: Uint8Array
   ): Promise<{ Ok: ByteBuf } | { Err: string }>;
   get_vetkey_verification_key(): Promise<ByteBuf>;
 }
 
-export type AccessRights =
+export interface AccessRights {
+  end: [] | [bigint];
+  rights: Rights;
+  start: [] | [bigint];
+}
+
+export type Rights =
   | { Read: null }
   | { ReadWrite: null }
   | { ReadWriteManage: null };

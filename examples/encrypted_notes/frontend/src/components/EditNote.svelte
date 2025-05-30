@@ -10,7 +10,7 @@ import { auth } from "../store/auth";
 import { addNotification, showError } from "../store/notifications";
 import { refreshVaults, setNote, vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
-import PasswordEditor from "./NoteEditor.svelte";
+import NoteEditor from "./NoteEditor.svelte";
 import Spinner from "./Spinner.svelte";
 
 export let currentRoute = "";
@@ -289,7 +289,7 @@ $: {
                     class="input input-bordered w-full"
                 />
             </div>
-            <PasswordEditor
+            <NoteEditor
                 {editor}
                 disabled={updating || deleting}
                 class="mb-3"

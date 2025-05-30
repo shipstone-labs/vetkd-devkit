@@ -5,6 +5,7 @@ import { EncryptedMaps } from "ic_vetkd_sdk_encrypted_maps/src";
 import fetch from "isomorphic-fetch";
 import { expect, test } from "vitest";
 import { DefaultEncryptedMapsClient } from "./index";
+import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps";
 
 function randomId(): Ed25519KeyIdentity {
   return Ed25519KeyIdentity.generate(randomBytes(32));
@@ -15,7 +16,7 @@ function ids(): [Ed25519KeyIdentity, Ed25519KeyIdentity] {
 }
 
 async function new_encrypted_maps(
-  id: Ed25519KeyIdentity,
+  id: Ed25519KeyIdentity
 ): Promise<EncryptedMaps> {
   const host = "http://localhost:8000";
   const agent = await HttpAgent.create({
@@ -47,11 +48,11 @@ test("can get vetkey", async () => {
 
   const second_vetkey = await encrypted_maps.get_symmetric_vetkey(
     owner,
-    "some key",
+    "some key"
   );
   // biome-ignore lint/complexity/useLiteralKeys: <explanation>
   expect(isEqualArray(vetkey["Ok"].inner, second_vetkey["Ok"].inner)).to.equal(
-    true,
+    true
   );
 });
 
@@ -65,7 +66,7 @@ test("vetkey encryption roundtrip", async () => {
     owner,
     "some map",
     "some key",
-    plaintext,
+    plaintext
   );
   if ("Err" in encryption_result) {
     return encryption_result;
@@ -74,7 +75,7 @@ test("vetkey encryption roundtrip", async () => {
     owner,
     "some map",
     "some key",
-    encryption_result.Ok,
+    encryption_result.Ok
   );
   if ("Err" in decrypted_ciphertext) {
     throw new Error("Failed to decrypt ciphertext");
@@ -92,7 +93,7 @@ test("cannot get unauthorized vetkey", async () => {
     (await encrypted_maps.get_symmetric_vetkey(id1.getPrincipal(), "some key"))[
       // biome-ignore lint/complexity/useLiteralKeys: <explanation>
       "Err"
-    ],
+    ]
   ).to.equal("unauthorized");
 });
 
@@ -104,36 +105,40 @@ test("can share a key", async () => {
   const encrypted_maps_user = await new_encrypted_maps(id1);
   const vetkey_owner = await encrypted_maps_owner.get_symmetric_vetkey(
     owner,
-    "some key",
+    "some key"
   );
 
   expect(
-    "Ok" in (await encrypted_maps_owner.remove_user(owner, "some_key", user)),
+    "Ok" in (await encrypted_maps_owner.remove_user(owner, "some_key", user))
   );
 
-  const rights = { ReadWrite: null };
+  const rights: AccessRights = {
+    rights: { ReadWrite: null },
+    start: [],
+    end: [],
+  };
   expect(
     (
       await encrypted_maps_owner.set_user_rights(
         owner,
         "some key",
         user,
-        rights,
+        rights
       )
     )[
       // biome-ignore lint/complexity/useLiteralKeys: <explanation>
       "Ok"
-    ],
+    ]
   ).to.deep.equal([]);
 
   const vetkey_user = await encrypted_maps_user.get_symmetric_vetkey(
     owner,
-    "some key",
+    "some key"
   );
 
   expect(
     // biome-ignore lint/complexity/useLiteralKeys: <explanation>
-    isEqualArray(vetkey_owner["Ok"].inner, vetkey_user["Ok"].inner),
+    isEqualArray(vetkey_owner["Ok"].inner, vetkey_user["Ok"].inner)
   ).to.equal(true);
 });
 
@@ -148,7 +153,7 @@ test("set value should work", async () => {
   const remove_result = encrypted_maps.remove_encrypted_value(
     owner,
     map_name,
-    map_key,
+    map_key
   );
   if ("Err" in remove_result) {
     throw new Error(`Failed to remove map key: ${remove_result.Err}`);
@@ -158,7 +163,7 @@ test("set value should work", async () => {
     owner,
     map_name,
     map_key,
-    plaintext,
+    plaintext
   );
   if ("Err" in set_value_result) {
     throw new Error(set_value_result.Err);
@@ -174,7 +179,7 @@ test("set value should work", async () => {
     owner,
     map_name,
     map_key,
-    plaintext,
+    plaintext
   );
   if ("Err" in expected_encryption_result) {
     return expected_encryption_result;
@@ -184,7 +189,7 @@ test("set value should work", async () => {
     await encrypted_maps.canister_client.get_encrypted_value(
       owner,
       map_name,
-      map_key,
+      map_key
     );
   if ("Err" in get_value_result) {
     throw new Error(get_value_result.Err);
@@ -194,21 +199,21 @@ test("set value should work", async () => {
   }
 
   expect(expected_encryption_result.Ok.length).to.equal(
-    12 + 16 + plaintext.length,
+    12 + 16 + plaintext.length
   );
   expect(get_value_result.Ok[0].inner.length).to.equal(
-    12 + 16 + plaintext.length,
+    12 + 16 + plaintext.length
   );
 
   const try_decrypt_from_check = await encrypted_maps.decrypt_for(
     owner,
     map_name,
     map_key,
-    Uint8Array.from(expected_encryption_result.Ok),
+    Uint8Array.from(expected_encryption_result.Ok)
   );
   if ("Err" in try_decrypt_from_check) {
     throw new Error(
-      `Failed to decrypt from check: ${try_decrypt_from_check.Err}`,
+      `Failed to decrypt from check: ${try_decrypt_from_check.Err}`
     );
   }
   if (try_decrypt_from_check.Ok.length === 0) {
@@ -220,11 +225,11 @@ test("set value should work", async () => {
     owner,
     map_name,
     map_key,
-    Uint8Array.from(get_value_result.Ok[0].inner),
+    Uint8Array.from(get_value_result.Ok[0].inner)
   );
   if ("Err" in try_decrypt_from_canister) {
     throw new Error(
-      `Failed to decrypt from check: ${try_decrypt_from_canister.Err}`,
+      `Failed to decrypt from check: ${try_decrypt_from_canister.Err}`
     );
   }
   if (try_decrypt_from_canister.Ok.length === 0) {
@@ -241,7 +246,7 @@ test("get value should work", async () => {
   const remove_result = encrypted_maps.remove_encrypted_value(
     owner,
     "some map",
-    "some key",
+    "some key"
   );
   if ("Err" in remove_result) {
     throw new Error(`Failed to remove map key: ${remove_result.Err}`);
@@ -253,7 +258,7 @@ test("get value should work", async () => {
     owner,
     "some map",
     "some key",
-    value,
+    value
   );
 
   expect("Ok" in set_value_result).to.equal(true);
@@ -261,7 +266,7 @@ test("get value should work", async () => {
   const get_value_result = await encrypted_maps.get_value(
     owner,
     "some map",
-    "some key",
+    "some key"
   );
 
   if ("Err" in get_value_result) {
