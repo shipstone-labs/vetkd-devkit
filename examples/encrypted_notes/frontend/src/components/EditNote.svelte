@@ -32,7 +32,7 @@ let originalNote: NoteModel;
 let editor: Editor;
 let updating = false;
 let deleting = false;
-let accessRights: AccessRights = { Read: null };
+let accessRights: AccessRights = { start: [], end: [], rights: { Read: null } };
 
 // Convert between string and array when the input changes
 export function handleTagsInput() {
@@ -216,7 +216,7 @@ $: {
     const myPrincipal = $auth.client.getIdentity().getPrincipal();
     accessRights =
       parentVaultOwnerPrincipal.compareTo(myPrincipal) === "eq"
-        ? { ReadWriteManage: null }
+        ? { start: [], end: [], rights: { ReadWriteManage: null } }
         : $vaultsStore.list
             .find(
               (v) =>

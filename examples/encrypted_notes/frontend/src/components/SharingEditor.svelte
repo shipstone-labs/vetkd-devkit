@@ -10,6 +10,8 @@ import {
   removeUser,
   vaultsStore,
 } from "../store/vaults";
+import type { Rights } from "ic_vetkd_sdk_encrypted_maps";
+import { AnonymousIdentity } from "@dfinity/agent";
 
 export let editedVault: VaultModel;
 // biome-ignore lint/style/useConst: Svelte mods don't show through
@@ -17,6 +19,8 @@ export let canManage = false;
 // biome-ignore lint/style/useConst: Svelte mods don't show through
 export let currentRoute = "";
 
+let newSharingEveryone = false;
+let newSharingCheckmark: HTMLButtonElement;
 let newSharing = "";
 let newSharingInput: HTMLInputElement;
 let adding = false;
@@ -27,7 +31,7 @@ async function add() {
     throw new Error("not logged in");
   }
   adding = true;
-  let accessRights: AccessRights = { Read: null };
+  let rights: Rights = { Read: null };
 
   const selectElement = document.getElementById(
     "access-rights-select",
@@ -37,10 +41,16 @@ async function add() {
 
   if (selectedValue === "Read") {
   } else if (selectedValue === "ReadWrite") {
-    accessRights = { ReadWrite: null };
+    rights = { ReadWrite: null };
   } else if (selectedValue === "ReadWriteManage") {
-    accessRights = { ReadWriteManage: null };
+    rights = { ReadWriteManage: null };
   }
+
+  const accessRights: AccessRights = {
+    start: [],
+    end: [],
+    rights,
+  };
 
   try {
     await addUser(
@@ -109,17 +119,43 @@ function onKeyPress(e) {
   }
 }
 
+function onEveryoneChanged(e: Event & { currentTarget: HTMLButtonElement }) {
+  const checked = e.currentTarget.checked;
+  if (checked) {
+    newSharing = Principal.anonymous();
+  }
+}
+
 export function accessRightsToString(ar: AccessRights) {
-  if ("ReadWriteManage" in ar) {
-    return "read, write, manage";
+  const parts = [];
+  if (ar.start?.length > 0) {
+    const start = ar.start[0];
+    if (start) {
+      parts.push(
+        `after ${new Date(Number(start / 1000000n)).toLocaleString()}`,
+      );
+    }
   }
-  if ("ReadWrite" in ar) {
-    return "read, write";
+  if (ar.end?.length > 0) {
+    const end = ar.end[0];
+    if (end) {
+      parts.push(`before ${new Date(Number(end / 1000000n)).toLocaleString()}`);
+    }
   }
-  if ("Read" in ar) {
-    return "read";
+  switch (Object.keys(ar.rights).at(0)) {
+    case "ReadWriteManage":
+      parts.push("read", "write", "manage");
+      break;
+    case "ReadWrite":
+      parts.push("read", "write");
+      break;
+    case "Read":
+      parts.push("read");
+      break;
+    default:
+      throw new Error("unknown access rights");
   }
-  throw new Error("unknown access rights");
+  return parts.join(", ");
 }
 
 $: {
@@ -148,7 +184,7 @@ $: {
     </p>
     <p class="mt-3">Users with whom the vault is shared:</p>
 {/if}
-<div class="flex flex-wrap space-x-2 mt-2">
+<input class="flex flex-wrap space-x-2 mt-2">
     {#each editedVault.users as sharing}
         <button
             class="btn btn-outline btn-sm flex items-center"
@@ -173,17 +209,33 @@ $: {
             </svg>
         </button>
     {/each}
+    <div>
+      <input
+          bind:value={newSharingEveryone}
+          type="checkbox"
+          class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
+          removing
+              ? 'opacity-50'
+              : ''} 
+            {!canManage ? 'hidden' : ''}"
+          bind:this={newSharingCheckmark}
+          on:change={onEveryoneChanged}
+          disabled={adding}
+          id="isEveryone"
+      />
+      <label for="isEveryone">Everyone</label>
+    </div>
     <input
         bind:value={newSharing}
         placeholder="Add principal..."
+        bind:this={newSharingInput}
         class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
         removing
             ? 'opacity-50'
             : ''} 
           {!canManage ? 'hidden' : ''}"
-        bind:this={newSharingInput}
         on:keypress={onKeyPress}
-        disabled={adding}
+        disabled={adding || newSharingEveryone}
     />
     <select
         name="access-rights"
