@@ -7,7 +7,8 @@ import Password from "./Password.svelte";
 import Spinner from "./Spinner.svelte";
 import Vault from "./Vault.svelte";
 
-const filter = "";
+// biome-ignore lint/style/useConst: <explanation>
+let filter = "";
 let filteredVaults: VaultModel[];
 
 $: searchIndex =

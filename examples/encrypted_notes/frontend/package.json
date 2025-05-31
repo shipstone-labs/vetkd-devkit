@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:deps && vite build",
+    "build": "pnpm run build:deps && vite build",
     "build:deps": "cd ../../../sdk/ic_vetkd_sdk_encrypted_maps_example && pnpm i && pnpm run build",
     "lint": "eslint",
     "preview": "vite preview",

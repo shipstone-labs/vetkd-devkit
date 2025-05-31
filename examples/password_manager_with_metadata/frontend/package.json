@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:deps && vite build",
+    "build": "pnpm run build:deps && vite build",
     "build:deps": "cd ../../../sdk/ic_vetkd_sdk_encrypted_maps_example && pnpm i && pnpm run build",
     "lint": "eslint",
     "preview": "vite preview",
@@ -28,7 +28,10 @@
     "vite-plugin-wasm": "^3.4.1"
   },
   "dependencies": {
+    "@dfinity/agent": "^2.4.1",
     "@dfinity/auth-client": "^2.3.0",
+    "@dfinity/principal": "^2.4.1",
+    "@eslint/js": "^9.28.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "daisyui": "^4.12.23",
     "ic_vetkd_sdk_encrypted_maps": "workspace:*",

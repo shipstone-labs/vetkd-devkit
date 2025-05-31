@@ -11,15 +11,20 @@ import Header from "./Header.svelte";
 import PasswordEditor from "./PasswordEditor.svelte";
 
 let creating = false;
-const vaultOwner =
+// biome-ignore lint/style/useConst: <explanation>
+let vaultOwner =
   $auth.state === "initialized"
     ? $auth.client.getIdentity().getPrincipal().toText()
     : Principal.anonymous().toText();
-const vaultName = "";
-const passwordName = "";
-const url = "";
+// biome-ignore lint/style/useConst: <explanation>
+let vaultName = "";
+// biome-ignore lint/style/useConst: <explanation>
+let passwordName = "";
+// biome-ignore lint/style/useConst: <explanation>
+let url = "";
 
-const tagsInput = "";
+// biome-ignore lint/style/useConst: <explanation>
+let tagsInput = "";
 let tags: string[] = [];
 // Convert between string and array when the input changes
 export function handleTagsInput() {

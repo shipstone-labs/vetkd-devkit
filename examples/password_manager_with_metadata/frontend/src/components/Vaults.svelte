@@ -5,7 +5,8 @@ import { vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
 import Spinner from "./Spinner.svelte";
 
-const filter = "";
+// biome-ignore lint/style/useConst: <explanation>
+let filter = "";
 let filteredVaults: VaultModel[];
 
 $: searchIndex =

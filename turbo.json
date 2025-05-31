@@ -2,7 +2,13 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "tasks": {
+    "turbo:test": {
+      "cache": false
+    },
     "build": {
+      "dependsOn": [
+        "^build"
+      ],
       "env": ["NODE_ENV", "DFX_NETWORK"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", "pgk/**", "target/debug/**", "target/**/debug/**"]
@@ -22,31 +28,6 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*", "dfx.json"],
       "outputs": [".dfx/**"]
     },
-    "ic_vetkd_sdk_utils:build": {
-      "outputs": ["dist/**"]
-    },
-    "ic_vetkd_sdk_key_manager:build": {
-      "dependsOn": ["ic_vetkd_sdk_utils:build"],
-      "outputs": ["dist/**"]
-    },
-    "ic_vetkd_sdk_encrypted_maps:build": {
-      "dependsOn": ["ic_vetkd_sdk_utils:build"],
-      "outputs": ["dist/**"]
-    },
-    "ic_vetkd_sdk_key_manager_example:build": {
-      "dependsOn": ["ic_vetkd_sdk_key_manager:build"],
-      "outputs": ["dist/**"]
-    },
-    "ic_vetkd_sdk_encrypted_maps_example:build": {
-      "dependsOn": ["ic_vetkd_sdk_encrypted_maps:build"],
-      "outputs": ["dist/**"]
-    },
-    "@shipstone-labs/ic-vetkd-notes-client:build": {
-      "dependsOn": ["^vetkd-notes-canister:build"]
-    },
-    "@shipstone-labs/ic-vetkd-notes-client:build:release": {
-      "dependsOn": ["^vetkd-notes-canister:build:release"]
-    },
     "lint": {
       "dependsOn": ["^lint"]
     },
@@ -62,9 +43,6 @@
     },
     "deploy": {
       "dependsOn": ["^build:release", "^deploy"]
-    },
-    "shipstone-labs-ic-vetkd-notes:doc": {
-      "dependsOn": ["^doc"]
     }
   }
 }

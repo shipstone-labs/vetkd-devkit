@@ -11,12 +11,15 @@ import Header from "./Header.svelte";
 import PasswordEditor from "./PasswordEditor.svelte";
 
 let creating = false;
-const vaultOwner =
+// biome-ignore lint/style/useConst: <explanation>
+let vaultOwner =
   $auth.state === "initialized"
     ? $auth.client.getIdentity().getPrincipal().toText()
     : Principal.anonymous().toText();
-const vaultName = "";
-const passwordName = "";
+// biome-ignore lint/style/useConst: <explanation>
+let vaultName = "";
+// biome-ignore lint/style/useConst: <explanation>
+let passwordName = "";
 
 const editor = new Editor({
   modules: {

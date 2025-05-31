@@ -21,6 +21,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "lint": "eslint"
+    "lint": "eslint",
+    "turbo:test": "echo 'Testing turbo detection'"
   }
 }
