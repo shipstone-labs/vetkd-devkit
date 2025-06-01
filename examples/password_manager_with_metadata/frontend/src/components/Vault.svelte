@@ -81,7 +81,7 @@ $: {
         <div class="mt-5"></div>
         <SharingEditor
             editedVault={vault}
-            canManage={"ReadWriteManage" in accessRights}
+            canManage={"ReadWriteManage" in accessRights.rights}
         />
 
         <div class="mt-5"></div>

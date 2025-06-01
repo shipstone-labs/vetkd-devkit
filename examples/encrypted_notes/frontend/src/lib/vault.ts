@@ -1,7 +1,6 @@
 import type { Principal } from "@dfinity/principal";
 import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 import type { NoteModel } from "./note";
-import type { AuditEntry } from "../declarations/encrypted_notes_canister.did";
 
 export interface VaultModel {
   owner: Principal;

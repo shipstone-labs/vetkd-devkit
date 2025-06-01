@@ -26,6 +26,14 @@ let newSharing = "";
 let newSharingInput: HTMLInputElement;
 let adding = false;
 let removing = false;
+// biome-ignore lint/style/useConst: <explanation>
+let newSharingStart = false;
+// biome-ignore lint/style/useConst: <explanation>
+let newSharingEnd = false;
+// biome-ignore lint/style/useConst: <explanation>
+let newSharingStartDate = "";
+// biome-ignore lint/style/useConst: <explanation>
+let newSharingEndDate = "";
 
 async function add() {
   if ($auth.state !== "initialized") {
@@ -48,8 +56,12 @@ async function add() {
   }
 
   const accessRights: AccessRights = {
-    start: [],
-    end: [],
+    start: newSharingStart
+      ? [BigInt(new Date(newSharingStartDate).getDate()) * 1000000n]
+      : [],
+    end: newSharingEnd
+      ? [BigInt(new Date(newSharingEndDate).getDate()) * 1000000n]
+      : [],
     rights,
   };
 
@@ -123,6 +135,7 @@ function onKeyPress(e) {
 function onEveryoneChanged(e: Event & { currentTarget: HTMLInputElement }) {
   const checked =
     "checked" in e.currentTarget ? e.currentTarget.checked : false;
+  newSharingEveryone = checked;
   if (checked) {
     newSharing = Principal.anonymous().toString();
   }
@@ -131,10 +144,10 @@ function onEveryoneChanged(e: Event & { currentTarget: HTMLInputElement }) {
 $: {
   if ($vaultsStore.state === "loaded" && !editedVault) {
     const split = currentRoute.split("/");
-    const vaultOwnewr = Principal.fromText(split[split.length - 2]);
+    const vaultOwner = Principal.fromText(split[split.length - 2]);
     const vaultName = split[split.length - 1];
     const vault = $vaultsStore.list.find(
-      (vault) => vault.owner === vaultOwnewr && vault.name === vaultName,
+      (vault) => vault.owner === vaultOwner && vault.name === vaultName,
     );
     editedVault = vault;
   }
@@ -181,7 +194,7 @@ $: {
     {/each}
     <div class="flex items-center">
       <input
-          bind:value={newSharingEveryone}
+          bind:checked={newSharingEveryone}
           type="checkbox"
           class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
           removing
@@ -193,7 +206,7 @@ $: {
           disabled={adding}
           id="isEveryone"
       />
-      <label for="isEveryone">Everyone</label>
+      <label for="isEveryone">&nbsp;Everyone</label>
     </div>
     <input
         bind:value={newSharing}
@@ -207,6 +220,52 @@ $: {
         on:keypress={onKeyPress}
         disabled={adding || newSharingEveryone}
     />
+    <div class="flex items-center">
+      <input
+          bind:checked={newSharingStart}
+          type="checkbox"
+          class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
+          removing
+              ? 'opacity-50'
+              : ''} 
+            {!canManage ? 'hidden' : ''}"
+          disabled={adding}
+          id="hasAfter"
+      />
+      <label for="hasBefore">&nbsp;After</label>
+      <input 
+        bind:value={newSharingStartDate}
+        type="datetime-local"
+        class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
+        removing
+            ? 'opacity-50'
+            : ''} 
+          {!canManage || !newSharingStart ? 'hidden' : ''}"
+      />
+    </div>
+    <div class="flex items-center">
+      <input
+          bind:checked={newSharingEnd}
+          type="checkbox"
+          class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
+          removing
+              ? 'opacity-50'
+              : ''} 
+            {!canManage ? 'hidden' : ''}"
+          disabled={adding}
+          id="hasEnd"
+      />
+      <label for="hasEnd">&nbsp;Before</label>
+      <input 
+        bind:value={newSharingStartDate}
+        type="datetime-local"
+        class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
+        removing
+            ? 'opacity-50'
+            : ''} 
+          {!canManage || !newSharingEnd ? 'hidden' : ''}"
+      />
+    </div>
     <select
         name="access-rights"
         id="access-rights-select"

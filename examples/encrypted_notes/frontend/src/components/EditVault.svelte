@@ -60,7 +60,14 @@ $: {
       canManage =
         vault.owner.compareTo(me) === "eq" ||
         "ReadWriteManage" in
-          vault.users.find(([p, r]) => p.compareTo(me) === "eq");
+          (vault.users.find(([p, r]) => p.compareTo(me) === "eq")?.[1]
+            ?.rights ?? {});
+      console.log({
+        owner: vault.owner,
+        me,
+        canManage,
+        users: vault.owner,
+      });
     }
   }
 }
