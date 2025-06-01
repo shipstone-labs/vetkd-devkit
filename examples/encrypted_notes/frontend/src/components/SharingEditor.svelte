@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Principal } from "@dfinity/principal";
 import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
-import type { VaultModel } from "../lib/vault";
+import { accessRightsToString, type VaultModel } from "../lib/vault";
 import { auth } from "../store/auth";
 import { addNotification, showError } from "../store/notifications";
 import {
@@ -19,8 +19,9 @@ export let canManage = false;
 // biome-ignore lint/style/useConst: Svelte mods don't show through
 export let currentRoute = "";
 
+// biome-ignore lint/style/useConst: <explanation>
 let newSharingEveryone = false;
-let newSharingCheckmark: HTMLButtonElement;
+let newSharingCheckmark: HTMLInputElement;
 let newSharing = "";
 let newSharingInput: HTMLInputElement;
 let adding = false;
@@ -119,43 +120,12 @@ function onKeyPress(e) {
   }
 }
 
-function onEveryoneChanged(e: Event & { currentTarget: HTMLButtonElement }) {
-  const checked = e.currentTarget.checked;
+function onEveryoneChanged(e: Event & { currentTarget: HTMLInputElement }) {
+  const checked =
+    "checked" in e.currentTarget ? e.currentTarget.checked : false;
   if (checked) {
-    newSharing = Principal.anonymous();
+    newSharing = Principal.anonymous().toString();
   }
-}
-
-export function accessRightsToString(ar: AccessRights) {
-  const parts = [];
-  if (ar.start?.length > 0) {
-    const start = ar.start[0];
-    if (start) {
-      parts.push(
-        `after ${new Date(Number(start / 1000000n)).toLocaleString()}`,
-      );
-    }
-  }
-  if (ar.end?.length > 0) {
-    const end = ar.end[0];
-    if (end) {
-      parts.push(`before ${new Date(Number(end / 1000000n)).toLocaleString()}`);
-    }
-  }
-  switch (Object.keys(ar.rights).at(0)) {
-    case "ReadWriteManage":
-      parts.push("read", "write", "manage");
-      break;
-    case "ReadWrite":
-      parts.push("read", "write");
-      break;
-    case "Read":
-      parts.push("read");
-      break;
-    default:
-      throw new Error("unknown access rights");
-  }
-  return parts.join(", ");
 }
 
 $: {
@@ -184,7 +154,7 @@ $: {
     </p>
     <p class="mt-3">Users with whom the vault is shared:</p>
 {/if}
-<input class="flex flex-wrap space-x-2 mt-2">
+<div class="flex flex-wrap space-x-2 mt-2">
     {#each editedVault.users as sharing}
         <button
             class="btn btn-outline btn-sm flex items-center"
@@ -209,7 +179,7 @@ $: {
             </svg>
         </button>
     {/each}
-    <div>
+    <div class="flex items-center">
       <input
           bind:value={newSharingEveryone}
           type="checkbox"

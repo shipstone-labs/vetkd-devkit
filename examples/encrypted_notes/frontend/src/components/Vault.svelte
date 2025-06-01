@@ -4,7 +4,7 @@ import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
 import { onDestroy } from "svelte";
 import GiOpenTreasureChest from "svelte-icons/gi/GiOpenTreasureChest.svelte";
 import { link, location } from "svelte-spa-router";
-import { type VaultModel, summarize } from "../lib/vault";
+import { type VaultModel, accessRightsToString, summarize } from "../lib/vault";
 import { auth } from "../store/auth";
 import { vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
@@ -18,7 +18,11 @@ export let vault: VaultModel = {
   users: [],
 };
 export let vaultSummary = "";
-export let accessRights: AccessRights = { Read: null };
+export let accessRights: AccessRights = {
+  start: [],
+  end: [],
+  rights: { Read: null },
+};
 
 export let currentRoute = "";
 const unsubscribeCurrentRoute = location.subscribe((value) => {
@@ -45,7 +49,7 @@ $: {
       const me = $auth.client.getIdentity().getPrincipal();
       accessRights =
         vault.owner.compareTo(me) === "eq"
-          ? { ReadWriteManage: null }
+          ? { start: [], end: [], rights: { ReadWriteManage: null } }
           : vault.users.find((user) => user[0].compareTo(me) === "eq")[1];
     } else {
       vaultSummary = `could not find vault ${vaultName} owned by ${vaultOwner.toText()}`;
@@ -87,7 +91,7 @@ $: {
         <div class="mt-5"></div>
 
         <div class="pointer-events-none">
-            <h2 class="text-lg font-bold mb-2 line-clamp-3">Passwords</h2>
+            <h2 class="text-lg font-bold mb-2 line-clamp-3">Notes</h2>
         </div>
         {#if vault.notes.length === 0}
             <div class="text-center pt-8 italic">

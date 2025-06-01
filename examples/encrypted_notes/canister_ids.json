@@ -1,0 +1,11 @@
+{
+  "chainkey_testing_canister": {
+    "ic": "ypyfh-eiaaa-aaaaj-a2bma-cai"
+  },
+  "encrypted_notes_canister": {
+    "ic": "yizdt-jqaaa-aaaaj-a2bmq-cai"
+  },
+  "www": {
+    "ic": "yb2ip-7yaaa-aaaaj-a2bna-cai"
+  }
+}

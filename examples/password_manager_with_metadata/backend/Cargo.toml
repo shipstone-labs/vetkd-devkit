@@ -15,6 +15,7 @@ candid = { workspace = true }
 ic-cdk = { workspace = true }
 ic-cdk-macros = { workspace = true }
 ic-stable-structures = { workspace = true }
+# Enable expose-testing-api to allow exployment
 ic-vetkd-cdk-encrypted-maps = { path = "../../../cdk/encrypted_maps" }
 ic-vetkd-cdk-types = { path = "../../../cdk/types" }
 ic-vetkd-utils = { workspace = true }

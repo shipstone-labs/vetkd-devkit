@@ -9,6 +9,9 @@ import environment from "vite-plugin-environment";
 import eslint from "vite-plugin-eslint";
 import topLevelAwait from "vite-plugin-top-level-await";
 import wasm from "vite-plugin-wasm";
+import { config } from "dotenv";
+
+config();
 
 // https://vite.dev/config/
 export default defineConfig({

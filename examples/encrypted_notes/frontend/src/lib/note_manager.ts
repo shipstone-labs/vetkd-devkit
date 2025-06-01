@@ -90,7 +90,12 @@ export class NoteManager {
       }
 
       const notes = new Array<[string, NoteModel]>();
-      for (const [noteNameBytebuf, encryptedData, noteMetadata] of result.Ok) {
+      for (const [
+        noteNameBytebuf,
+        encryptedData,
+        noteMetadata,
+        log,
+      ] of result.Ok) {
         const noteNameString = new TextDecoder().decode(
           Uint8Array.from(noteNameBytebuf.inner),
         );
@@ -110,6 +115,7 @@ export class NoteManager {
           noteNameString,
           noteContent,
           noteMetadata,
+          log,
         );
         notes.push([noteNameString, note]);
       }

@@ -1,5 +1,8 @@
 import type { Principal } from "@dfinity/principal";
-import type { MetadataWrapper } from "../declarations/encrypted_notes_canister.did";
+import type {
+  AuditEntry,
+  MetadataWrapper,
+} from "../declarations/encrypted_notes_canister.did";
 
 export interface NoteModel {
   owner: Principal;
@@ -7,6 +10,7 @@ export interface NoteModel {
   noteName: string;
   content: string;
   metadata: MetadataWrapper;
+  log: Array<AuditEntry>;
 }
 
 export function noteFromContent(
@@ -15,6 +19,7 @@ export function noteFromContent(
   noteName: string,
   content: string,
   metadata: MetadataWrapper,
+  log: [Array<AuditEntry>] | [],
 ): NoteModel {
   return {
     owner,
@@ -22,6 +27,7 @@ export function noteFromContent(
     noteName,
     content,
     metadata,
+    log: log[0] ?? [],
   };
 }
 

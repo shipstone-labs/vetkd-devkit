@@ -24,3 +24,4 @@ serde_cbor = { workspace = true }
 
 [features]
 expose-testing-api = ["ic-vetkd-cdk-encrypted-maps/expose-testing-api"]
+default = ["expose-testing-api"]
