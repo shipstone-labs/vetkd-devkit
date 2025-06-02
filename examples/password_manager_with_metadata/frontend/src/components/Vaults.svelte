@@ -1,35 +1,36 @@
 <script lang="ts">
-    import { type VaultModel } from "../lib/vault";
-    import { vaultsStore } from "../store/vaults";
-    import Header from "./Header.svelte";
-    import Spinner from "./Spinner.svelte";
-    import { link } from "svelte-spa-router";
+import { link } from "svelte-spa-router";
+import type { VaultModel } from "../lib/vault";
+import { vaultsStore } from "../store/vaults";
+import Header from "./Header.svelte";
+import Spinner from "./Spinner.svelte";
 
-    let filter = "";
-    let filteredVaults: VaultModel[];
+// biome-ignore lint/style/useConst: <explanation>
+let filter = "";
+let filteredVaults: VaultModel[];
 
-    $: searchIndex =
-        $vaultsStore.state === "loaded"
-            ? $vaultsStore.list.map((vault) => {
-                  const div = document.createElement("div");
-                  div.innerHTML += vault.name;
+$: searchIndex =
+  $vaultsStore.state === "loaded"
+    ? $vaultsStore.list.map((vault) => {
+        const div = document.createElement("div");
+        div.innerHTML += vault.name;
 
-                  const content = div.innerText;
-                  return [content].join("/#delimiter#/").toLowerCase();
-              })
-            : [];
+        const content = div.innerText;
+        return [content].join("/#delimiter#/").toLowerCase();
+      })
+    : [];
 
-    $: {
-        if ($vaultsStore.state === "loaded") {
-            if (filter.length > 0) {
-                filteredVaults = $vaultsStore.list.filter((_, i) => {
-                    return searchIndex[i].includes(filter.toLowerCase());
-                });
-            } else {
-                filteredVaults = $vaultsStore.list;
-            }
-        }
+$: {
+  if ($vaultsStore.state === "loaded") {
+    if (filter.length > 0) {
+      filteredVaults = $vaultsStore.list.filter((_, i) => {
+        return searchIndex[i].includes(filter.toLowerCase());
+      });
+    } else {
+      filteredVaults = $vaultsStore.list;
     }
+  }
+}
 </script>
 
 <Header>

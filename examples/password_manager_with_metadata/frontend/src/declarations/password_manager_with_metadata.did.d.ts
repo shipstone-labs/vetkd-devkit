@@ -2,9 +2,11 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 import type { IDL } from '@dfinity/candid';
 
-export type AccessRights = { 'Read' : null } |
-  { 'ReadWrite' : null } |
-  { 'ReadWriteManage' : null };
+export interface AccessRights {
+  'end' : [] | [bigint],
+  'rights' : Rights,
+  'start' : [] | [bigint],
+}
 export interface ByteBuf { 'inner' : Uint8Array | number[] }
 export interface PasswordMetadata {
   'url' : string,
@@ -24,6 +26,9 @@ export type Result_3 = { 'Ok' : [] | [AccessRights] } |
   { 'Err' : string };
 export type Result_4 = { 'Ok' : [] | [[ByteBuf, PasswordMetadata]] } |
   { 'Err' : string };
+export type Rights = { 'Read' : null } |
+  { 'ReadWrite' : null } |
+  { 'ReadWriteManage' : null };
 export interface _SERVICE {
   'get_accessible_shared_map_names' : ActorMethod<
     [],

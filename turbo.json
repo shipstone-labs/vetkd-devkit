@@ -1,0 +1,48 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "turbo:test": {
+      "cache": false
+    },
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "env": ["NODE_ENV", "DFX_NETWORK"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**", "pgk/**", "target/debug/**", "target/**/debug/**"]
+    },
+    "build:release": {
+      "env": ["NODE_ENV", "DFX_NETWORK"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [
+        "dist/**",
+        "pgk/**",
+        "target/release/**",
+        "target/**/release/**"
+      ]
+    },
+    "build:dfx": {
+      "env": ["NODE_ENV", "DFX_NETWORK"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "dfx.json"],
+      "outputs": [".dfx/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "doc": {
+      "cache": false
+    },
+    "deploy": {
+      "dependsOn": ["^build:release", "^deploy"]
+    }
+  }
+}

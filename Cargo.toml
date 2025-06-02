@@ -7,7 +7,8 @@ members = [
     "cdk/test_utils",
     "cdk/types",
     "cdk/utils",
-    "examples/password_manager_with_metadata/backend"
+    "examples/password_manager_with_metadata/backend",
+    "examples/encrypted_notes/backend"
 ]
 resolver = "2"
 

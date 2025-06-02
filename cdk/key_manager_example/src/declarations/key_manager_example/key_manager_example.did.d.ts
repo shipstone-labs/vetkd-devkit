@@ -2,9 +2,11 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 import type { IDL } from '@dfinity/candid';
 
-export type AccessRights = { 'Read' : null } |
-  { 'ReadWrite' : null } |
-  { 'ReadWriteManage' : null };
+export interface AccessRights {
+  'end' : [] | [bigint],
+  'rights' : Rights,
+  'start' : [] | [bigint],
+}
 export interface ByteBuf { 'inner' : Uint8Array | number[] }
 export type Result = { 'Ok' : ByteBuf } |
   { 'Err' : string };
@@ -12,6 +14,9 @@ export type Result_1 = { 'Ok' : Array<[Principal, AccessRights]> } |
   { 'Err' : string };
 export type Result_2 = { 'Ok' : [] | [AccessRights] } |
   { 'Err' : string };
+export type Rights = { 'Read' : null } |
+  { 'ReadWrite' : null } |
+  { 'ReadWriteManage' : null };
 export interface _SERVICE {
   'get_accessible_shared_key_ids' : ActorMethod<
     [],

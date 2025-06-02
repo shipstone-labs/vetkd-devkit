@@ -21,7 +21,8 @@ The **VetKey Password Manager** is an example application demonstrating how to u
 ### Install Dependencies
 
 ```bash
-npm install
+corepack enable pnpm
+pnpm install
 ```
 
 ### Deploy the Canisters

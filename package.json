@@ -1,8 +1,16 @@
 {
-    "private": true,
-    "workspaces": [
-        "cdk/utils/pkg",
-        "sdk/*",
-        "examples/password_manager/frontend"
-    ]
+  "name": "vetkd-devkit",
+  "private": true,
+  "packageManager": "pnpm@10.11.0",
+  "workspaces": [
+    "sdk/*",
+    "cdk/utils/pkg",
+    "examples/encrypted_notes/frontend",
+    "examples/password_manager/frontend",
+    "examples/password_manager_with_metadata/frontend"
+  ],
+  "scripts": {
+    "build:all": "pnpm build:sdk && pnpm --filter=ic_vetkd_sdk_utils build && pnpm --filter=encrypted_notes_frontend build && pnpm --filter=frontend build && pnpm --filter=password_manager_with_metadata_frontend build",
+    "build:sdk": "pnpm --filter=\"./sdk/*\" build"
+  }
 }

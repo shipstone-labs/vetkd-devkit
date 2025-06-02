@@ -13,10 +13,15 @@ export const idlFactory = ({ IDL }) => {
     'Err' : IDL.Text,
   });
   const Result_1 = IDL.Variant({ 'Ok' : ByteBuf, 'Err' : IDL.Text });
-  const AccessRights = IDL.Variant({
+  const Rights = IDL.Variant({
     'Read' : IDL.Null,
     'ReadWrite' : IDL.Null,
     'ReadWriteManage' : IDL.Null,
+  });
+  const AccessRights = IDL.Record({
+    'end' : IDL.Opt(IDL.Nat64),
+    'rights' : Rights,
+    'start' : IDL.Opt(IDL.Nat64),
   });
   const Result_2 = IDL.Variant({
     'Ok' : IDL.Vec(IDL.Tuple(IDL.Principal, AccessRights)),

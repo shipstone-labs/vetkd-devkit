@@ -132,7 +132,14 @@ impl KeyManager {
             .map(|user| {
                 self.get_user_rights(caller, key_id, user)
                     .map(|opt_user_rights| {
-                        (user, opt_user_rights.expect("always some access rights"))
+                        (
+                            user,
+                            opt_user_rights.unwrap_or_else(|| AccessRights {
+                                rights: Rights::Read,
+                                start: None,
+                                end: Some(now()),
+                            }),
+                        )
                     })
             })
             .collect::<Result<Vec<_>, _>>()
@@ -186,19 +193,19 @@ impl KeyManager {
         use futures::future::FutureExt;
 
         let access_rights = self.ensure_user_can_read(caller, key_id)?;
-        
+
         // Check if this is the first access to this key (implicit creation)
         // We consider a key created when the owner first accesses it and it has no access records
         let is_owner = caller == key_id.0;
-        let no_shared_records = !self.shared_keys.range((key_id, Principal::management_canister())..)
+        let no_shared_records = !self
+            .shared_keys
+            .range((key_id, Principal::management_canister())..)
             .take_while(|((k, _), _)| k == &key_id)
             .any(|_| true);
-            
+
         // If this is the owner's first access, log a creation event
         if is_owner && no_shared_records {
-            self.add_audit_log(key_id, move || {
-                AuditEntry::created(now(), caller)
-            });
+            self.add_audit_log(key_id, move || AuditEntry::created(now(), caller));
         }
 
         // Log the access - using closure to avoid allocation if audit is disabled
@@ -304,17 +311,13 @@ impl KeyManager {
         // If we're removing the owner's access rights from someone else,
         // consider this effectively deleting the key, since the owner is the primary access point
         let is_key_owner = user == key_id.0;
-        
+
         if is_key_owner {
             // Log a key deletion event if we're removing the owner's access
-            self.add_audit_log(key_id, move || {
-                AuditEntry::deleted(now(), caller)
-            });
+            self.add_audit_log(key_id, move || AuditEntry::deleted(now(), caller));
         } else {
             // Otherwise, log the standard unshare action
-            self.add_audit_log(key_id, move || {
-                AuditEntry::unshare(now(), caller, user)
-            });
+            self.add_audit_log(key_id, move || AuditEntry::unshare(now(), caller, user));
         }
 
         self.shared_keys.remove(&(key_id, user));
@@ -366,7 +369,7 @@ impl KeyManager {
 
     /// Ensures that a user has management access to a key before proceeding.
     /// Returns an error if the user is not authorized.
-    fn ensure_user_can_manage(
+    pub fn ensure_user_can_manage(
         &self,
         user: Principal,
         key_id: KeyId,
@@ -413,7 +416,7 @@ impl KeyManager {
         if let Some(audit_logs) = &mut self.audit_logs {
             // Only create the AuditEntry if we have audit logs enabled
             let audit = audit_fn();
-            
+
             match audit_logs.get(&key_id) {
                 Some(existing_logs) => {
                     let mut new_logs = AuditLog(existing_logs.0.clone());
@@ -427,6 +430,13 @@ impl KeyManager {
             }
         }
     }
+
+    pub fn get_audit_log(&self, key_id: KeyId) -> Option<AuditLog> {
+        if let Some(audit_logs) = &self.audit_logs {
+            return audit_logs.get(&key_id).clone();
+        }
+        None
+    }
 }
 
 fn bls12_381_test_key_1() -> VetKDKeyId {
@@ -439,7 +449,7 @@ fn bls12_381_test_key_1() -> VetKDKeyId {
 fn vetkd_system_api_canister_id() -> CanisterId {
     #[cfg(feature = "expose-testing-api")]
     {
-        if let Some(canister_id) = VETKD_TESTING_CANISTER_ID.with(|cell| cell.borrow().clone()) {
+        if let Some(canister_id) = VETKD_TESTING_CANISTER_ID.with(|cell| *cell.borrow()) {
             return canister_id;
         }
     }

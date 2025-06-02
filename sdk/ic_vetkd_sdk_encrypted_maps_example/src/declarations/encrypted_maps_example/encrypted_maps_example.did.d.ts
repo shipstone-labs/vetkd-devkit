@@ -2,9 +2,11 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 import type { IDL } from '@dfinity/candid';
 
-export type AccessRights = { 'Read' : null } |
-  { 'ReadWrite' : null } |
-  { 'ReadWriteManage' : null };
+export interface AccessRights {
+  'end' : [] | [bigint],
+  'rights' : Rights,
+  'start' : [] | [bigint],
+}
 export interface ByteBuf { 'inner' : Uint8Array | number[] }
 export interface EncryptedMapData {
   'access_control' : Array<[Principal, AccessRights]>,
@@ -20,10 +22,23 @@ export type Result_2 = { 'Ok' : ByteBuf } |
   { 'Err' : string };
 export type Result_3 = { 'Ok' : Array<[Principal, AccessRights]> } |
   { 'Err' : string };
-export type Result_4 = { 'Ok' : [] | [AccessRights] } |
+export type Result_4 = { 'Ok' : Array<[ByteBuf, TombstoneEntry]> } |
   { 'Err' : string };
-export type Result_5 = { 'Ok' : Array<ByteBuf> } |
+export type Result_5 = { 'Ok' : [] | [AccessRights] } |
   { 'Err' : string };
+export type Result_6 = { 'Ok' : Array<ByteBuf> } |
+  { 'Err' : string };
+export type Result_7 = { 'Ok' : [] | [TombstoneEntry] } |
+  { 'Err' : string };
+export type Rights = { 'Read' : null } |
+  { 'ReadWrite' : null } |
+  { 'ReadWriteManage' : null };
+export interface TombstoneEntry {
+  'value' : ByteBuf,
+  'deletion_timestamp' : bigint,
+  'deleted_by' : Principal,
+  'marked_for_purge' : boolean,
+}
 export interface _SERVICE {
   'get_accessible_shared_map_names' : ActorMethod<
     [],
@@ -45,18 +60,26 @@ export interface _SERVICE {
     [Principal, ByteBuf],
     Result_3
   >,
-  'get_user_rights' : ActorMethod<[Principal, ByteBuf, Principal], Result_4>,
+  'get_tombstones' : ActorMethod<[Principal, ByteBuf], Result_4>,
+  'get_user_rights' : ActorMethod<[Principal, ByteBuf, Principal], Result_5>,
   'get_vetkey_verification_key' : ActorMethod<[], ByteBuf>,
+  'hard_delete_encrypted_value' : ActorMethod<
+    [Principal, ByteBuf, ByteBuf],
+    Result
+  >,
+  'hard_delete_map_values' : ActorMethod<[Principal, ByteBuf], Result_6>,
   'insert_encrypted_value' : ActorMethod<
     [Principal, ByteBuf, ByteBuf, ByteBuf],
     Result
   >,
+  'purge_tombstone' : ActorMethod<[Principal, ByteBuf, ByteBuf], Result_7>,
   'remove_encrypted_value' : ActorMethod<[Principal, ByteBuf, ByteBuf], Result>,
-  'remove_map_values' : ActorMethod<[Principal, ByteBuf], Result_5>,
-  'remove_user' : ActorMethod<[Principal, ByteBuf, Principal], Result_4>,
+  'remove_map_values' : ActorMethod<[Principal, ByteBuf], Result_6>,
+  'remove_user' : ActorMethod<[Principal, ByteBuf, Principal], Result_5>,
+  'restore_value' : ActorMethod<[Principal, ByteBuf, ByteBuf], Result>,
   'set_user_rights' : ActorMethod<
     [Principal, ByteBuf, Principal, AccessRights],
-    Result_4
+    Result_5
   >,
 }
 export declare const idlFactory: IDL.InterfaceFactory;

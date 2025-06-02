@@ -1,65 +1,61 @@
 <script lang="ts">
-    import { type VaultModel, summarize } from "../lib/vault";
-    import { link, location } from "svelte-spa-router";
-    import { onDestroy } from "svelte";
-    import { vaultsStore } from "../store/vaults";
-    import { Principal } from "@dfinity/principal";
-    import Header from "./Header.svelte";
-    import Spinner from "./Spinner.svelte";
-    import GiOpenTreasureChest from "svelte-icons/gi/GiOpenTreasureChest.svelte";
-    import { auth } from "../store/auth";
-    import SharingEditor from "./SharingEditor.svelte";
-    import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
+import { Principal } from "@dfinity/principal";
+import type { AccessRights } from "ic_vetkd_sdk_encrypted_maps/src";
+import { onDestroy } from "svelte";
+import GiOpenTreasureChest from "svelte-icons/gi/GiOpenTreasureChest.svelte";
+import { link, location } from "svelte-spa-router";
+import { type VaultModel, summarize } from "../lib/vault";
+import { auth } from "../store/auth";
+import { vaultsStore } from "../store/vaults";
+import Header from "./Header.svelte";
+import SharingEditor from "./SharingEditor.svelte";
+import Spinner from "./Spinner.svelte";
 
-    export let vault: VaultModel = {
-        name: "",
-        owner: Principal.managementCanister(),
-        passwords: [],
-        users: [],
-    };
-    export let vaultSummary: string = "";
-    export let accessRights: AccessRights = { Read: null };
+export let vault: VaultModel = {
+  name: "",
+  owner: Principal.managementCanister(),
+  passwords: [],
+  users: [],
+};
+export let vaultSummary = "";
+export let accessRights: AccessRights = {
+  start: [],
+  end: [],
+  rights: { Read: null },
+};
 
-    export let currentRoute = "";
-    const unsubscribeCurrentRoute = location.subscribe((value) => {
-        currentRoute = decodeURI(value);
-    });
-    onDestroy(unsubscribeCurrentRoute);
+export let currentRoute = "";
+const unsubscribeCurrentRoute = location.subscribe((value) => {
+  currentRoute = decodeURI(value);
+});
+onDestroy(unsubscribeCurrentRoute);
 
-    $: {
-        if (
-            $vaultsStore.state === "loaded" &&
-            $auth.state === "initialized" &&
-            vault.name.length === 0 &&
-            currentRoute.split("/").length > 2
-        ) {
-            const split = currentRoute.split("/");
-            const vaultOwner = Principal.fromText(split[split.length - 2]);
-            const vaultName = split[split.length - 1];
-            const searchedForVault = $vaultsStore.list.find(
-                (v) =>
-                    v.owner.compareTo(vaultOwner) === "eq" &&
-                    v.name === vaultName,
-            );
-            if (!!searchedForVault) {
-                vault = searchedForVault;
-                vaultSummary += summarize(vault);
-                const me = $auth.client.getIdentity().getPrincipal();
-                accessRights =
-                    vault.owner.compareTo(me) === "eq"
-                        ? { ReadWriteManage: null }
-                        : vault.users.find(
-                              (user) => user[0].compareTo(me) === "eq",
-                          )[1];
-            } else {
-                vaultSummary =
-                    "could not find vault " +
-                    vaultName +
-                    " owned by " +
-                    vaultOwner.toText();
-            }
-        }
+$: {
+  if (
+    $vaultsStore.state === "loaded" &&
+    $auth.state === "initialized" &&
+    vault.name.length === 0 &&
+    currentRoute.split("/").length > 2
+  ) {
+    const split = currentRoute.split("/");
+    const vaultOwner = Principal.fromText(split[split.length - 2]);
+    const vaultName = split[split.length - 1];
+    const searchedForVault = $vaultsStore.list.find(
+      (v) => v.owner.compareTo(vaultOwner) === "eq" && v.name === vaultName,
+    );
+    if (searchedForVault) {
+      vault = searchedForVault;
+      vaultSummary += summarize(vault);
+      const me = $auth.client.getIdentity().getPrincipal();
+      accessRights =
+        vault.owner.compareTo(me) === "eq"
+          ? { start: [], end: [], rights: { ReadWriteManage: null } }
+          : vault.users.find((user) => user[0].compareTo(me) === "eq")[1];
+    } else {
+      vaultSummary = `could not find vault ${vaultName} owned by ${vaultOwner.toText()}`;
     }
+  }
+}
 </script>
 
 <Header>
@@ -89,7 +85,7 @@
         <div class="mt-5"></div>
         <SharingEditor
             editedVault={vault}
-            canManage={"ReadWriteManage" in accessRights}
+            canManage={"ReadWriteManage" in accessRights.rights}
         />
 
         <div class="mt-5"></div>

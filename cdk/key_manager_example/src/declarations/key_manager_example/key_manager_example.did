@@ -1,4 +1,8 @@
-type AccessRights = variant { Read; ReadWrite; ReadWriteManage };
+type AccessRights = record {
+  end : opt nat64;
+  rights : Rights;
+  start : opt nat64;
+};
 type ByteBuf = record { inner : blob };
 type Result = variant { Ok : ByteBuf; Err : text };
 type Result_1 = variant {
@@ -6,7 +10,8 @@ type Result_1 = variant {
   Err : text;
 };
 type Result_2 = variant { Ok : opt AccessRights; Err : text };
-service : () -> {
+type Rights = variant { Read; ReadWrite; ReadWriteManage };
+service : {
   get_accessible_shared_key_ids : () -> (
       vec record { principal; ByteBuf },
     ) query;
