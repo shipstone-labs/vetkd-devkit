@@ -129,10 +129,6 @@ Our work shows that vetKeys can evolve to support more complex security scenario
 
 The additional attached document is a short description suggesting additional improvements to the SDK that would practically extend the use cases for vetKeys to perform a variety of cross-blockchain operations with encrypted digital assets.
 
-### Milestone Rewards:
-- Milestone 2 Completion: $10,000
-- Milestone 3 Completion: $10,000
-- **Total Project Completion: $20,000**
 
 ---
 *Submitted by: SafeIdea Team*  
