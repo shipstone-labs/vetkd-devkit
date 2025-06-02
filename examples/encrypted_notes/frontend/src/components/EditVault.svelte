@@ -62,12 +62,6 @@ $: {
         "ReadWriteManage" in
           (vault.users.find(([p, r]) => p.compareTo(me) === "eq")?.[1]
             ?.rights ?? {});
-      console.log({
-        owner: vault.owner,
-        me,
-        canManage,
-        users: vault.owner,
-      });
     }
   }
 }

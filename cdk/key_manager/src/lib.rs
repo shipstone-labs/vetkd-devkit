@@ -132,7 +132,14 @@ impl KeyManager {
             .map(|user| {
                 self.get_user_rights(caller, key_id, user)
                     .map(|opt_user_rights| {
-                        (user, opt_user_rights.expect("always some access rights"))
+                        (
+                            user,
+                            opt_user_rights.unwrap_or_else(|| AccessRights {
+                                rights: Rights::Read,
+                                start: None,
+                                end: Some(now()),
+                            }),
+                        )
                     })
             })
             .collect::<Result<Vec<_>, _>>()

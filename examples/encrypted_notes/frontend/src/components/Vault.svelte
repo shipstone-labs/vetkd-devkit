@@ -51,12 +51,6 @@ $: {
         vault.owner.compareTo(me) === "eq"
           ? { start: [], end: [], rights: { ReadWriteManage: null } }
           : vault.users.find((user) => user[0].compareTo(me) === "eq")[1];
-      console.log({
-        accessRights,
-        me,
-        owner: vault.owner,
-        canManage: "ReadWriteManage" in accessRights.rights,
-      });
     } else {
       vaultSummary = `could not find vault ${vaultName} owned by ${vaultOwner.toText()}`;
     }

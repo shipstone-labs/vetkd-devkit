@@ -12,8 +12,10 @@ import {
 } from "../store/vaults";
 
 export let editedVault: VaultModel;
-export const canManage = false;
-export const currentRoute = "";
+// biome-ignore lint/style/useConst: <explanation>
+export let canManage = false;
+// biome-ignore lint/style/useConst: <explanation>
+export let currentRoute = "";
 
 let newSharing = "";
 let newSharingInput: HTMLInputElement;
@@ -25,7 +27,11 @@ async function add() {
     throw new Error("not logged in");
   }
   adding = true;
-  let accessRights: AccessRights = { Read: null };
+  let accessRights: AccessRights = {
+    start: [],
+    end: [],
+    rights: { Read: null },
+  };
 
   const selectElement = document.getElementById(
     "access-rights-select",
@@ -35,9 +41,9 @@ async function add() {
 
   if (selectedValue === "Read") {
   } else if (selectedValue === "ReadWrite") {
-    accessRights = { ReadWrite: null };
+    accessRights = { start: [], end: [], rights: { ReadWrite: null } };
   } else if (selectedValue === "ReadWriteManage") {
-    accessRights = { ReadWriteManage: null };
+    accessRights = { start: [], end: [], rights: { ReadWriteManage: null } };
   }
 
   try {

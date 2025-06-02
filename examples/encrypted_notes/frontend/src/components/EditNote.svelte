@@ -12,6 +12,7 @@ import { refreshVaults, setNote, vaultsStore } from "../store/vaults";
 import Header from "./Header.svelte";
 import NoteEditor from "./NoteEditor.svelte";
 import Spinner from "./Spinner.svelte";
+import { accessRightsToString } from "../lib/vault";
 
 export let currentRoute = "";
 const unsubscribe = location.subscribe((value) => {
@@ -312,6 +313,24 @@ $: {
             <div class="mb-1 text-sm text-gray-500">
                 Last modification by: {originalNote.metadata.last_modified_principal.toText()}
             </div>
+            <!-- History Section -->
+            <div class="bg-gray-100 dark:bg-base-100 p-4 rounded-lg shadow-md">
+              <p class="text-lg font-bold mb-2">History</p>
+              <div class="space-y-1">
+                {#each originalNote.log as entry}
+                  <div class="flex flex-row bg-gray-200 dark:bg-base-200 space-x-4 text-sm p-2 rounded-lg shadow-md">
+                    <span class="font-mono text-gray-600 dark:text-white text-xs">{new Date(Number(entry.timestamp / BigInt(1000000))).toLocaleDateString()}<br/>{new Date(Number(entry.timestamp / BigInt(1000000))).toLocaleTimeString()}</span>
+                    <span>
+                      {Object.keys(entry.audit_type).join(', ')}
+                      {entry.user?.length ? entry.user[0] : ""}
+                      {entry.access_rights?.length ? accessRightsToString(entry.access_rights[0]) : ""}
+                      {entry.caller.toString()}
+                    </span>
+                  </div>
+                {/each}
+              </div>
+            </div>
+
             <a
                 href={`/vaults/${parentVaultOwner}/${parentVaultName}`}
                 use:link

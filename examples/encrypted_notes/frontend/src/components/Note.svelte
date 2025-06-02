@@ -88,23 +88,6 @@ $: {
                 </div>
             </div>
         {/if}
-        <!-- History Section -->
-        <div class="bg-gray-100 dark:bg-base-100 p-4 rounded-lg shadow-md">
-          <p class="text-lg font-bold mb-2">History</p>
-          <div class="space-y-1">
-            {#each note.log as entry}
-              <div class="flex flex-row bg-gray-200 dark:bg-base-200 space-x-4 text-sm p-2 rounded-lg shadow-md">
-                <span class="font-mono text-gray-600 dark:text-white text-xs">{new Date(Number(entry.timestamp / BigInt(1000000))).toLocaleDateString()}<br/>{new Date(Number(entry.timestamp / BigInt(1000000))).toLocaleTimeString()}</span>
-                <span>
-                  {entry.audit_type}
-                  {entry.user?.length ? entry.user[0] : undefined}
-                  {entry.access_rights?.length ? accessRightsToString(entry.access_rights[0]) : undefined}
-                  {entry.caller.toString()}
-                </span>
-              </div>
-            {/each}
-          </div>
-        </div>
         <div class="flex-grow"></div>
         <div class="text-center">
             <a

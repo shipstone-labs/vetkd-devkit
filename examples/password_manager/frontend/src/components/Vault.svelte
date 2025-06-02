@@ -20,7 +20,11 @@ export let vault: VaultModel = {
   users: [],
 };
 export let vaultSummary = "";
-export let accessRights: AccessRights = { Read: null };
+export let accessRights: AccessRights = {
+  start: [],
+  end: [],
+  rights: { Read: null },
+};
 
 export let currentRoute = "";
 const unsubscribeCurrentRoute = location.subscribe((value) => {
@@ -47,7 +51,7 @@ $: {
       const me = $auth.client.getIdentity().getPrincipal();
       accessRights =
         vault.owner.compareTo(me) === "eq"
-          ? { ReadWriteManage: null }
+          ? { start: [], end: [], rights: { ReadWriteManage: null } }
           : vault.users.find((user) => user[0].compareTo(me) === "eq")[1];
     } else {
       vaultSummary = `could not find vault ${vaultName} owned by ${vaultOwner.toText()}`;

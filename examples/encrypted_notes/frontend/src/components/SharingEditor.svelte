@@ -56,12 +56,14 @@ async function add() {
   }
 
   const accessRights: AccessRights = {
-    start: newSharingStart
-      ? [BigInt(new Date(newSharingStartDate).getDate()) * 1000000n]
-      : [],
-    end: newSharingEnd
-      ? [BigInt(new Date(newSharingEndDate).getDate()) * 1000000n]
-      : [],
+    start:
+      newSharingStart && newSharingStartDate
+        ? [BigInt(new Date(newSharingStartDate).valueOf()) * 1000000n]
+        : [],
+    end:
+      newSharingEnd && newSharingEndDate
+        ? [BigInt(new Date(newSharingEndDate).valueOf()) * 1000000n]
+        : [],
     rights,
   };
 
@@ -167,10 +169,10 @@ $: {
     </p>
     <p class="mt-3">Users with whom the vault is shared:</p>
 {/if}
-<div class="flex flex-wrap space-x-2 mt-2">
+<div class="flex flex-wrap space-x-2 mt-2 flex-col">
     {#each editedVault.users as sharing}
         <button
-            class="btn btn-outline btn-sm flex items-center"
+            class="btn btn-outline btn-sm flex items-center flex-row"
             on:click={() => {
                 remove(sharing[0]);
             }}
@@ -192,108 +194,110 @@ $: {
             </svg>
         </button>
     {/each}
-    <div class="flex items-center">
+    <div class="flex flex-row">
+      <div class="flex items-center">
+        <input
+            bind:checked={newSharingEveryone}
+            type="checkbox"
+            class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
+            removing
+                ? 'opacity-50'
+                : ''} 
+              {!canManage ? 'hidden' : ''}"
+            bind:this={newSharingCheckmark}
+            on:change={onEveryoneChanged}
+            disabled={adding}
+            id="isEveryone"
+        />
+        <label for="isEveryone">&nbsp;Everyone</label>
+      </div>
       <input
-          bind:checked={newSharingEveryone}
-          type="checkbox"
+          bind:value={newSharing}
+          placeholder="Add principal..."
+          bind:this={newSharingInput}
           class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
           removing
               ? 'opacity-50'
               : ''} 
             {!canManage ? 'hidden' : ''}"
-          bind:this={newSharingCheckmark}
-          on:change={onEveryoneChanged}
-          disabled={adding}
-          id="isEveryone"
+          on:keypress={onKeyPress}
+          disabled={adding || newSharingEveryone}
       />
-      <label for="isEveryone">&nbsp;Everyone</label>
-    </div>
-    <input
-        bind:value={newSharing}
-        placeholder="Add principal..."
-        bind:this={newSharingInput}
-        class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
-        removing
-            ? 'opacity-50'
-            : ''} 
-          {!canManage ? 'hidden' : ''}"
-        on:keypress={onKeyPress}
-        disabled={adding || newSharingEveryone}
-    />
-    <div class="flex items-center">
-      <input
-          bind:checked={newSharingStart}
-          type="checkbox"
+      <div class="flex items-center">
+        <input
+            bind:checked={newSharingStart}
+            type="checkbox"
+            class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
+            removing
+                ? 'opacity-50'
+                : ''} 
+              {!canManage ? 'hidden' : ''}"
+            disabled={adding}
+            id="hasAfter"
+        />
+        <label for="hasBefore">&nbsp;After</label>
+        <input 
+          bind:value={newSharingStartDate}
+          type="datetime-local"
           class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
           removing
               ? 'opacity-50'
               : ''} 
-            {!canManage ? 'hidden' : ''}"
-          disabled={adding}
-          id="hasAfter"
-      />
-      <label for="hasBefore">&nbsp;After</label>
-      <input 
-        bind:value={newSharingStartDate}
-        type="datetime-local"
-        class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
-        removing
-            ? 'opacity-50'
-            : ''} 
-          {!canManage || !newSharingStart ? 'hidden' : ''}"
-      />
-    </div>
-    <div class="flex items-center">
-      <input
-          bind:checked={newSharingEnd}
-          type="checkbox"
+            {!canManage || !newSharingStart ? 'hidden' : ''}"
+        />
+      </div>
+      <div class="flex items-center">
+        <input
+            bind:checked={newSharingEnd}
+            type="checkbox"
+            class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
+            removing
+                ? 'opacity-50'
+                : ''} 
+              {!canManage ? 'hidden' : ''}"
+            disabled={adding}
+            id="hasEnd"
+        />
+        <label for="hasEnd">&nbsp;Before</label>
+        <input 
+          bind:value={newSharingEndDate}
+          type="datetime-local"
           class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
           removing
               ? 'opacity-50'
               : ''} 
-            {!canManage ? 'hidden' : ''}"
-          disabled={adding}
-          id="hasEnd"
-      />
-      <label for="hasEnd">&nbsp;Before</label>
-      <input 
-        bind:value={newSharingStartDate}
-        type="datetime-local"
-        class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
-        removing
-            ? 'opacity-50'
-            : ''} 
-          {!canManage || !newSharingEnd ? 'hidden' : ''}"
-      />
+            {!canManage || !newSharingEnd ? 'hidden' : ''}"
+        />
+      </div>
+      <select
+          name="access-rights"
+          id="access-rights-select"
+          disabled={(newSharing !== "" &&
+              !!editedVault.users.find(
+                  (user) =>
+                      user[0].compareTo(Principal.fromText(newSharing)) === "eq",
+              )) ||
+              adding ||
+              removing}
+          hidden={!canManage}
+      >
+          <option value="Read">read</option>
+          <option value="ReadWrite">read-write</option>
+          <option value="ReadWriteManage">read-write-manage</option>
+      </select>
+      <button
+          class="btn btn-sm btn-ghost
+            {!canManage ? 'hidden' : ''}
+            {adding || removing ? 'loading' : ''}"
+          on:click={add}
+          disabled={(newSharing !== "" &&
+              !!editedVault.users.find(
+                  (user) =>
+                      user[0].compareTo(Principal.fromText(newSharing)) === "eq",
+              )) ||
+              adding ||
+              removing}
+          >{adding ? "Adding..." : removing ? "Removing... " : "Add"}</button
+      >
     </div>
-    <select
-        name="access-rights"
-        id="access-rights-select"
-        disabled={(newSharing !== "" &&
-            !!editedVault.users.find(
-                (user) =>
-                    user[0].compareTo(Principal.fromText(newSharing)) === "eq",
-            )) ||
-            adding ||
-            removing}
-        hidden={!canManage}
-    >
-        <option value="Read">read</option>
-        <option value="ReadWrite">read-write</option>
-        <option value="ReadWriteManage">read-write-manage</option>
-    </select>
-    <button
-        class="btn btn-sm btn-ghost
-          {!canManage ? 'hidden' : ''}
-          {adding || removing ? 'loading' : ''}"
-        on:click={add}
-        disabled={(newSharing !== "" &&
-            !!editedVault.users.find(
-                (user) =>
-                    user[0].compareTo(Principal.fromText(newSharing)) === "eq",
-            )) ||
-            adding ||
-            removing}
-        >{adding ? "Adding..." : removing ? "Removing... " : "Add"}</button
-    >
 </div>
